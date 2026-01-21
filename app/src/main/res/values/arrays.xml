@@ -1,0 +1,65 @@
+<resources>
+    <string-array name="Protect_op_type_array">
+        <item>Protect</item>
+        <item>Unprotect</item>
+        <item>GetPassword</item>
+        <item>SetPassword</item>
+        <item>Enable Inventory Of Protected Tags</item>
+        <item>Clear Protected Mode Configuration</item>
+    </string-array>
+
+    <string-array name="tagmask_enum">
+        <item>S1</item>
+        <item>S2</item>
+        <item>S3</item>
+    </string-array>
+
+    <string-array name="pre_filter_target_options">
+        <item>SESSION_S0</item>
+        <item>SESSION_S1</item>
+        <item>SESSION_S2</item>
+        <item>SESSION_S3</item>
+        <item>SL_FLAG</item>
+    </string-array>
+
+    <string-array name="pre_filter_action_array">
+        <item>INV_A_NOT_INV_B</item>
+        <item>INV_A</item>
+        <item>NOT_INV_B</item>
+        <item>INV_A2BB2A_NOT_INV_A</item>
+        <item>INV_B_NOT_INV_A</item>
+        <item>INV_B</item>
+        <item>NOT_INV_A</item>
+        <item>NOT_INV_A2BB2A</item>
+    </string-array>
+
+    <string-array name="pre_filter_memory_bank_array">
+        <item>EPC</item>
+        <item>TID</item>
+        <item>USER</item>
+    </string-array>
+
+    <string-array name="pre_filter_index">
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <string-array name="session_array">
+        <item>S0</item>
+        <item>S1</item>
+        <item>S2</item>
+        <item>S3</item>
+    </string-array>
+
+    <string-array name="inventory_state_array">
+        <item>STATE_A</item>
+        <item>STATE_B</item>
+        <item>AB_FLIP</item>
+    </string-array>
+
+    <string-array name="sl_flags_array">
+        <item>ALL</item>
+        <item>DEASSERTED</item>
+        <item>ASSERTED</item>
+    </string-array>
+</resources>

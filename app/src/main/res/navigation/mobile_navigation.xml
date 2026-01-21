@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_login">
+
+    <action
+        android:id="@+id/action_global_logout"
+        app:destination="@id/nav_login"
+        app:popUpTo="@id/mobile_navigation"
+        app:popUpToInclusive="true" />
+
+    <fragment
+        android:id="@+id/nav_login"
+        android:name="com.example.stramitapp.ui.login.LoginFragment"
+        android:label="LOGIN"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_nav_login_to_nav_home"
+            app:destination="@id/nav_home"
+            app:popUpTo="@id/nav_login"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_nav_login_to_nav_settings"
+            app:destination="@id/nav_settings" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_settings"
+        android:name="com.example.stramitapp.ui.settings.SettingsFragment"
+        android:label="SETTINGS"
+        tools:layout="@layout/fragment_settings" />
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.example.stramitapp.ui.home.HomeFragment"
+        android:label="@string/menu_home"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_nav_home_to_nav_settings"
+            app:destination="@id/nav_settings" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_movement"
+        android:name="com.example.stramitapp.ui.addlocationmovement.AddLocationMovementFragment"
+        android:label="Movement"
+        tools:layout="@layout/fragment_add_location_movement">
+        <action
+            android:id="@+id/action_nav_movement_to_nav_movement_scanned_items"
+            app:destination="@id/nav_movement_scanned_items" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_movement_scanned_items"
+        android:name="com.example.stramitapp.ui.movement.MovementFragment"
+        android:label="Movement"
+        tools:layout="@layout/fragment_movement" />
+
+    <fragment
+        android:id="@+id/nav_reader_list"
+        android:name="com.example.stramitapp.ui.reader_list.ReaderListFragment"
+        android:label="@string/menu_reader_list"
+        tools:layout="@layout/fragment_reader_list" />
+
+    <fragment
+        android:id="@+id/nav_search_asset"
+        android:name="com.example.stramitapp.ui.search_asset.SearchAssetFragment"
+        android:label="@string/menu_search_asset"
+        tools:layout="@layout/fragment_search_asset" />
+
+    <fragment
+        android:id="@+id/nav_load_shipment"
+        android:name="com.example.stramitapp.ui.load_shipment.LoadShipmentFragment"
+        android:label="@string/menu_load_shipment"
+        tools:layout="@layout/fragment_load_shipment">
+        <action
+            android:id="@+id/action_nav_load_shipment_to_nav_load_shipment_list"
+            app:destination="@id/nav_load_shipment_list" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_load_shipment_list"
+        android:name="com.example.stramitapp.ui.load_shipment.LoadShipmentListFragment"
+        android:label="6133213"
+        tools:layout="@layout/fragment_load_shipment_list" />
+
+    <fragment
+        android:id="@+id/nav_search_shipment"
+        android:name="com.example.stramitapp.ui.search_shipment.SearchShipmentFragment"
+        android:label="@string/menu_search_shipment"
+        tools:layout="@layout/fragment_search_shipment" />
+
+    <fragment
+        android:id="@+id/nav_floor_sweep"
+        android:name="com.example.stramitapp.ui.floorsweep.FloorSweepFragment"
+        android:label="@string/menu_floor_sweep"
+        tools:layout="@layout/fragment_floor_sweep/fragment_floor_sweep" />
+
+    <fragment
+        android:id="@+id/nav_sync"
+        android:name="com.example.stramitapp.ui.sync.SyncFragment"
+        android:label="@string/menu_sync"
+        tools:layout="@layout/fragment_sync" />
+
+</navigation>

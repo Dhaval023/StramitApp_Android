@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/ic_home_black_24dp"
+            android:title="@string/menu_home" />
+        <item
+            android:id="@+id/nav_movement"
+            android:icon="@drawable/ic_movement_black_24dp"
+            android:title="@string/menu_movement" />
+        <item
+            android:id="@+id/nav_reader_list"
+            android:icon="@drawable/ic_reader_list_black_24dp"
+            android:title="@string/menu_reader_list" />
+        <item
+            android:id="@+id/nav_search_asset"
+            android:icon="@drawable/ic_search_asset_black_24dp"
+            android:title="@string/menu_search_asset" />
+        <item
+            android:id="@+id/nav_load_shipment"
+            android:icon="@drawable/ic_load_shipment_black_24dp"
+            android:title="@string/menu_load_shipment" />
+        <item
+            android:id="@+id/nav_search_shipment"
+            android:icon="@drawable/ic_search_shipment_black_24dp"
+            android:title="@string/menu_search_shipment" />
+        <item
+            android:id="@+id/nav_floor_sweep"
+            android:icon="@drawable/ic_floor_sweep_black_24dp"
+            android:title="@string/menu_floor_sweep" />
+        <item
+            android:id="@+id/nav_sync"
+            android:icon="@drawable/ic_sync_black_24dp"
+            android:title="@string/menu_sync" />
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@drawable/ic_logout_black_24dp"
+            android:title="@string/menu_logout" />
+    </group>
+</menu>
