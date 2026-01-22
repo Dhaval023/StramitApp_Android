@@ -91,3 +91,13 @@ Thumbs.db
 
 # Kotlin
 .kotlin/
+
+# Binary cache files
+*.bin
+
+# Generated HTML reports
+*.html
+
+# Gradle cache (extra safety)
+.gradle/**
+build/**
