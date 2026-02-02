@@ -25,7 +25,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <RadioGroup
-            android:id="@+id/scan_type_radiogroup"
+            android:id="@+id/readerModeRadioGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
@@ -67,7 +67,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/scan_type_radiogroup" />
+            app:layout_constraintTop_toBottomOf="@+id/readerModeRadioGroup" />
 
         <TextView
             android:id="@+id/company_picker_textview"
@@ -120,14 +120,14 @@
                     android:background="@drawable/rounded_corner_bg"
                     android:padding="10dp"
                     android:src="@drawable/search"
-                    android:tint="@android:color/white"
+                    app:tint="@android:color/white"
                     android:backgroundTint="@color/app_blue"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="@string/menu_search_asset"
-                    android:textSize="20dp" />
+                    android:textSize="20sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -149,7 +149,7 @@
                     android:background="@drawable/rounded_corner_bg"
                     android:padding="10dp"
                     android:src="@drawable/left_right"
-                    android:tint="@android:color/white"
+                    app:tint="@android:color/white"
                     android:backgroundTint="@color/app_blue"/>
 
                 <TextView
@@ -157,7 +157,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="@string/menu_movement"
-                    android:textSize="20dp" />
+                    android:textSize="20sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -179,16 +179,16 @@
                     android:background="@drawable/rounded_corner_bg"
                     android:padding="15dp"
                     android:src="@drawable/add_square"
-                    android:tint="@android:color/white"
+                    app:tint="@android:color/white"
                     android:backgroundTint="@color/app_blue"
-                    android:textSize="20dp" />
+                    android:textSize="20sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="@string/menu_reader_list"
-                    android:textSize="20dp" />
+                    android:textSize="20sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -210,7 +210,7 @@
                     android:background="@drawable/rounded_corner_bg"
                     android:padding="8dp"
                     android:src="@drawable/shipment"
-                    android:tint="@android:color/white"
+                    app:tint="@android:color/white"
                     android:backgroundTint="@color/app_blue"/>
 
                 <TextView
@@ -218,7 +218,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="@string/menu_load_shipment"
-                    android:textSize="20dp" />
+                    android:textSize="20sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -240,7 +240,7 @@
                     android:background="@drawable/rounded_corner_bg"
                     android:padding="10dp"
                     android:src="@drawable/search_plus"
-                    android:tint="@android:color/white"
+                    app:tint="@android:color/white"
                     android:backgroundTint="@color/app_blue"/>
 
                 <TextView
@@ -248,7 +248,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="@string/menu_search_shipment"
-                    android:textSize="20dp" />
+                    android:textSize="20sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -270,7 +270,7 @@
                     android:background="@drawable/rounded_corner_bg"
                     android:padding="10dp"
                     android:src="@drawable/flag"
-                    android:tint="@android:color/white"
+                    app:tint="@android:color/white"
                     android:backgroundTint="@color/app_blue"/>
 
                 <TextView
@@ -278,7 +278,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="@string/menu_floor_sweep"
-                    android:textSize="20dp" />
+                    android:textSize="20sp" />
             </LinearLayout>
 
         </GridLayout>

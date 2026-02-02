@@ -15,6 +15,7 @@ import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.example.stramitapp.databinding.ActivityMainBinding
+import com.example.stramitapp.zebraconnection.BarcodeHandler
 import com.example.stramitapp.zebraconnection.Inventory.TagDataViewModel
 import com.example.stramitapp.zebraconnection.RFIDHandler
 import com.google.android.material.navigation.NavigationView
@@ -25,6 +26,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var binding: ActivityMainBinding
     private var rfidHandler: RFIDHandler? = null
     private lateinit var navController: NavController
+    private var settingsMenuItem: MenuItem? = null
+
+    private var barcodeHandler: BarcodeHandler? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +54,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         navView?.setNavigationItemSelectedListener(this)
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
+            settingsMenuItem?.isVisible = destination.id == R.id.nav_login
             if (destination.id == R.id.nav_login) {
                 drawerLayout?.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
                 supportActionBar?.setDisplayHomeAsUpEnabled(false)
@@ -63,8 +68,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         rfidHandler = RFIDHandler()
         rfidHandler?.onCreate(this)
         RFIDHandler.tagDataViewModel = tagDataViewModel
+
+        // Initialize Barcode Handler
+        barcodeHandler = BarcodeHandler(this)
     }
 
+    fun getBarcodeHandler(): BarcodeHandler? {
+        return barcodeHandler
+    }
     override fun onResume() {
         super.onResume()
         rfidHandler?.onResume()
@@ -81,7 +92,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.overflow, menu)
+        settingsMenuItem = menu.add(Menu.NONE, R.id.nav_settings, Menu.NONE, getString(R.string.menu_settings))
+        settingsMenuItem?.setIcon(R.drawable.ic_settings_black_24dp)
+        settingsMenuItem?.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+        settingsMenuItem?.isVisible = navController.currentDestination?.id == R.id.nav_login
         return true
     }
 

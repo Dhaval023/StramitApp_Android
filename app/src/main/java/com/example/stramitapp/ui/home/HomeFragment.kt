@@ -26,13 +26,13 @@ class HomeFragment : Fragment() {
 
         // Initialize radio group with current global state
         if (Global.isRfidSelected) {
-            binding.scanTypeRadiogroup.check(R.id.rfid_radiobutton)
+            binding.readerModeRadioGroup?.check(R.id.rfid_radiobutton)
         } else {
-            binding.scanTypeRadiogroup.check(R.id.barcode_radiobutton)
+            binding.readerModeRadioGroup?.check(R.id.barcode_radiobutton)
         }
 
         // Setup radio group listener
-        binding.scanTypeRadiogroup.setOnCheckedChangeListener { _, checkedId ->
+        binding.readerModeRadioGroup?.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
                 R.id.rfid_radiobutton -> Global.setRfidMode()
                 R.id.barcode_radiobutton -> Global.setBarcodeMode()

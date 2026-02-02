@@ -340,7 +340,7 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
             TagData[] myTags = mConnectedRfidReader.Actions.getReadTags(100);
             if (myTags != null) {
                 for (int index = 0; index < myTags.length; index++) {
-                   // Log.d(TAG, "Tag ID " + myTags[index].getTagID() + " Count "+ myTags[index].getTagSeenCount());
+                    Log.d(TAG, "Tag ID " + myTags[index].getTagID() + " Count "+ myTags[index].getTagSeenCount());
 
                     if (myTags[index].getOpCode() == ACCESS_OPERATION_CODE.ACCESS_OPERATION_READ &&
                             myTags[index].getOpStatus() == ACCESS_OPERATION_STATUS.ACCESS_SUCCESS) {
@@ -354,7 +354,7 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
                         Log.d(TAG, "Tag relative distance " + dist + " # " + num);
                     }
                 }
-              //  Log.d(TAG," Total Tags Read: " + myTags);
+                Log.d(TAG," Total Tags Read: " + myTags.length);
                 context.runOnUiThread(() -> tagDataViewModel.setTagItems(myTags));
 
             }
