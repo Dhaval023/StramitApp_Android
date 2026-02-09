@@ -32,7 +32,7 @@ class ReaderDeviceAdapter(private val listener: OnItemClickListener) :
 
         init {
             itemView.setOnClickListener {
-                val position = adapterPosition
+                val position = bindingAdapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     val readerDevice = getItem(position)
                     listener.onItemClick(readerDevice)

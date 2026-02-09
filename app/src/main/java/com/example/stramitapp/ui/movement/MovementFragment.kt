@@ -59,6 +59,20 @@ class MovementFragment : Fragment() {
         } else {
             setupBarcodeMode()
         }
+
+        observeConnectionStatus()
+    }
+
+    private fun observeConnectionStatus() {
+        rfidHandler?.connectionStatus?.observe(viewLifecycleOwner) { isConnected ->
+            if (isConnected) {
+                binding.readerStatus.text = "Reader Connected"
+                binding.readerStatus.setTextColor(resources.getColor(android.R.color.holo_green_dark, null))
+            } else {
+                binding.readerStatus.text = "Reader Disconnected"
+                binding.readerStatus.setTextColor(resources.getColor(android.R.color.holo_red_dark, null))
+            }
+        }
     }
 
     override fun onResume() {

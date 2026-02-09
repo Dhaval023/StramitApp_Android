@@ -27,10 +27,6 @@ class LoginFragment : Fragment() {
     ): View {
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
 
-        // TODO: Remove before production
-        binding.usernameEditText.setText("vishalpatel")
-        binding.passwordEditText.setText("Vish@123")
-
         setupClickListeners()
         observeViewModel()
 

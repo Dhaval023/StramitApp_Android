@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
+import java.util.concurrent.TimeUnit
 
 class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -20,10 +21,18 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     val uiState: StateFlow<LoginUiState> = _uiState
 
     private val authenticationService = AuthenticationService(
-        LoginClientServiceImpl(OkHttpClient(), Gson()),
+        LoginClientServiceImpl(createConfiguredOkHttpClient(), Gson()),
         UserRepository(),
         SecureStorage(application)
     )
+
+    private fun createConfiguredOkHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+    }
 
     fun login(username: String, password: String) {
         if (username.isBlank() || password.isBlank()) {
@@ -39,17 +48,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
             if (result == 1) {
                 _uiState.value = LoginUiState.Success
             } else {
-                // If login fails (result != 1), we still go to Success for testing as requested
-                // In production, you would handle this based on isLicenseeKeyAvailable or show the error
-                _uiState.value = LoginUiState.Success 
-                
-                /* Original Logic:
                 if (!authenticationService.isLicenseeKeyAvailable()) {
                     _uiState.value = LoginUiState.NavigateToSettings
                 } else {
                     _uiState.value = LoginUiState.Error(AppSettings.loginErrorMessage ?: "Invalid username or password")
                 }
-                */
             }
         }
     }

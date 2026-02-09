@@ -22,6 +22,10 @@ class AuthenticationService(
         isRememberCredentials: Boolean,
         isForceLogin: Boolean
     ): Int {
+        // Input validation
+        if (username.isBlank() || password.isBlank()) {
+            return 0
+        }
 
         val licenseeKey = fetchLicenseeKey() ?: return 0
 
@@ -33,7 +37,7 @@ class AuthenticationService(
             currentDeviceType = AppSettings.deviceType,
             currentDeviceUdid = AppSettings.deviceUdid,
             deviceId = AppSettings.deviceId,
-            licennseeKey = licenseeKey,
+            licenseeKey = licenseeKey,
             setForceFullAssign = isForceLogin
         )
 

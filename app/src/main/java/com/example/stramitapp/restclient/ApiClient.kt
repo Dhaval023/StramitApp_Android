@@ -1,6 +1,6 @@
 package com.example.stramitapp.restclient
 
-import com.example.stramitapp.utils.ApiSettings
+import com.example.stramitapp.security.ApiSettings
 
 open class ApiClient {
 

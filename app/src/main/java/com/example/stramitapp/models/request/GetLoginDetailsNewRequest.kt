@@ -6,6 +6,6 @@ data class GetLoginDetailsNewRequest(
     val currentDeviceType: String,
     val currentDeviceUdid: String,
     val deviceId: Int,
-    val licennseeKey: String,
+    val licenseeKey: String,
     val setForceFullAssign: Boolean
 )
