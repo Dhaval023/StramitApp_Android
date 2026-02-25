@@ -1,13 +1,15 @@
 package com.example.stramitapp.ui.login
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentLoginBinding
@@ -26,54 +28,114 @@ class LoginFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        binding.usernameEditText.setText("mttest")
+        binding.passwordEditText.setText("Mitesh@123")
 
         setupClickListeners()
         observeViewModel()
-
-        return binding.root
     }
 
     private fun setupClickListeners() {
         binding.loginButton.setOnClickListener {
-            viewModel.login(
-                binding.usernameEditText.text.toString(),
-                binding.passwordEditText.text.toString()
-            )
+            val username = binding.usernameEditText.text.toString().trim()
+            val password = binding.passwordEditText.text.toString().trim()
+            viewModel.login(username, password)
         }
     }
 
     private fun observeViewModel() {
-        lifecycleScope.launch {
-            viewModel.uiState.collect { state ->
-                when (state) {
-                    is LoginUiState.Loading -> {
-                        binding.loginButton.isEnabled = false
-                    }
-                    is LoginUiState.Success -> {
-                        findNavController()
-                            .navigate(R.id.action_nav_login_to_nav_home)
-                    }
-                    is LoginUiState.NavigateToSettings -> {
-                        // Assuming nav_settings is the destination ID for settings
-                        // You might need to change this if your ID is different
-                        try {
-                            findNavController().navigate(R.id.nav_settings)
-                        } catch (e: Exception) {
-                            Toast.makeText(requireContext(), "Settings navigation failed. Check nav graph.", Toast.LENGTH_SHORT).show()
-                        }
-                        viewModel.resetState()
-                    }
-                    is LoginUiState.Error -> {
-                        binding.loginButton.isEnabled = true
-                        Toast.makeText(requireContext(), state.message, Toast.LENGTH_SHORT).show()
-                        viewModel.resetState()
-                    }
-                    else -> {
-                        binding.loginButton.isEnabled = true
-                    }
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    handleState(state)
                 }
             }
         }
+    }
+
+    private fun handleState(state: LoginUiState) {
+        when (state) {
+            is LoginUiState.Idle -> setLoading(false)
+
+            is LoginUiState.Loading -> setLoading(true)
+
+            // C#: isAuthenticated == 1 → navigate to RootPage
+            is LoginUiState.Success -> {
+                setLoading(false)
+                viewModel.resetState()
+                findNavController().navigate(R.id.action_nav_login_to_nav_home)
+            }
+
+            // C#: !IsLicenseeKeyAvailable → ShowMessageDialog → navigate to Settings
+            is LoginUiState.NoLicenseKey -> {
+                setLoading(false)
+                viewModel.resetState()
+                showAlertDialog(
+                    title   = "ERROR!",
+                    message = "Please configure your licensee settings in the Setting page."
+                ) {
+                    findNavController().navigate(R.id.nav_settings)
+                }
+            }
+
+            // C#: isAuthenticated == 3 → ShowForceLoginDialog with server message
+            is LoginUiState.ForceLoginRequired -> {
+                setLoading(false)
+                viewModel.resetState()
+                showForceLoginDialog(state.message)
+            }
+
+            // C#: else → ShowMessageDialog("LOGIN FAILED!", AppSettings.LoginErrorMessage)
+            is LoginUiState.ShowDialog -> {
+                setLoading(false)
+                viewModel.resetState()
+                showAlertDialog(
+                    title   = state.title,
+                    message = state.message
+                )
+            }
+        }
+    }
+
+    // ✅ C# ShowMessageDialog equivalent — optional onDismiss action
+    private fun showAlertDialog(
+        title: String,
+        message: String,
+        onDismiss: (() -> Unit)? = null
+    ) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+                onDismiss?.invoke()
+            }
+            .setCancelable(false)
+            .show()
+    }
+
+    // ✅ C# ShowForceLoginDialog — shows server message, OK proceeds
+    private fun showForceLoginDialog(message: String) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("LOGIN")
+            .setMessage(message)  // ✅ real server message
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+                viewModel.forceLogin()  // ✅ setForceFullAssign = true
+            }
+            .setCancelable(false)
+            .show()
+    }
+
+    private fun setLoading(isLoading: Boolean) {
+        binding.loginButton.isEnabled = !isLoading
+        binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
     }
 
     override fun onDestroyView() {

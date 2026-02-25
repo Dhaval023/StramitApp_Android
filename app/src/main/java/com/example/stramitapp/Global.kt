@@ -7,6 +7,9 @@ object Global {
     var isBarcodeSelected: Boolean = false
         private set
 
+    const val databaseName = ""
+    const val deviceId = ""
+
     // Use these functions to update the values
     fun setRfidMode() {
         isRfidSelected = true

@@ -1,11 +1,11 @@
 package com.example.stramitapp.models.request
 
 data class GetLoginDetailsNewRequest(
-    val loginName: String,
-    val password: String,
-    val currentDeviceType: String,
-    val currentDeviceUdid: String,
-    val deviceId: Int,
-    val licenseeKey: String,
-    val setForceFullAssign: Boolean
+    var loginName: String? = null,
+    var password: String? = null,
+    var currentDeviceType: String? = null,
+    var currentDeviceUdid: String? = null,
+    var deviceId: Int = 0,
+    var licennseeKey: String? = null,  // ✅ double nn
+    var setForceFullAssign: Boolean = false
 )

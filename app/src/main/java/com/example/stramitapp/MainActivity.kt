@@ -3,6 +3,7 @@ package com.example.stramitapp
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -15,6 +16,7 @@ import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.example.stramitapp.databinding.ActivityMainBinding
+import com.example.stramitapp.ui.login.LoginViewModel
 import com.example.stramitapp.zebraconnection.BarcodeHandler
 import com.example.stramitapp.zebraconnection.Inventory.TagDataViewModel
 import com.example.stramitapp.zebraconnection.RFIDHandler
@@ -27,6 +29,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var rfidHandler: RFIDHandler? = null
     private lateinit var navController: NavController
     private var settingsMenuItem: MenuItem? = null
+    private val loginViewModel: LoginViewModel by viewModels()
 
     private var barcodeHandler: BarcodeHandler? = null
 
@@ -126,6 +129,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             .setTitle("Logout")
             .setMessage("Are you sure you want to logout?")
             .setPositiveButton("Yes") { _, _ ->
+                loginViewModel.logout()
                 navController.navigate(R.id.action_global_logout)
             }
             .setNegativeButton("No", null)

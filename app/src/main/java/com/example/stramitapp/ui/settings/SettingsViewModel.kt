@@ -4,12 +4,10 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.stramitapp.utils.SecureStorage
-import com.example.stramitapp.utils.StorageKeys
+import com.example.stramitapp.models.Constants.StorageKeys
+import com.zebra.rfid.api3.BuildConfig
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val secureStorage = SecureStorage(application)
 
     private val _licenseKey = MutableLiveData<String>()
     val licenseKey: LiveData<String> = _licenseKey
@@ -21,12 +19,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     val versionText: LiveData<String> = _versionText
 
     init {
-        // Load saved values
-        _licenseKey.value = secureStorage.get(StorageKeys.LICENSEE_KEY) ?: "77Y5HKIOI3YTA0G40NCL"
-        _rememberLicenseKey.value = true // Default to true
-
-        // App version text
-        _versionText.value = "Test Stramit AsTrack Version 2.3"
+        val context = getApplication<Application>()
+        // ✅ Load saved values on open
+        _licenseKey.value = StorageKeys.getLicenseKey(context)
+        _rememberLicenseKey.value = StorageKeys.getRememberCredentials(context)
+        _versionText.value = "Stramit AsTrack Version ${BuildConfig.VERSION_NAME}"
     }
 
     fun onLicenseKeyChanged(value: String) {
@@ -38,16 +35,19 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun saveSettings(): Boolean {
-        val key = licenseKey.value
+        val key = _licenseKey.value?.trim()
+        val context = getApplication<Application>()
 
-        if (key.isNullOrEmpty()) {
-            return false
-        }
+        if (key.isNullOrEmpty()) return false
 
-        if (rememberLicenseKey.value == true) {
-            secureStorage.set(StorageKeys.LICENSEE_KEY, key)
-        } else {
-            // Logic for what happens when remember is false could be added here
+        val remember = _rememberLicenseKey.value ?: true
+
+        StorageKeys.saveLicenseKey(context, key)
+        StorageKeys.saveRememberCredentials(context, remember)
+
+        // If remember is false — clear key so next launch prompts again
+        if (!remember) {
+            StorageKeys.clearLicenseKey(context)
         }
 
         return true

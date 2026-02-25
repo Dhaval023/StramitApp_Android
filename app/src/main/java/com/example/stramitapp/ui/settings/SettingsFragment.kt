@@ -24,47 +24,42 @@ class SettingsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-        viewModel = ViewModelProvider(this)
-            .get(SettingsViewModel::class.java)
-
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
-
-        setupObservers()
-        setupListeners()
-
         return binding.root
     }
 
-    private fun setupObservers() {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        viewModel.licenseKey.observe(viewLifecycleOwner) {
-            if (binding.licenseeKeyEdittext.text.toString() != it) {
-                binding.licenseeKeyEdittext.setText(it)
+        viewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
+
+        setupObservers()
+        setupListeners()
+    }
+
+    private fun setupObservers() {
+        viewModel.licenseKey.observe(viewLifecycleOwner) { key ->
+            if (binding.licenseeKeyEdittext.text.toString() != key) {
+                binding.licenseeKeyEdittext.setText(key)
             }
         }
 
-        viewModel.rememberLicenseKey.observe(viewLifecycleOwner) {
-            binding.rememberLicenseeKeyCheckbox.isChecked = it
+        viewModel.rememberLicenseKey.observe(viewLifecycleOwner) { remember ->
+            binding.rememberLicenseeKeyCheckbox.isChecked = remember
         }
 
-        viewModel.versionText.observe(viewLifecycleOwner) {
-            binding.versionTextview.text = it
+        viewModel.versionText.observe(viewLifecycleOwner) { version ->
+            binding.versionTextview.text = version
         }
     }
 
     private fun setupListeners() {
-
         binding.licenseeKeyEdittext.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            }
-
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 viewModel.onLicenseKeyChanged(s.toString())
             }
-
-            override fun afterTextChanged(s: Editable?) {
-            }
+            override fun afterTextChanged(s: Editable?) {}
         })
 
         binding.rememberLicenseeKeyCheckbox.setOnCheckedChangeListener { _, isChecked ->
@@ -72,17 +67,11 @@ class SettingsFragment : Fragment() {
         }
 
         binding.saveButton.setOnClickListener {
-            val success = viewModel.saveSettings()
-
-            if (success) {
-                Toast.makeText(requireContext(), "Settings saved", Toast.LENGTH_SHORT).show()
+            if (viewModel.saveSettings()) {
+                Toast.makeText(requireContext(), "Settings saved successfully", Toast.LENGTH_SHORT).show()
                 findNavController().popBackStack()
             } else {
-                Toast.makeText(
-                    requireContext(),
-                    "Please enter license key",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "Please enter a license key", Toast.LENGTH_SHORT).show()
             }
         }
     }
