@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 import com.example.stramitapp.models.Interfaces.Base.IBaseLocalModel
 
 @Entity(tableName = "tbl_asset")
-class Asset : IBaseLocalModel {
+ class Asset : IBaseLocalModel {
 
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "asset_id")

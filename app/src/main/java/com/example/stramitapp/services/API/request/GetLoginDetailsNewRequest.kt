@@ -1,4 +1,4 @@
-package com.example.stramitapp.models.request
+package com.example.stramitapp.services.API.request
 
 data class GetLoginDetailsNewRequest(
     var loginName: String? = null,

@@ -1,4 +1,4 @@
-package com.example.stramitapp.models.response
+package com.example.stramitapp.services.API.response
 
 data class GetDeviceIdResponse(
     var statusCode: Int = 0,

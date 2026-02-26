@@ -1,52 +1,45 @@
 package com.example.stramitapp.restclient//package com.example.stramitapp.restclient
 //
 //import android.util.Log
-//import com.example.stramitapp.models.Constants.ApiClient
-//import com.example.stramitapp.models.request.sync.*
-//import com.example.stramitapp.models.response.sync.*
-//import com.google.gson.Gson
+//import com.example.stramitapp.model.New.SimpleDeviceToServerRequest
+//import com.example.stramitapp.models.Asset
+//import com.example.stramitapp.services.API.Sync.request.DeviceToServerRequest
+//import com.example.stramitapp.services.API.Sync.response.DeviceToServerResponse
+//import com.example.stramitapp.services.API.Sync.response.GetAssignCompanyListToUserResponse
 //import kotlinx.coroutines.Dispatchers
 //import kotlinx.coroutines.withContext
+//import okhttp3.*
 //import okhttp3.MediaType.Companion.toMediaType
-//import okhttp3.MultipartBody
-//import okhttp3.OkHttpClient
-//import okhttp3.Request
 //import okhttp3.RequestBody.Companion.asRequestBody
 //import okhttp3.RequestBody.Companion.toRequestBody
-//import java.io.File
-//import java.io.FileInputStream
-//import java.io.FileOutputStream
-//import java.util.zip.GZIPInputStream
-//import java.util.concurrent.TimeUnit
+//import com.google.gson.Gson
+//import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
+//import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream
+//import java.io.*
+//import com.example.stramitapp.models.Constants.ApiClient
+//import com.example.stramitapp.services.API.Sync.request.DownloadCompanyAssignToUserWithDBGzipRequest
+//import com.example.stramitapp.services.API.Sync.request.GetAssignCompanyListToUserRequest
+//import com.example.stramitapp.services.API.Sync.response.DownloadCompanyAssignToUserWithDBGzipResponse
 //
 //class SyncClientService : ApiClient() {
 //
-//    // ─── Upload Asset Image ───────────────────────────────────────────
-//    // C#: UploadImage()
+//    private val gson = Gson()
+//    private val httpClient = OkHttpClient()
+//
+//    // ─────────────────────────────────────────────────────────────────────────
+//    // Upload Image
+//    // ─────────────────────────────────────────────────────────────────────────
+//
 //    suspend fun uploadImage(
-//        barcode: String,
-//        assetId: Int,
-//        deviceId: Int,
-//        companyId: Int,
-//        userId: Int,
-//        currentDeviceUdid: String,
-//        pathAssetNewImages: String
-//    ): DeviceToServerResponse {
+//        item: Asset,
+//        request: SimpleDeviceToServerRequest
+//    ): DeviceToServerResponse = withContext(Dispatchers.IO) {
+//        val result = DeviceToServerResponse()
+//        controller = "uploadAssetImage.do"
 //
-//        val controller = "uploadAssetImage.do"
-//
-//        return try {
-//            val resource = "$baseUrl/$userId/$currentDeviceUdid/$controller"
-//            val file = File("$pathAssetNewImages$barcode.jpg")
-//
-//            if (!file.exists()) {
-//                return DeviceToServerResponse().apply {
-//                    statusCode = 0
-//                    error = "Image file not found: ${file.path}"
-//                }
-//            }
-//
-//            Log.d("SyncClientService", "Upload URL: $resource")
+//        try {
+//            val resource = "$baseUrl/${request.userId}/${request.currentDeviceUdid}/$controller"
+//            val file = File("${AppSettings.pathAssetNewImages}${item.barcode}.jpg")
 //
 //            val requestBody = MultipartBody.Builder()
 //                .setType(MultipartBody.FORM)
@@ -55,10 +48,10 @@ package com.example.stramitapp.restclient//package com.example.stramitapp.restcl
 //                    file.name,
 //                    file.asRequestBody("image/jpeg".toMediaType())
 //                )
-//                .addFormDataPart("assetId", assetId.toString())
-//                .addFormDataPart("deviceId", deviceId.toString())
-//                .addFormDataPart("barcode", barcode)
-//                .addFormDataPart("companyId", companyId.toString())
+//                .addFormDataPart("assetId", item.assetId.toString())
+//                .addFormDataPart("deviceId", item.deviceId.toString())
+//                .addFormDataPart("barcode", item.barcode)
+//                .addFormDataPart("companyId", item.companyId.toString())
 //                .build()
 //
 //            val httpRequest = Request.Builder()
@@ -66,302 +59,261 @@ package com.example.stramitapp.restclient//package com.example.stramitapp.restcl
 //                .post(requestBody)
 //                .build()
 //
-//            val client = OkHttpClient.Builder()
-//                .connectTimeout(30, TimeUnit.SECONDS)
-//                .readTimeout(60, TimeUnit.SECONDS)
-//                .writeTimeout(60, TimeUnit.SECONDS)
-//                .build()
-//
-//            val response = withContext(Dispatchers.IO) {
-//                client.newCall(httpRequest).execute()
-//            }
-//
-//            val responseBody = response.body?.string()
-//            Log.d("SyncClientService", "Upload response: $responseBody")
-//
-//            if (responseBody != null) {
-//                Gson().fromJson(responseBody, DeviceToServerResponse::class.java)
+//            val response = httpClient.newCall(httpRequest).execute()
+//            val body = response.body?.string()
+//            if (body != null) {
+//                gson.fromJson(body, DeviceToServerResponse::class.java)
 //            } else {
-//                DeviceToServerResponse().apply {
-//                    statusCode = 0
-//                    error = "No response from server"
-//                }
+//                result
 //            }
-//
 //        } catch (ex: Exception) {
-//            Log.e("SyncClientService", "uploadImage exception: ${ex.message}", ex)
-//            DeviceToServerResponse().apply {
+//            Log.e("SyncClientService", "uploadImage Exception: ${ex.message}", ex)
+//            result.apply {
 //                statusCode = 0
-//                error = ex.message ?: "Unknown error"
+//                error = ex.message
 //            }
 //        }
 //    }
 //
-//    // ─── Device To Server (with syncVersion) ─────────────────────────
-//    // C#: DeviceToServer(DeviceToServerRequest)
-//    suspend fun deviceToServer(request: DeviceToServerRequest): DeviceToServerResponse {
+//    // ─────────────────────────────────────────────────────────────────────────
+//    // Device To Server (with syncVersion)
+//    // ─────────────────────────────────────────────────────────────────────────
 //
-//        val controller = "deviceToServer.do"
+//    suspend fun deviceToServer(
+//        request: DeviceToServerRequest
+//    ): DeviceToServerResponse = withContext(Dispatchers.IO) {
+//        val result = DeviceToServerResponse()
+//        controller = "deviceToServer.do"
 //
-//        return try {
+//        try {
 //            val resource = "$baseUrl/${request.userId}/${request.currentDeviceUdid}/$controller" +
 //                    "?syncVersion=${request.syncVersion}"
 //
-//            val parameters = Gson().toJson(request.parameters)
-//
-//            // C#: RegexReplace — replace space between date and time with T
-//            val paramSerialize = parameters.replace(
-//                Regex("(\\d{4}-\\d{2}-\\d{2}) (\\d{2}:\\d{2}:\\d{2})"),
-//                "$1T$2"
-//            ).ifEmpty { parameters }
-//
-//            Log.d("SyncClientService", "DeviceToServer URL: $resource")
+//            val parameters = gson.toJson(request.parameters)
+//            val paramSerialize = APIHelper.regexReplace(parameters, "JsonDateTime", " ", "T")
+//                .takeIf { it.isNotEmpty() } ?: parameters
 //
 //            val response = RestClientService.executePostRequestAsync(resource, paramSerialize)
-//
-//            Log.d("SyncClientService", "DeviceToServer response: $response")
-//
 //            if (response != null) {
-//                Gson().fromJson(response, DeviceToServerResponse::class.java)
+//                gson.fromJson(response, DeviceToServerResponse::class.java)
 //            } else {
-//                DeviceToServerResponse().apply {
-//                    statusCode = 0
-//                    error = "No response from server"
-//                }
+//                result
 //            }
-//
 //        } catch (ex: Exception) {
-//            Log.e("SyncClientService", "deviceToServer exception: ${ex.message}", ex)
-//            DeviceToServerResponse().apply {
+//            Log.e("SyncClientService", "deviceToServer Exception: ${ex.message}", ex)
+//            result.apply {
 //                statusCode = 0
-//                error = ex.message ?: "Unknown error"
+//                error = ex.message
 //            }
 //        }
 //    }
 //
-//    // ─── Device To Server (simple — no syncVersion) ───────────────────
-//    // C#: DeviceToServer(SimpleDeviceToServerRequest)
-//    suspend fun deviceToServerSimple(request: SimpleDeviceToServerRequest): DeviceToServerResponse {
+//    // ─────────────────────────────────────────────────────────────────────────
+//    // Device To Server (simple, no syncVersion)
+//    // ─────────────────────────────────────────────────────────────────────────
 //
-//        val controller = "deviceToServer.do"
+//    suspend fun deviceToServer(
+//        request: SimpleDeviceToServerRequest
+//    ): DeviceToServerResponse = withContext(Dispatchers.IO) {
+//        val result = DeviceToServerResponse()
+//        controller = "deviceToServer.do"
 //
-//        return try {
+//        try {
 //            val resource = "$baseUrl/${request.userId}/${request.currentDeviceUdid}/$controller"
 //
-//            val parameters = Gson().toJson(request.parameters)
-//
-//            // C#: RegexReplace — replace T with space (opposite direction)
-//            val paramSerialize = parameters.replace(
-//                Regex("(\\d{4}-\\d{2}-\\d{2})T(\\d{2}:\\d{2}:\\d{2})"),
-//                "$1 $2"
-//            ).ifEmpty { parameters }
-//
-//            Log.d("SyncClientService", "DeviceToServerSimple URL: $resource")
+//            val parameters = gson.toJson(request.parameters)
+//            // NOTE: args intentionally reversed vs overload above, matching original C#
+//            val paramSerialize = APIHelper.regexReplace(parameters, "JsonDateTime", "T", " ")
+//                .takeIf { it.isNotEmpty() } ?: parameters
 //
 //            val response = RestClientService.executePostRequestAsync(resource, paramSerialize)
-//
-//            Log.d("SyncClientService", "DeviceToServerSimple response: $response")
-//
 //            if (response != null) {
-//                Gson().fromJson(response, DeviceToServerResponse::class.java)
+//                gson.fromJson(response, DeviceToServerResponse::class.java)
 //            } else {
-//                DeviceToServerResponse().apply {
-//                    statusCode = 0
-//                    error = "No response from server"
-//                }
+//                result
 //            }
-//
 //        } catch (ex: Exception) {
-//            Log.e("SyncClientService", "deviceToServerSimple exception: ${ex.message}", ex)
-//            DeviceToServerResponse().apply {
+//            Log.e("SyncClientService", "deviceToServer (simple) Exception: ${ex.message}", ex)
+//            result.apply {
 //                statusCode = 0
-//                error = ex.message ?: "Unknown error"
+//                error = ex.message
 //            }
 //        }
 //    }
 //
-//    // ─── Download Company Assign To User With DB Gzip ─────────────────
-//    // C#: DownloadCompanyAssignToUserWithDBGzip()
+//    // ─────────────────────────────────────────────────────────────────────────
+//    // Download Company DB (GZip / ZIP)
+//    // ─────────────────────────────────────────────────────────────────────────
+//
 //    suspend fun downloadCompanyAssignToUserWithDBGzip(
-//        request: DownloadCompanyAssignToUserWithDBGzipRequest,
-//        dbPath: String,
-//        databaseName: String,
-//        isFreshInstall: Boolean,
-//        assetCount: Int
-//    ): DownloadCompanyAssignToUserWithDBGzipResponse {
+//        request: DownloadCompanyAssignToUserWithDBGzipRequest
+//    ): DownloadCompanyAssignToUserWithDBGzipResponse = withContext(Dispatchers.IO) {
 //
-//        val controller = "downloadCompanyAssignToUserWithDBGzip.do"
-//        val tempDbFilename = "TempDB.zip"
-//        val pathTempDBZip = "$dbPath/$tempDbFilename"
-//        val tempDbExtracted = "$dbPath/Temp_$databaseName"
-//        val finalDbPath = "$dbPath/$databaseName"
+//        val result = DownloadCompanyAssignToUserWithDBGzipResponse()
+//        controller = "downloadCompanyAssignToUserWithDBGzip.do"
 //
-//        return try {
+//        val dbPath = AppSettings.pathDatabase
+//        val pathTempDBZip = File(dbPath, "TempDB.zip")
+//        val tempDbExtracted = File(dbPath, "Temp_${AppSettings.databaseName}")
+//        val finalDbPath = File(dbPath, AppSettings.databaseName)
+//
+//        try {
 //            // Ensure directory exists
 //            File(dbPath).mkdirs()
 //
-//            // Build URL — same as C#
-//            val resource = StringBuilder()
-//                .append("$baseUrl/${request.userId}/${request.currentDeviceUdid}/$controller")
-//                .append("?syncVersion=1.3.0")
-//                .append("&currentDeviceType=${request.currentDeviceType}")
-//                .append("&companyId=${request.companyId}")
-//                .append("&userLastUpdateTimeStamp=${if (assetCount == 0) "0" else request.userLastUpdateTimeStamp}")
-//                .append("&userId=${request.userId}")
-//                .append("&currentDeviceUdid=${request.currentDeviceUdid}")
-//                .toString()
+//            // Build request URL
+//            val assetCount = App.repository.assetDataStore.assetCount()
+//            val resource = buildString {
+//                append("$baseUrl/${request.userId}/${request.currentDeviceUdid}/$controller?syncVersion=1.3.0")
+//                append("&currentDeviceType=${request.currentDeviceType}")
+//                append("&companyId=${request.companyId}")
+//                append("&userLastUpdateTimeStamp=${if (assetCount == 0) "0" else request.userLastUpdateTimeStamp}")
+//                append("&userId=${request.userId}")
+//                append("&currentDeviceUdid=${request.currentDeviceUdid}")
+//            }
 //
-//            Log.d("SyncClientService", "DownloadDB URL: $resource")
+//            // Delete old temp zip if exists
+//            if (pathTempDBZip.exists()) pathTempDBZip.delete()
 //
-//            // Download zip file
-//            val client = OkHttpClient.Builder()
-//                .connectTimeout(60, TimeUnit.SECONDS)
-//                .readTimeout(120, TimeUnit.SECONDS)
-//                .writeTimeout(120, TimeUnit.SECONDS)
-//                .build()
+//            // Download the zip file
+//            val emptyBody = "".toRequestBody("application/json".toMediaType())
+//            val httpRequest = Request.Builder().url(resource).post(emptyBody).build()
 //
-//            val httpRequest = Request.Builder()
-//                .url(resource)
-//                .post("".toRequestBody("application/json".toMediaType()))
-//                .build()
+//            httpClient.newCall(httpRequest).execute().use { response ->
+//                response.body?.byteStream()?.use { input ->
+//                    FileOutputStream(pathTempDBZip).use { output ->
+//                        input.copyTo(output)
+//                    }
+//                }
+//            }
 //
-//            withContext(Dispatchers.IO) {
-//                client.newCall(httpRequest).execute().use { response ->
-//                    response.body?.byteStream()?.use { inputStream ->
-//                        FileOutputStream(pathTempDBZip).use { outputStream ->
-//                            inputStream.copyTo(outputStream)
+//            if (pathTempDBZip.length() <= 0L) throw Exception("Downloaded file is empty")
+//
+//            // Delete old extracted file if exists
+//            if (tempDbExtracted.exists()) tempDbExtracted.delete()
+//
+//            // Extract — Android = GZip, iOS = ZIP
+//            if (isAndroid()) {
+//                FileInputStream(pathTempDBZip).use { fis ->
+//                    GzipCompressorInputStream(BufferedInputStream(fis)).use { gzip ->
+//                        FileOutputStream(tempDbExtracted).use { out ->
+//                            gzip.copyTo(out)
 //                        }
 //                    }
 //                }
-//            }
-//
-//            // Verify downloaded file
-//            val fileInfo = File(pathTempDBZip)
-//            if (!fileInfo.exists() || fileInfo.length() == 0L) {
-//                throw Exception("Downloaded file is empty")
-//            }
-//
-//            Log.d("SyncClientService", "Downloaded file size: ${fileInfo.length()} bytes")
-//
-//            // Delete existing temp extracted if exists
-//            File(tempDbExtracted).takeIf { it.exists() }?.delete()
-//
-//            // Extract GZip — Android only (no iOS in Kotlin)
-//            withContext(Dispatchers.IO) {
-//                GZIPInputStream(FileInputStream(pathTempDBZip)).use { gzipStream ->
-//                    FileOutputStream(tempDbExtracted).use { outputStream ->
-//                        gzipStream.copyTo(outputStream)
+//            } else {
+//                ZipArchiveInputStream(BufferedInputStream(FileInputStream(pathTempDBZip))).use { zis ->
+//                    var entry = zis.nextZipEntry
+//                    while (entry != null) {
+//                        if (!entry.isDirectory) {
+//                            FileOutputStream(tempDbExtracted).use { out ->
+//                                zis.copyTo(out)
+//                            }
+//                            break // only first file
+//                        }
+//                        entry = zis.nextZipEntry
 //                    }
 //                }
 //            }
 //
-//            Log.d("SyncClientService", "Extracted DB to: $tempDbExtracted")
-//
-//            // Replace main DB if fresh install or no assets
-//            if (assetCount == 0 || isFreshInstall) {
-//                File(finalDbPath).takeIf { it.exists() }?.delete()
-//                File(tempDbExtracted).copyTo(File(finalDbPath))
-//                Log.d("SyncClientService", "Replaced main DB at: $finalDbPath")
+//            // Replace main DB if fresh install or no existing assets
+//            if (assetCount == 0 || AppSettings.isFreshInstall.equals("Yes", ignoreCase = true)) {
+//                if (finalDbPath.exists()) finalDbPath.delete()
+//                tempDbExtracted.copyTo(finalDbPath, overwrite = true)
 //            }
 //
-//            // Cleanup temp zip
-//            File(pathTempDBZip).takeIf { it.exists() }?.delete()
+//            if (pathTempDBZip.exists()) pathTempDBZip.delete()
 //
-//            DownloadCompanyAssignToUserWithDBGzipResponse().apply {
-//                statusCode = 1
-//            }
+//            result.statusCode = 1
 //
 //        } catch (ex: Exception) {
-//            Log.e("SyncClientService", "downloadDB exception: ${ex.message}", ex)
-//
-//            // Always cleanup temp files
-//            try { File(pathTempDBZip).takeIf { it.exists() }?.delete() } catch (_: Exception) {}
-//
-//            DownloadCompanyAssignToUserWithDBGzipResponse().apply {
-//                statusCode = 0
-//                error = ex.message ?: "Unknown error"
+//            result.statusCode = 0
+//            result.error = ex.message
+//            Log.e("SyncClientService", "downloadCompanyAssignToUserWithDBGzip error: ${ex.message}", ex)
+//        } finally {
+//            try {
+//                if (pathTempDBZip.exists()) pathTempDBZip.delete()
+//            } catch (e: Exception) {
+//                Log.w("SyncClientService", "Cleanup failed: ${e.message}")
 //            }
 //        }
+//
+//        result
 //    }
 //
-//    // ─── Get Assign Company List To User ─────────────────────────────
-//    // C#: GetAssignCompanyListToUser()
+//    // ─────────────────────────────────────────────────────────────────────────
+//    // Get Assign Company List To User
+//    // ─────────────────────────────────────────────────────────────────────────
+//
 //    suspend fun getAssignCompanyListToUser(
 //        request: GetAssignCompanyListToUserRequest
-//    ): GetAssignCompanyListToUserResponse {
+//    ): GetAssignCompanyListToUserResponse = withContext(Dispatchers.IO) {
 //
-//        val controller = "getAssignCompanyListToUser.do"
+//        val result = GetAssignCompanyListToUserResponse()
+//        controller = "getAssignCompanyListToUser.do"
 //
-//        return try {
+//        try {
 //            val resource = "$baseUrl/${request.userId}/${request.currentDeviceUdid}/$controller" +
 //                    "?userId=${request.userId}" +
 //                    "&currentDeviceType=${request.currentDeviceType}" +
 //                    "&currentDeviceUdid=${request.currentDeviceUdid}"
 //
-//            Log.d("SyncClientService", "GetAssignCompany URL: $resource")
-//
 //            val response = RestClientService.executeSimpleGetRequestAsync(resource)
-//
-//            Log.d("SyncClientService", "GetAssignCompany response: $response")
-//
 //            if (response != null) {
-//                Gson().fromJson(response, GetAssignCompanyListToUserResponse::class.java)
+//                gson.fromJson(response, GetAssignCompanyListToUserResponse::class.java)
 //            } else {
-//                GetAssignCompanyListToUserResponse().apply {
-//                    statusCode = 0
-//                    error = "No response from server"
-//                }
+//                result
 //            }
-//
 //        } catch (ex: Exception) {
-//            Log.e("SyncClientService", "getAssignCompanyListToUser exception: ${ex.message}", ex)
-//            GetAssignCompanyListToUserResponse().apply {
+//            Log.e("SyncClientService", "getAssignCompanyListToUser Exception: ${ex.message}", ex)
+//            result.apply {
 //                statusCode = 0
-//                error = ex.message ?: "Unknown error"
+//                error = ex.message
 //            }
 //        }
 //    }
 //
-//    // ─── Floor Sweep Data Transfer ────────────────────────────────────
-//    // C#: FloorSweepDataTransfer()
-//    suspend fun floorSweepDataTransfer(request: FloorSweepRequest): FloorSweepResponse {
+//    // ─────────────────────────────────────────────────────────────────────────
+//    // Floor Sweep Data Transfer
+//    // ─────────────────────────────────────────────────────────────────────────
 //
-//        val controller = "floorSweep.do"
+//    suspend fun floorSweepDataTransfer(
+//        request: FloorSweepRequest
+//    ): FloorSweepResponse = withContext(Dispatchers.IO) {
 //
-//        return try {
-//            // C#: replaces /ws with /sws for FloorSweep
+//        val result = FloorSweepResponse()
+//        controller = "floorSweep.do"
+//
+//        try {
 //            val tempBaseUrl = baseUrl.replace("/ws", "")
 //            val resource = "$tempBaseUrl/sws/$controller"
 //
-//            val parameters = Gson().toJson(request)
-//
-//            // C#: RegexReplace — replace space with T in datetime
-//            val paramSerialize = parameters.replace(
-//                Regex("(\\d{4}-\\d{2}-\\d{2}) (\\d{2}:\\d{2}:\\d{2})"),
-//                "$1T$2"
-//            ).ifEmpty { parameters }
-//
-//            Log.d("SyncClientService", "FloorSweep URL: $resource")
+//            val parameters = gson.toJson(request)
+//            val paramSerialize = APIHelper.regexReplace(parameters, "JsonDateTime", " ", "T")
+//                .takeIf { it.isNotEmpty() } ?: parameters
 //
 //            val response = RestClientService.executePostRequestAsync(resource, paramSerialize)
-//
-//            Log.d("SyncClientService", "FloorSweep response: $response")
-//
 //            if (response != null) {
-//                Gson().fromJson(response, FloorSweepResponse::class.java)
+//                gson.fromJson(response, FloorSweepResponse::class.java)
 //            } else {
-//                FloorSweepResponse().apply {
+//                result.apply {
 //                    statusCode = 0
 //                    error = "No response received from server"
 //                }
 //            }
-//
 //        } catch (ex: Exception) {
-//            Log.e("SyncClientService", "floorSweepDataTransfer exception: ${ex.message}", ex)
-//            FloorSweepResponse().apply {
+//            Log.e("SyncClientService", "floorSweepDataTransfer Exception: ${ex.message}", ex)
+//            result.apply {
 //                statusCode = 0
-//                error = ex.message ?: "Unknown error"
+//                error = ex.message
 //            }
 //        }
 //    }
+//
+//    // ─────────────────────────────────────────────────────────────────────────
+//    // Helper
+//    // ─────────────────────────────────────────────────────────────────────────
+//
+//    private fun isAndroid(): Boolean =
+//        System.getProperty("java.vm.name") == "Dalvik"
 //}

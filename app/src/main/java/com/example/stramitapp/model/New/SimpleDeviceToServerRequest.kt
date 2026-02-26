@@ -1,121 +1,322 @@
-package com.example.stramitapp.models
+package com.example.stramitapp.model.New
 
-import java.time.OffsetDateTime
+import com.google.gson.annotations.SerializedName
+import java.util.Date
 
-class SimpleDeviceToServerRequest {
-    var userId: Int = 0
-    var currentDeviceUdid: String? = null
-    var parameters: RootObject? = null
-}
+data class SimpleDeviceToServerRequest(
 
-class RootObject {
-    var tblAssetExtraInfo: TblAssetExtraInfo? = null
-    var tblAssets: List<TblAsset>? = null
-    var mobileJobList: List<MobileJobList>? = null
-}
+    @SerializedName("userId")
+    val userId: Int = 0,
 
-class TblAssetExtraInfo {
-    var tblAssetMovementInfos: List<TblAssetMovementInfo>? = null
-}
+    @SerializedName("currentDeviceUdid")
+    val currentDeviceUdid: String? = null,
 
-class TblAssetMovementInfo {
-    var id: String? = null
-    var movementRecordedBy: String? = null
-    var movedBy: String? = null
-    var movementType: String? = null
-    var movementDateStr: String? = null
-    var movementDate: OffsetDateTime? = null
-    var updateFlag: String? = null
-    var assetId: String? = null
-    var deviceId: String? = null
-    var updatedBy: String? = null
-    var attributeDeviceId: Int = 0
-    var sourceLocationId: String? = null
-    var destinationLocationId: String? = null
-    var workOrderNumber: String? = null
-}
+    @SerializedName("parameters")
+    val parameters: RootObject? = null
+)
 
-class TblAsset {
-    var assetId: Int = 0
-    var deviceId: Int = 0
-    var lastUpdateDeviceId: Int = 0
-    var companyAssetId: String? = null
-    var assetType: Int? = null
-    var title: String? = null
-    var tag: String? = null
-    var barcode: String? = null
-    var serialNumber: String? = null
-    var assetValue: Double = 0.0
-    var weight: Double = 0.0
-    var partId: Int = 0
-    var subPartId: Int = 0
-    var locationId: Int = 0
-    var categoryId: Int = 0
-    var statusId: Int = 0
-    var companyId: Int = 0
-    var conditionId: Int = 0
-    var longDesc: String? = null
-    var gpsLat: Float? = null
-    var gpsLong: Float? = null
-    var assetImage: String? = null
-    var createDate: OffsetDateTime? = null
-    var purchaseDate: OffsetDateTime? = null
-    var lastUpdateDate: OffsetDateTime? = null
-    var createdBy: Int? = null
-    var responsibleUserId: Int = 0
-    var lastUpdatedBy: Int = 0
-    var updateFlag: String? = null
-    var dTSMMSync: String? = null
-    var sTDMMSync: String? = null
-    var flagSync: Int = 0
-    var imageSync: Int = 0
-    var length: String? = null
-    var width: String? = null
-    var girth: String? = null
-    var colour: String? = null
-    var numberOfBends: String? = null
-    var packNumber: String? = null
-    var totalPackNumber: String? = null
-    var splitNumber: String? = null
-    var supplierReference: String? = null
-    var supplierNumber: String? = null
-    var docketNumber: String? = null
-    var purchaseOrderNumber: String? = null
-    var erpOrderNumber: String? = null
-    var customerName: String? = null
-    var customerReference: String? = null
-    var deliveryNumber: String? = null
-    var dropNumber: String? = null
-    var shipmentNumber: String? = null
-    var route: String? = null
-    var deliveryInstruction: String? = null
-    var address: String? = null
-    var distributionOrderNumber: String? = null
-    var quantity: String? = null
-    var quantityUOM: String? = null
-    var lengthUOM: String? = null
-    var heightUOM: String? = null
-    var widthUOM: String? = null
-    var weightUOM: String? = null
-    var girthUOM: String? = null
-    var colourUOM: String? = null
-    var packageStructure: String? = null
-    var manufacturingInstruction: String? = null
-    var scheduleNumber: String? = null
-    var markNumber: String? = null
-    var packDescription: String? = null
-    var packageNumber: String? = null
-}
+data class RootObject(
 
-class MobileJobList {
-    var wpCompanyId: String? = null
-    var companyId: String? = null
-    var locationId: String? = null
-    var jobTypeId: String? = null
-    var jobDescId: String? = null
-    var barcode: String? = null
-    var userId: String? = null
-    var jobNumber: String? = null
-    var createDate: OffsetDateTime? = null
-    var lastUpdatedUser: String? = null
-}
+    @SerializedName("tblAssetExtraInfo")
+    val tblAssetExtraInfo: TblAssetExtraInfo? = null,
+
+    @SerializedName("tblAssets")
+    val tblAssets: List<TblAsset>? = null,
+
+    @SerializedName("mobileJobList")
+    val mobileJobList: List<MobileJobList>? = null
+)
+
+data class TblAssetExtraInfo(
+
+    @SerializedName("tblAssetMovementInfos")
+    val tblAssetMovementInfos: List<TblAssetMovementInfo>? = null
+)
+
+data class TblAssetMovementInfo(
+
+    @SerializedName("id")
+    val id: String? = null,
+
+    @SerializedName("movementRecordedBy")
+    val movementRecordedBy: String? = null,
+
+    @SerializedName("movedBy")
+    val movedBy: String? = null,
+
+    @SerializedName("movementType")
+    val movementType: String? = null,
+
+    @SerializedName("movementDateStr")
+    val movementDateStr: String? = null,
+
+    @SerializedName("movementDate")
+    val movementDate: Date? = null,
+
+    @SerializedName("updateFlag")
+    val updateFlag: String? = null,
+
+    @SerializedName("assetId")
+    val assetId: String? = null,
+
+    @SerializedName("deviceId")
+    val deviceId: String? = null,
+
+    @SerializedName("updatedBy")
+    val updatedBy: String? = null,
+
+    @SerializedName("attributeDeviceId")
+    val attributeDeviceId: Int = 0,
+
+    @SerializedName("sourceLocationId")
+    val sourceLocationId: String? = null,
+
+    @SerializedName("destinationLocationId")
+    val destinationLocationId: String? = null,
+
+    @SerializedName("workOrderNumber")
+    val workOrderNumber: String? = null
+)
+
+data class TblAsset(
+
+    @SerializedName("assetId")
+    val assetId: Int = 0,
+
+    @SerializedName("deviceId")
+    val deviceId: Int = 0,
+
+    @SerializedName("lastUpdateDeviceId")
+    val lastUpdateDeviceId: Int = 0,
+
+    @SerializedName("companyAssetId")
+    val companyAssetId: String? = null,
+
+    @SerializedName("assetType")
+    val assetType: Int? = null,
+
+    @SerializedName("title")
+    val title: String? = null,
+
+    @SerializedName("tag")
+    val tag: String? = null,
+
+    @SerializedName("barcode")
+    val barcode: String? = null,
+
+    @SerializedName("serialNumber")
+    val serialNumber: String? = null,
+
+    @SerializedName("assetValue")
+    val assetValue: Double = 0.0,
+
+    @SerializedName("weight")
+    val weight: Double = 0.0,
+
+    @SerializedName("partId")
+    val partId: Int = 0,
+
+    @SerializedName("subPartId")
+    val subPartId: Int = 0,
+
+    @SerializedName("locationId")
+    val locationId: Int = 0,
+
+    @SerializedName("categoryId")
+    val categoryId: Int = 0,
+
+    @SerializedName("statusId")
+    val statusId: Int = 0,
+
+    @SerializedName("companyId")
+    val companyId: Int = 0,
+
+    @SerializedName("conditionId")
+    val conditionId: Int = 0,
+
+    @SerializedName("longDesc")
+    val longDesc: String? = null,
+
+    @SerializedName("gpsLat")
+    val gpsLat: Float? = null,
+
+    @SerializedName("gpsLong")
+    val gpsLong: Float? = null,
+
+    @SerializedName("assetImage")
+    val assetImage: String? = null,
+
+    @SerializedName("createDate")
+    val createDate: Date? = null,
+
+    @SerializedName("purchaseDate")
+    val purchaseDate: Date? = null,
+
+    @SerializedName("lastUpdateDate")
+    val lastUpdateDate: Date? = null,
+
+    @SerializedName("createdBy")
+    val createdBy: Int? = null,
+
+    @SerializedName("responsibleUserId")
+    val responsibleUserId: Int = 0,
+
+    @SerializedName("lastUpdatedBy")
+    val lastUpdatedBy: Int = 0,
+
+    @SerializedName("updateFlag")
+    val updateFlag: String? = null,
+
+    @SerializedName("dTSMMSync")
+    val dTSMMSync: String? = null,
+
+    @SerializedName("sTDMMSync")
+    val sTDMMSync: String? = null,
+
+    @SerializedName("flagSync")
+    val flagSync: Int = 0,
+
+    @SerializedName("imageSync")
+    val imageSync: Int = 0,
+
+    @SerializedName("lenght")
+    val lenght: String? = null,
+
+    @SerializedName("width")
+    val width: String? = null,
+
+    @SerializedName("girth")
+    val girth: String? = null,
+
+    @SerializedName("colour")
+    val colour: String? = null,
+
+    @SerializedName("numberOfBends")
+    val numberOfBends: String? = null,
+
+    @SerializedName("packNumber")
+    val packNumber: String? = null,
+
+    @SerializedName("totalPackNumber")
+    val totalPackNumber: String? = null,
+
+    @SerializedName("splitNumber")
+    val splitNumber: String? = null,
+
+    @SerializedName("supplierreference")
+    val supplierreference: String? = null,
+
+    @SerializedName("suppliernumber")
+    val suppliernumber: String? = null,
+
+    @SerializedName("docketNumber")
+    val docketNumber: String? = null,
+
+    @SerializedName("purchaseOrderNumber")
+    val purchaseOrderNumber: String? = null,
+
+    @SerializedName("eroOrderNumber")
+    val eroOrderNumber: String? = null,
+
+    @SerializedName("customername")
+    val customername: String? = null,
+
+    @SerializedName("customerReference")
+    val customerReference: String? = null,
+
+    @SerializedName("deliveryNumber")
+    val deliveryNumber: String? = null,
+
+    @SerializedName("dropNumber")
+    val dropNumber: String? = null,
+
+    @SerializedName("shipmentNumber")
+    val shipmentNumber: String? = null,
+
+    @SerializedName("route")
+    val route: String? = null,
+
+    @SerializedName("deliveryInstruction")
+    val deliveryInstruction: String? = null,
+
+    @SerializedName("address")
+    val address: String? = null,
+
+    @SerializedName("distributionOrderNumber")
+    val distributionOrderNumber: String? = null,
+
+    @SerializedName("quantity")
+    val quantity: String? = null,
+
+    @SerializedName("quantityUOM")
+    val quantityUOM: String? = null,
+
+    @SerializedName("lenghtUOM")
+    val lenghtUOM: String? = null,
+
+    @SerializedName("heightUOM")
+    val heightUOM: String? = null,
+
+    @SerializedName("widthUOM")
+    val widthUOM: String? = null,
+
+    @SerializedName("weightUOM")
+    val weightUOM: String? = null,
+
+    @SerializedName("girthUOM")
+    val girthUOM: String? = null,
+
+    @SerializedName("colourUOM")
+    val colourUOM: String? = null,
+
+    @SerializedName("packageStructure")
+    val packageStructure: String? = null,
+
+    @SerializedName("manufacturingIstruction")
+    val manufacturingIstruction: String? = null,
+
+    @SerializedName("scheduleNumber")
+    val scheduleNumber: String? = null,
+
+    @SerializedName("markNumber")
+    val markNumber: String? = null,
+
+    @SerializedName("packDescription")
+    val packDescription: String? = null,
+
+    @SerializedName("packageNumber")
+    val packageNumber: String? = null
+)
+
+data class MobileJobList(
+
+    @SerializedName("wpCompanyId")
+    val wpCompanyId: String? = null,
+
+    @SerializedName("companyId")
+    val companyId: String? = null,
+
+    @SerializedName("locationId")
+    val locationId: String? = null,
+
+    @SerializedName("jobTypeId")
+    val jobTypeId: String? = null,
+
+    @SerializedName("jobDescId")
+    val jobDescId: String? = null,
+
+    @SerializedName("barcode")
+    val barcode: String? = null,
+
+    @SerializedName("userId")
+    val userId: String? = null,
+
+    @SerializedName("jobNumber")
+    val jobNumber: String? = null,
+
+    @SerializedName("createDate")
+    val createDate: Date? = null,
+
+    @SerializedName("lastUpdatedUser")
+    val lastUpdatedUser: String? = null
+)

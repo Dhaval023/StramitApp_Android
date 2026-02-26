@@ -2,10 +2,10 @@ package com.example.stramitapp.restclient
 
 import android.util.Log
 import com.example.stramitapp.models.Constants.ApiClient
-import com.example.stramitapp.models.request.GetDeviceIdRequest
-import com.example.stramitapp.models.request.GetLoginDetailsNewRequest
-import com.example.stramitapp.models.response.GetDeviceIdResponse
-import com.example.stramitapp.models.response.GetLoginDetailsNewResponse
+import com.example.stramitapp.services.API.request.GetDeviceIdRequest
+import com.example.stramitapp.services.API.request.GetLoginDetailsNewRequest
+import com.example.stramitapp.services.API.response.GetDeviceIdResponse
+import com.example.stramitapp.services.API.response.GetLoginDetailsNewResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query

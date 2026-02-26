@@ -4,8 +4,8 @@ import android.content.Context
 import android.provider.Settings
 import android.util.Log
 import com.example.stramitapp.models.Constants.StorageKeys
-import com.example.stramitapp.models.request.GetDeviceIdRequest
-import com.example.stramitapp.models.request.GetLoginDetailsNewRequest
+import com.example.stramitapp.services.API.request.GetDeviceIdRequest
+import com.example.stramitapp.services.API.request.GetLoginDetailsNewRequest
 import com.example.stramitapp.restclient.LoginClientService
 
 class AuthenticationService(private val context: Context) {

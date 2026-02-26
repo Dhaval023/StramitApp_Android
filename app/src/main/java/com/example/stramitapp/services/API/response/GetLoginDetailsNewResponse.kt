@@ -1,4 +1,4 @@
-package com.example.stramitapp.models.response
+package com.example.stramitapp.services.API.response
 
 import com.example.stramitapp.Licensee
 import com.example.stramitapp.model.*
