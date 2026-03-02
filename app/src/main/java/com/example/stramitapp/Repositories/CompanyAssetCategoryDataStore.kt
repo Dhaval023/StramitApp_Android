@@ -1,22 +1,36 @@
 package com.example.stramitapp.Repositories
 
-import com.example.stramitapp.model.User
+
+import com.example.stramitapp.model.Company
+import com.example.stramitapp.model.CompanyAssetCategory
 import com.example.stramitapp.Repositories.Base.BaseRepository
 import com.example.stramitapp.Repositories.Base.IDataStore
 //
-//class UserDataStore : BaseRepository<User>(), IDataStore<User> {
+//class CompanyAssetCategoryDataStore : BaseRepository<CompanyAssetCategory>(), IDataStore<CompanyAssetCategory> {
 //
-//    suspend fun getItemAsync(id: Int): User? {
+//    suspend fun getItemsAsync(companyId: Int): List<CompanyAssetCategory> {
 //        return try {
 //            val conn = getConnection()
-//            conn.use { it.queryAll<User>().firstOrNull { item -> item.userId == id } }
+//            conn.use {
+//                it.queryAll<CompanyAssetCategory>().filter { item -> item.companyId == companyId }
+//            }
 //        } catch (ex: Exception) {
 //            val d = ex.message
 //            throw ex
 //        }
 //    }
 //
-//    suspend fun addItemAsync(item: User): Boolean {
+//    suspend fun getItemAsync(id: Int): CompanyAssetCategory? {
+//        return try {
+//            val conn = getConnection()
+//            conn.use { it.queryAll<CompanyAssetCategory>().firstOrNull { item -> item.id == id } }
+//        } catch (ex: Exception) {
+//            val d = ex.message
+//            throw ex
+//        }
+//    }
+//
+//    suspend fun addItemAsync(item: CompanyAssetCategory): Boolean {
 //        return try {
 //            val conn = getConnection()
 //            conn.use { it.insert(item) }
@@ -27,7 +41,7 @@ import com.example.stramitapp.Repositories.Base.IDataStore
 //        }
 //    }
 //
-//    suspend fun updateItemAsync(item: User): Boolean {
+//    suspend fun updateItemAsync(item: CompanyAssetCategory): Boolean {
 //        return try {
 //            val conn = getConnection()
 //            conn.use { it.update(item) }
@@ -38,7 +52,7 @@ import com.example.stramitapp.Repositories.Base.IDataStore
 //        }
 //    }
 //
-//    suspend fun deleteItemAsync(item: User): Boolean {
+//    suspend fun deleteItemAsync(item: CompanyAssetCategory): Boolean {
 //        return try {
 //            val conn = getConnection()
 //            conn.use { it.delete(item) }
@@ -49,25 +63,35 @@ import com.example.stramitapp.Repositories.Base.IDataStore
 //        }
 //    }
 //
+//    suspend fun clearAllAsync(): Int {
+//        return try {
+//            val conn = getConnection()
+//            conn.use { it.deleteAll<Company>() }
+//        } catch (ex: Exception) {
+//            val d = ex.message
+//            -1
+//        }
+//    }
+//
 //    suspend fun clearAsync(): Boolean {
 //        throw NotImplementedError("clearAsync is not implemented")
 //    }
 //
-//    suspend fun getItemsAsync(forceRefresh: Boolean = false): List<User> {
+//    suspend fun getItemsAsync(forceRefresh: Boolean = false): List<CompanyAssetCategory> {
 //        return try {
 //            val conn = getConnection()
-//            conn.use { it.queryAll<User>() }
+//            conn.use { it.queryAll<CompanyAssetCategory>() }
 //        } catch (ex: Exception) {
 //            val d = ex.message
 //            throw ex
 //        }
 //    }
 //
-//    suspend fun getItemsAsync(licenseeId: Int): List<User> {
+//    suspend fun getFirstItemByCompanyAsync(companyId: Int): CompanyAssetCategory? {
 //        return try {
 //            val conn = getConnection()
 //            conn.use {
-//                it.queryAll<User>().filter { item -> item.licenseeId == licenseeId }
+//                it.queryAll<CompanyAssetCategory>().firstOrNull { item -> item.companyId == companyId }
 //            }
 //        } catch (ex: Exception) {
 //            val d = ex.message
@@ -85,27 +109,5 @@ import com.example.stramitapp.Repositories.Base.IDataStore
 //
 //    suspend fun syncAsync(): Boolean {
 //        throw NotImplementedError("syncAsync is not implemented")
-//    }
-//
-//    fun hasItems(): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<User>().isNotEmpty() }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    fun hasItem(user: User): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use {
-//                it.queryAll<User>().any { item -> item.userId == user.userId }
-//            }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
 //    }
 //}

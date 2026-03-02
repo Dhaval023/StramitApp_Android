@@ -1,26 +1,32 @@
 package com.example.stramitapp.Repositories.DataStore
 
-import com.example.stramitapp.model.Settings
+import com.example.stramitapp.models.LicenseeConfig
 import com.example.stramitapp.Repositories.Base.BaseRepository
 import com.example.stramitapp.Repositories.Base.IDataStore
+
+//class LicenseeConfigDataStore : BaseRepository<LicenseeConfig>(), IDataStore<LicenseeConfig> {
 //
-//class SettingsDataStore : BaseRepository<Settings>(), IDataStore<Settings> {
-//
-//    suspend fun getItemAsync(id: Int): Settings? {
-//        throw NotImplementedError("getItemAsync(id) is not implemented")
-//    }
-//
-//    suspend fun getItemAsync(key: String): Settings? {
+//    suspend fun getItemAsync(id: Int): LicenseeConfig? {
 //        return try {
 //            val conn = getConnection()
-//            conn.use { it.queryAll<Settings>().firstOrNull { item -> item.key == key } }
+//            conn.use { it.queryAll<LicenseeConfig>().firstOrNull { item -> item.id == id.toString() } }
 //        } catch (ex: Exception) {
 //            val d = ex.message
 //            throw ex
 //        }
 //    }
 //
-//    suspend fun addItemAsync(item: Settings): Boolean {
+//    suspend fun getItemsAsync(forceRefresh: Boolean = false): List<LicenseeConfig> {
+//        return try {
+//            val conn = getConnection()
+//            conn.use { it.queryAll<LicenseeConfig>() }
+//        } catch (ex: Exception) {
+//            val d = ex.message
+//            throw ex
+//        }
+//    }
+//
+//    suspend fun addItemAsync(item: LicenseeConfig): Boolean {
 //        return try {
 //            val conn = getConnection()
 //            conn.use { it.insert(item) }
@@ -31,26 +37,22 @@ import com.example.stramitapp.Repositories.Base.IDataStore
 //        }
 //    }
 //
-//    suspend fun updateItemAsync(item: Settings): Boolean {
+//    suspend fun updateItemAsync(item: LicenseeConfig): Boolean {
 //        return try {
 //            val conn = getConnection()
-//            conn.use {
-//                val rowsAffected = it.insertOrReplace(item)
-//                rowsAffected == 1
-//            }
+//            conn.use { it.update(item) }
+//            true
 //        } catch (ex: Exception) {
 //            val d = ex.message
 //            false
 //        }
 //    }
 //
-//    suspend fun deleteItemAsync(item: Settings): Boolean {
+//    suspend fun deleteItemAsync(item: LicenseeConfig): Boolean {
 //        return try {
 //            val conn = getConnection()
-//            conn.use {
-//                val rowsAffected = it.delete(item)
-//                rowsAffected == 1
-//            }
+//            conn.use { it.delete(item) }
+//            true
 //        } catch (ex: Exception) {
 //            val d = ex.message
 //            false
@@ -59,16 +61,6 @@ import com.example.stramitapp.Repositories.Base.IDataStore
 //
 //    suspend fun clearAsync(): Boolean {
 //        throw NotImplementedError("clearAsync is not implemented")
-//    }
-//
-//    suspend fun getItemsAsync(forceRefresh: Boolean = false): List<Settings> {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<Settings>() }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
 //    }
 //
 //    suspend fun initializeAsync() {

@@ -1,22 +1,24 @@
 package com.example.stramitapp.Repositories
 
-import com.example.stramitapp.model.User
+import com.example.stramitapp.model.AssetMemoType
 import com.example.stramitapp.Repositories.Base.BaseRepository
 import com.example.stramitapp.Repositories.Base.IDataStore
+//import com.example.stramitapp.Utilities.AppSettings
+
+
+//class AssetMemoTypeDataStore : BaseRepository<AssetMemoType>(), IDataStore<AssetMemoType> {
 //
-//class UserDataStore : BaseRepository<User>(), IDataStore<User> {
-//
-//    suspend fun getItemAsync(id: Int): User? {
+//    suspend fun getItemAsync(id: Int): AssetMemoType? {
 //        return try {
 //            val conn = getConnection()
-//            conn.use { it.queryAll<User>().firstOrNull { item -> item.userId == id } }
+//            conn.use { it.queryAll<AssetMemoType>().firstOrNull { item -> item.memoTypeId == id } }
 //        } catch (ex: Exception) {
 //            val d = ex.message
 //            throw ex
 //        }
 //    }
 //
-//    suspend fun addItemAsync(item: User): Boolean {
+//    suspend fun addItemAsync(item: AssetMemoType): Boolean {
 //        return try {
 //            val conn = getConnection()
 //            conn.use { it.insert(item) }
@@ -27,7 +29,7 @@ import com.example.stramitapp.Repositories.Base.IDataStore
 //        }
 //    }
 //
-//    suspend fun updateItemAsync(item: User): Boolean {
+//    suspend fun updateItemAsync(item: AssetMemoType): Boolean {
 //        return try {
 //            val conn = getConnection()
 //            conn.use { it.update(item) }
@@ -38,7 +40,7 @@ import com.example.stramitapp.Repositories.Base.IDataStore
 //        }
 //    }
 //
-//    suspend fun deleteItemAsync(item: User): Boolean {
+//    suspend fun deleteItemAsync(item: AssetMemoType): Boolean {
 //        return try {
 //            val conn = getConnection()
 //            conn.use { it.delete(item) }
@@ -53,21 +55,33 @@ import com.example.stramitapp.Repositories.Base.IDataStore
 //        throw NotImplementedError("clearAsync is not implemented")
 //    }
 //
-//    suspend fun getItemsAsync(forceRefresh: Boolean = false): List<User> {
+//    suspend fun getItemsAsync(forceRefresh: Boolean = false): List<AssetMemoType> {
 //        return try {
 //            val conn = getConnection()
-//            conn.use { it.queryAll<User>() }
+//            conn.use { it.queryAll<AssetMemoType>() }
 //        } catch (ex: Exception) {
 //            val d = ex.message
 //            throw ex
 //        }
 //    }
 //
-//    suspend fun getItemsAsync(licenseeId: Int): List<User> {
+//    suspend fun getItemsToExportAsync(lastSyncUpData: String): List<AssetMemoType> {
 //        return try {
 //            val conn = getConnection()
 //            conn.use {
-//                it.queryAll<User>().filter { item -> item.licenseeId == licenseeId }
+//                it.rawQuery("SELECT * FROM tbl_asset_memo_type WHERE last_update_date > '$lastSyncUpData'")
+//            }
+//        } catch (ex: Exception) {
+//            val d = ex.message
+//            throw ex
+//        }
+//    }
+//
+//    suspend fun getNewIdAsync(): Int {
+//        return try {
+//            val conn = getConnection()
+//            conn.use {
+//                it.queryAll<AssetMemoType>().maxOfOrNull { item -> item.memoTypeId + 1 } ?: 0
 //            }
 //        } catch (ex: Exception) {
 //            val d = ex.message
@@ -85,27 +99,5 @@ import com.example.stramitapp.Repositories.Base.IDataStore
 //
 //    suspend fun syncAsync(): Boolean {
 //        throw NotImplementedError("syncAsync is not implemented")
-//    }
-//
-//    fun hasItems(): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<User>().isNotEmpty() }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    fun hasItem(user: User): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use {
-//                it.queryAll<User>().any { item -> item.userId == user.userId }
-//            }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
 //    }
 //}

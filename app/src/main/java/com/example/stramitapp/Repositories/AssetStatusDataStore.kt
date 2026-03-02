@@ -1,26 +1,23 @@
-package com.example.stramitapp.Repositories.DataStore
+package com.example.stramitapp.Repositories
 
-import com.example.stramitapp.model.Settings
+
+import com.example.stramitapp.model.AssetStatus
 import com.example.stramitapp.Repositories.Base.BaseRepository
 import com.example.stramitapp.Repositories.Base.IDataStore
 //
-//class SettingsDataStore : BaseRepository<Settings>(), IDataStore<Settings> {
+//class AssetStatusDataStore : BaseRepository<AssetStatus>(), IDataStore<AssetStatus> {
 //
-//    suspend fun getItemAsync(id: Int): Settings? {
-//        throw NotImplementedError("getItemAsync(id) is not implemented")
-//    }
-//
-//    suspend fun getItemAsync(key: String): Settings? {
+//    suspend fun getItemAsync(id: Int): AssetStatus? {
 //        return try {
 //            val conn = getConnection()
-//            conn.use { it.queryAll<Settings>().firstOrNull { item -> item.key == key } }
+//            conn.use { it.queryAll<AssetStatus>().firstOrNull { item -> item.id == id } }
 //        } catch (ex: Exception) {
 //            val d = ex.message
 //            throw ex
 //        }
 //    }
 //
-//    suspend fun addItemAsync(item: Settings): Boolean {
+//    suspend fun addItemAsync(item: AssetStatus): Boolean {
 //        return try {
 //            val conn = getConnection()
 //            conn.use { it.insert(item) }
@@ -31,12 +28,12 @@ import com.example.stramitapp.Repositories.Base.IDataStore
 //        }
 //    }
 //
-//    suspend fun updateItemAsync(item: Settings): Boolean {
+//    suspend fun updateItemAsync(item: AssetStatus): Boolean {
 //        return try {
 //            val conn = getConnection()
 //            conn.use {
-//                val rowsAffected = it.insertOrReplace(item)
-//                rowsAffected == 1
+//                val rowsAffected = it.update(item)
+//                rowsAffected > 0
 //            }
 //        } catch (ex: Exception) {
 //            val d = ex.message
@@ -44,13 +41,11 @@ import com.example.stramitapp.Repositories.Base.IDataStore
 //        }
 //    }
 //
-//    suspend fun deleteItemAsync(item: Settings): Boolean {
+//    suspend fun deleteItemAsync(item: AssetStatus): Boolean {
 //        return try {
 //            val conn = getConnection()
-//            conn.use {
-//                val rowsAffected = it.delete(item)
-//                rowsAffected == 1
-//            }
+//            conn.use { it.delete(item) }
+//            true
 //        } catch (ex: Exception) {
 //            val d = ex.message
 //            false
@@ -61,10 +56,34 @@ import com.example.stramitapp.Repositories.Base.IDataStore
 //        throw NotImplementedError("clearAsync is not implemented")
 //    }
 //
-//    suspend fun getItemsAsync(forceRefresh: Boolean = false): List<Settings> {
+//    suspend fun getItemsAsync(forceRefresh: Boolean = false): List<AssetStatus> {
 //        return try {
 //            val conn = getConnection()
-//            conn.use { it.queryAll<Settings>() }
+//            conn.use { it.queryAll<AssetStatus>() }
+//        } catch (ex: Exception) {
+//            val d = ex.message
+//            throw ex
+//        }
+//    }
+//
+//    suspend fun getItemsByCompanyAsync(companyId: Int): List<AssetStatus> {
+//        return try {
+//            val conn = getConnection()
+//            conn.use {
+//                it.queryAll<AssetStatus>().filter { item -> item.companyId == companyId }
+//            }
+//        } catch (ex: Exception) {
+//            val d = ex.message
+//            throw ex
+//        }
+//    }
+//
+//    suspend fun getFirstItemByCompanyAsync(companyId: Int): AssetStatus? {
+//        return try {
+//            val conn = getConnection()
+//            conn.use {
+//                it.queryAll<AssetStatus>().firstOrNull { item -> item.companyId == companyId }
+//            }
 //        } catch (ex: Exception) {
 //            val d = ex.message
 //            throw ex
