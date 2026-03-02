@@ -1,4 +1,4 @@
-package com.example.stramitapp.models
+package com.example.stramitapp.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

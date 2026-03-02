@@ -9,6 +9,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stramitapp.models.Constants.StorageKeys
 import com.example.stramitapp.services.AuthenticationService
+import com.example.stramitapp.services.AuthenticatedUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +23,9 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
     private val authService = AuthenticationService(application)
+
+    val authenticatedUser: AuthenticatedUser?
+        get() = authService.authenticatedUser
 
     // C#: _isRememberCredentials loaded from storage
     private var isRememberCredentials: Boolean =

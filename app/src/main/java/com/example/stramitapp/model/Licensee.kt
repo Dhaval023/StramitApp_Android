@@ -1,4 +1,4 @@
-package com.example.stramitapp
+package com.example.stramitapp.model
 
 import com.example.stramitapp.model.DataObject.BaseDataObject
 import androidx.room.ColumnInfo

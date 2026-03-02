@@ -1,3 +1,3 @@
-package com.example.stramitapp.models
+package com.example.stramitapp.model
 
 class InitSettings

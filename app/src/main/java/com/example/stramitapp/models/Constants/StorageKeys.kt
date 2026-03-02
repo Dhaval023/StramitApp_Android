@@ -20,7 +20,7 @@ object StorageKeys {
     private const val KEY_COMPANY           = "SelectedCompany"
     private const val KEY_LOCATION          = "SelectedLocation"
     private const val KEY_FRESH_INSTALL     = "IsFreshInstall"
-    private const val KEY_FORCE_SYNC        = "ForceSyncRequested"
+    const val KEY_FORCE_SYNC        = "ForceSyncRequested"
 
     // ─── SharedPreferences Instance ──────────────────────────────────
     private fun prefs(context: Context): SharedPreferences =
