@@ -1,4 +1,4 @@
-package com.example.stramitapp.models
+package com.example.stramitapp.model
 
 import com.example.stramitapp.model.DataObject.BaseDataObject
 

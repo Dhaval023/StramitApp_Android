@@ -1,10 +1,10 @@
-package com.example.stramitapp.models
+package com.example.stramitapp.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import com.example.stramitapp.Licensee
+import com.example.stramitapp.model.Licensee
 import com.example.stramitapp.model.CompanyAssetCategory
 import com.example.stramitapp.model.CompanyLocation
 import com.example.stramitapp.model.DataObject.BaseDataObject
