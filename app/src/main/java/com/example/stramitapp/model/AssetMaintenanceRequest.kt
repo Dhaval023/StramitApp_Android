@@ -3,7 +3,7 @@ package com.example.stramitapp.model
 import com.example.stramitapp.model.DataObject.BaseDataObject
 
 class AssetMaintenanceRequest : BaseDataObject() {
-    var id: Int = 0
+    override var id: Int = 0
     var assetId: Int = 0
     var deviceId: Int = 0
     var requestDate: String = ""

@@ -6,11 +6,14 @@ import androidx.room.PrimaryKey
 import com.example.stramitapp.models.Interfaces.Base.IBaseLocalModel
 
 @Entity(tableName = "tbl_asset")
- class Asset : IBaseLocalModel {
+open class Asset : IBaseLocalModel {
 
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "asset_id")
     var assetId: Int = 0
+
+    override val id: Int
+        get() = assetId
 
     @ColumnInfo(name = "device_id")
     var deviceId: Int = 0

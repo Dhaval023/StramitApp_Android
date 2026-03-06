@@ -1,7 +1,7 @@
 package com.example.stramitapp.Repositories
 
 import com.example.stramitapp.model.ReaderDevice
-//import com.example.stramitapp.Repositories.Base.BaseRepository
+import com.example.stramitapp.Repositories.Base.BaseRepository
 import com.example.stramitapp.Repositories.Base.IDataStore
 //
 //class ReaderDataStore : BaseRepository<ReaderDevice>(), IDataStore<ReaderDevice> {

@@ -1,4 +1,4 @@
-package com.example.stramitapp.Repositories
+package com.example.stramitapp.Repositories.Base
 
 import android.content.Context
 import com.example.stramitapp.models.Database.AppDatabase

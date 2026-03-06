@@ -9,7 +9,7 @@ import com.example.stramitapp.model.DataObject.BaseDataObject
 class ReaderDevice : BaseDataObject() {
 
     @PrimaryKey(autoGenerate = true)
-    var id: Int = 0
+    override var id: Int = 0
     var name: String = ""
     var address: String = ""
     var isPaired: Boolean = false

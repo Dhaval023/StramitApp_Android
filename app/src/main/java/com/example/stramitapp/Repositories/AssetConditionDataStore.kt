@@ -1,130 +1,83 @@
-package com.example.stramitapp.Repositories.DataStore
-
-import com.example.stramitapp.Repositories.Base.IDataStore
-import com.example.stramitapp.model.Asset
-import com.example.stramitapp.Repositories.Base.BaseRepository
-import com.example.stramitapp.model.AssetCondition
+package com.example.stramitapp.Repositories//package com.example.stramitapp.repositories.datastore // lowercase
+//
+//import com.example.stramitapp.Repositories.Base.IDataStore
+//import com.example.stramitapp.Repositories.Base.BaseRepository
+//import com.example.stramitapp.model.Asset
+//import com.example.stramitapp.model.AssetCondition
+//import com.example.stramitapp.Dao.AssetConditionDao
+//import com.example.stramitapp.Dao.AssetDao
 //
 //class AssetConditionDataStore : BaseRepository<AssetCondition>(), IDataStore<AssetCondition> {
 //
-//    suspend fun getItemAsync(id: Int): AssetCondition? {
-//        return try {
-//            val conn = getConnection()
-//            conn.use {
-//                it.query("SELECT * FROM AssetCondition WHERE Id = ?", arrayOf(id.toString()))
-//                    .let { cursor -> cursor.toObject<AssetCondition>() }
-//            }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
+//    private val dao: AssetConditionDao by lazy { db.assetConditionDao() }
+//    private val assetDao: AssetDao by lazy { db.assetDao() }
+//
+//    override suspend fun getItemAsync(id: Int): AssetCondition {
+//        return dao.getById(id)
+//            ?: throw NoSuchElementException("AssetCondition with id $id not found")
 //    }
 //
-//    suspend fun addItemAsync(item: AssetCondition): Boolean {
+//    override suspend fun addItemAsync(item: AssetCondition): Boolean {
 //        return try {
-//            val conn = getConnection()
-//            conn.use {
-//                it.insert(item)
-//            }
+//            dao.insert(item)
 //            true
 //        } catch (ex: Exception) {
-//            val d = ex.message
 //            false
 //        }
 //    }
 //
-//    suspend fun updateItemAsync(item: AssetCondition): Boolean {
+//    override suspend fun updateItemAsync(item: AssetCondition): Boolean {
 //        return try {
-//            val conn = getConnection()
-//            conn.use {
-//                val rowsAffected = it.update(item)
-//                rowsAffected > 0
-//            }
+//            dao.update(item) > 0
 //        } catch (ex: Exception) {
-//            val d = ex.message
 //            false
 //        }
 //    }
 //
-//    suspend fun deleteItemAsync(item: AssetCondition): Boolean {
+//    override suspend fun deleteItemAsync(item: AssetCondition): Boolean {
 //        return try {
-//            val conn = getConnection()
-//            conn.use {
-//                it.delete(item)
-//            }
+//            dao.delete(item)
 //            true
 //        } catch (ex: Exception) {
-//            val d = ex.message
 //            false
 //        }
 //    }
 //
-//    suspend fun clearAsync(): Boolean {
-//        throw NotImplementedError("clearAsync is not implemented")
-//    }
-//
-//    suspend fun getItemsAsync(forceRefresh: Boolean = false): List<AssetCondition> {
+//    override suspend fun clearAsync(): Boolean {
 //        return try {
-//            val conn = getConnection()
-//            conn.use {
-//                it.queryAll<AssetCondition>()
-//            }
+//            dao.clearAll()
+//            true
 //        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
+//            false
 //        }
 //    }
 //
+//    override suspend fun getItemsAsync(forceRefresh: Boolean): List<AssetCondition> {
+//        return dao.getAll()
+//    }
+//
+//    override suspend fun initializeAsync() {
+//        // Initialize logic here if needed
+//    }
+//
+//    override suspend fun pullLatestAsync(): Boolean {
+//        throw NotImplementedError("pullLatestAsync not implemented")
+//    }
+//
+//    override suspend fun syncAsync(): Boolean {
+//        throw NotImplementedError("syncAsync not implemented")
+//    }
+//
+//    // Custom methods
 //    suspend fun getItemsByCompanyAsync(companyId: Int): List<AssetCondition> {
-//        return try {
-//            val conn = getConnection()
-//            conn.use {
-//                it.queryAll<AssetCondition>()
-//                    .filter { item -> item.companyId == companyId && item.updateFlag != "D" }
-//            }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
+//        return dao.getByCompanyId(companyId)
 //    }
 //
 //    suspend fun getFirstItemByCompanyAsync(companyId: Int): AssetCondition? {
-//        return try {
-//            val conn = getConnection()
-//            conn.use {
-//                it.queryAll<AssetCondition>()
-//                    .firstOrNull { item -> item.companyId == companyId }
-//            }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
+//        return dao.getFirstByCompanyId(companyId)
 //    }
 //
-//    suspend fun initializeAsync() {
-//        throw NotImplementedError("initializeAsync is not implemented")
-//    }
-//
-//    suspend fun pullLatestAsync(): Boolean {
-//        throw NotImplementedError("pullLatestAsync is not implemented")
-//    }
-//
-//    suspend fun syncAsync(): Boolean {
-//        throw NotImplementedError("syncAsync is not implemented")
-//    }
-//
-//    // START Asset Status Checking
 //    suspend fun getItemsByAssetAsyncStatus(assetUpdateFlag: String): List<Asset> {
-//        return try {
-//            val conn = getConnection()
-//            conn.use {
-//                it.queryAll<Asset>()
-//                    .filter { item -> item.updateFlag == assetUpdateFlag && item.updateFlag != "D" }
-//            }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
+//        return assetDao.getByUpdateFlag(assetUpdateFlag)
 //    }
-//    // END Asset Status Checking
 //}

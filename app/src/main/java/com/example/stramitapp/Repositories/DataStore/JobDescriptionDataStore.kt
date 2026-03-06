@@ -1,7 +1,7 @@
 package com.example.stramitapp.Repositories.DataStore
 
 import com.example.stramitapp.models.JobDescription
-import com.example.stramitapp.Repositories.Base.BaseRepository
+//import com.example.stramitapp.Repositories.Base.BaseRepository
 import com.example.stramitapp.Repositories.Base.IDataStore
 //
 //class JobDescriptionDataStore : BaseRepository<JobDescription>(), IDataStore<JobDescription> {

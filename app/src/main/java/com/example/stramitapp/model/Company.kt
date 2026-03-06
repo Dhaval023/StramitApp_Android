@@ -13,6 +13,9 @@ class Company : IBaseLocalModel {
     @ColumnInfo(name = "company_id")
     var companyId: Int = 0
 
+    override val id: Int
+        get() = companyId
+
     @ColumnInfo(name = "company_name")
     var companyName: String? = null
 

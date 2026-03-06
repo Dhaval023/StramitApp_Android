@@ -1,7 +1,7 @@
 package com.example.stramitapp.Repositories.DataStore
 
 import com.example.stramitapp.model.DeviceType
-import com.example.stramitapp.Repositories.Base.BaseRepository
+//import com.example.stramitapp.Repositories.Base.BaseRepository
 import com.example.stramitapp.Repositories.Base.IDataStore
 //
 //class DeviceTypeDataStore : BaseRepository<DeviceType>(), IDataStore<DeviceType> {

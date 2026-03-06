@@ -1,102 +1,88 @@
 package com.example.stramitapp.Repositories
 
-
-import com.example.stramitapp.model.AssetMemoInfo
-import com.example.stramitapp.Repositories.Base.BaseRepository
 import com.example.stramitapp.Repositories.Base.IDataStore
-//
-//class AssetMemoInfoDataStore : BaseRepository<AssetMemoInfo>(), IDataStore<AssetMemoInfo> {
-//
-//    suspend fun getItemAsync(id: Int): AssetMemoInfo? {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<AssetMemoInfo>().firstOrNull { item -> item.id == id } }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    suspend fun addItemAsync(item: AssetMemoInfo): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.insert(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun updateItemAsync(item: AssetMemoInfo): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.update(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun deleteItemAsync(item: AssetMemoInfo): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.delete(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun clearAsync(): Boolean {
-//        throw NotImplementedError("clearAsync is not implemented")
-//    }
-//
-//    suspend fun getItemsAsync(forceRefresh: Boolean = false): List<AssetMemoInfo> {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<AssetMemoInfo>() }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    suspend fun getItemsToExportAsync(lastSyncUpData: String): List<AssetMemoInfo> {
-//        return try {
-//            val conn = getConnection()
-//            conn.use {
-//                it.rawQuery("SELECT * FROM tbl_asset_memo_info WHERE last_update_date > '$lastSyncUpData'")
-//            }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    suspend fun getNewIdAsync(): Int {
-//        return try {
-//            val conn = getConnection()
-//            conn.use {
-//                it.queryAll<AssetMemoInfo>().maxOfOrNull { item -> item.id + 1 } ?: 0
-//            }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    suspend fun initializeAsync() {
-//        throw NotImplementedError("initializeAsync is not implemented")
-//    }
-//
-//    suspend fun pullLatestAsync(): Boolean {
-//        throw NotImplementedError("pullLatestAsync is not implemented")
-//    }
-//
-//    suspend fun syncAsync(): Boolean {
-//        throw NotImplementedError("syncAsync is not implemented")
-//    }
-//}
+import com.example.stramitapp.Dao.AssetMemoInfoDao
+import com.example.stramitapp.model.AssetMemoInfo
+
+class AssetMemoInfoDataStore(
+    private val dao: AssetMemoInfoDao
+) : IDataStore<AssetMemoInfo> {
+
+    override suspend fun getItemAsync(id: Int): AssetMemoInfo? {
+        return try {
+            dao.getById(id)
+        } catch (ex: Exception) {
+            throw ex
+        }
+    }
+
+    override suspend fun addItemAsync(item: AssetMemoInfo): Boolean {
+        return try {
+            dao.insert(item)
+            true
+        } catch (ex: Exception) {
+            false
+        }
+    }
+
+    override suspend fun updateItemAsync(item: AssetMemoInfo): Boolean {
+        return try {
+            dao.update(item)
+            true
+        } catch (ex: Exception) {
+            false
+        }
+    }
+
+    override suspend fun deleteItemAsync(item: AssetMemoInfo): Boolean {
+        return try {
+            dao.delete(item)
+            true
+        } catch (ex: Exception) {
+            false
+        }
+    }
+
+    override suspend fun clearAsync(): Boolean {
+        return try {
+            dao.clear()
+            true
+        } catch (ex: Exception) {
+            false
+        }
+    }
+
+    override suspend fun getItemsAsync(forceRefresh: Boolean): List<AssetMemoInfo> {
+        return try {
+            dao.getAll()
+        } catch (ex: Exception) {
+            throw ex
+        }
+    }
+
+    suspend fun getItemsToExportAsync(lastSyncUpData: String): List<AssetMemoInfo> {
+        return try {
+            dao.getItemsToExport(lastSyncUpData)
+        } catch (ex: Exception) {
+            throw ex
+        }
+    }
+
+    suspend fun getNewIdAsync(): Int {
+        return try {
+            dao.getNewId() ?: 1
+        } catch (ex: Exception) {
+            throw ex
+        }
+    }
+
+    override suspend fun initializeAsync() {}
+
+    override suspend fun pullLatestAsync(): Boolean {
+        return false
+    }
+
+    override suspend fun syncAsync(): Boolean {
+        return false
+    }
+}

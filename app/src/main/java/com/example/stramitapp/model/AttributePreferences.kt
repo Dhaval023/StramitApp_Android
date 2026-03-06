@@ -14,7 +14,7 @@ class AttributePreferences : BaseDataObject() {
 
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    var id: Int = 0
+    override var id: Int = 0
 
     @ColumnInfo(name = "attribute_id")
     var attributeId: Int = 0

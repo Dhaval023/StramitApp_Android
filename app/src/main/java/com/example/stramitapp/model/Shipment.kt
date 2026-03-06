@@ -12,6 +12,9 @@ class Shipment : IBaseLocalModel {
     @ColumnInfo(name = "shipment_id")
     var shipmentId: Int? = null
 
+    override val id: Int
+        get() = shipmentId ?: 0
+
     @ColumnInfo(name = "shipment_number")
     var shipmentNumber: String? = null
 

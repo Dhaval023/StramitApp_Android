@@ -1,6 +1,11 @@
-package com.example.stramitapp.Repositories
+package com.example.stramitapp.Dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
 import com.example.stramitapp.model.Company
 
 @Dao
@@ -15,7 +20,7 @@ interface CompanyDao {
     @Query("SELECT * FROM tbl_company")
     fun getAll(): List<Company>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
     fun insert(company: Company)
 
     @Update

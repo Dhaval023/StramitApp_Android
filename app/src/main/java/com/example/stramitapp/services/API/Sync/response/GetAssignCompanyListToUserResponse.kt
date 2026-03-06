@@ -1,8 +1,8 @@
 package com.example.stramitapp.services.API.Sync.response
 
-import com.example.stramitapp.models.AssetMemoType
-import com.example.stramitapp.models.BillOfMaterial
-import com.example.stramitapp.models.CompanyAssetType
+import com.example.stramitapp.model.AssetMemoType
+import com.example.stramitapp.model.BillOfMaterial
+import com.example.stramitapp.model.CompanyAssetType
 import com.google.gson.annotations.SerializedName
 
 data class GetAssignCompanyListToUserResponse(

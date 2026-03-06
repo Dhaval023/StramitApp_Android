@@ -7,16 +7,19 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.security.cert.CertificateException
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
+import com.google.gson.GsonBuilder
 import javax.net.ssl.X509TrustManager
+import java.time.OffsetDateTime
+//import com.example.stramitapp.utilities.OffsetDateTimeAdapter
 
 open class ApiClient {
 
     protected val baseUrl: String
-    val retrofit: Retrofit
-
     protected var controller: String? = null
+    protected val retrofit: Retrofit
 
     init {
+
         baseUrl = "${ApiSettings.BASE_URL}/${ApiSettings.ROOT}/"
 
         val logging = HttpLoggingInterceptor()
@@ -24,6 +27,10 @@ open class ApiClient {
 
         val httpClient = unsafeOkHttpClientBuilder()
         httpClient.addInterceptor(logging)
+
+//        val gson = GsonBuilder()
+//            .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeAdapter())
+//            .create()
 
         retrofit = Retrofit.Builder()
             .baseUrl(baseUrl)
@@ -34,25 +41,31 @@ open class ApiClient {
 
     private fun unsafeOkHttpClientBuilder(): OkHttpClient.Builder {
         try {
-            // Create a trust manager that does not validate certificate chains
-            val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
-                @Throws(CertificateException::class)
-                override fun checkClientTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) {
-                }
 
-                @Throws(CertificateException::class)
-                override fun checkServerTrusted(chain: Array<java.security.cert.X509Certificate>, authType: String) {
-                }
+            val trustAllCerts = arrayOf<TrustManager>(
+                object : X509TrustManager {
 
-                override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> {
-                    return arrayOf()
-                }
-            })
+                    @Throws(CertificateException::class)
+                    override fun checkClientTrusted(
+                        chain: Array<java.security.cert.X509Certificate>,
+                        authType: String
+                    ) {}
 
-            // Install the all-trusting trust manager
+                    @Throws(CertificateException::class)
+                    override fun checkServerTrusted(
+                        chain: Array<java.security.cert.X509Certificate>,
+                        authType: String
+                    ) {}
+
+                    override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> {
+                        return arrayOf()
+                    }
+                }
+            )
+
             val sslContext = SSLContext.getInstance("SSL")
             sslContext.init(null, trustAllCerts, java.security.SecureRandom())
-            // Create an ssl socket factory with our all-trusting manager
+
             val sslSocketFactory = sslContext.socketFactory
 
             val builder = OkHttpClient.Builder()
@@ -60,6 +73,7 @@ open class ApiClient {
             builder.hostnameVerifier { _, _ -> true }
 
             return builder
+
         } catch (e: Exception) {
             throw RuntimeException(e)
         }

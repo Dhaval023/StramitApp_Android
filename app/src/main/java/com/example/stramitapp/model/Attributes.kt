@@ -10,7 +10,7 @@ class Attributes : BaseDataObject() {
 
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    var id: Int = 0
+    override var id: Int = 0
 
     @ColumnInfo(name = "table_id")
     var tableId: Int = 0

@@ -5,7 +5,8 @@ import com.example.stramitapp.model.CompanyLocation
 import com.example.stramitapp.Repositories.Base.BaseRepository
 import com.example.stramitapp.Repositories.Base.IDataStore
 //
-//class CompanyLocationDataStore : BaseRepository<CompanyLocation>(), IDataStore<CompanyLocation> {
+abstract class CompanyLocationDataStore : BaseRepository<CompanyLocation>(), IDataStore<CompanyLocation> {
+    abstract fun getItem(it: Int): CompanyLocation?
 //
 //    suspend fun getItemAsync(idLocation: Int): CompanyLocation? {
 //        return try {
@@ -180,4 +181,4 @@ import com.example.stramitapp.Repositories.Base.IDataStore
 //    suspend fun syncAsync(): Boolean {
 //        throw NotImplementedError("syncAsync is not implemented")
 //    }
-//}
+}

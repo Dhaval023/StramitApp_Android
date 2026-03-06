@@ -10,7 +10,7 @@ class LicenseeConfig : BaseDataObject() {
 
     @PrimaryKey
     @ColumnInfo(name = "id")
-    var id: String = ""
+    override var id: Int = 0
 
     @ColumnInfo(name = "item")
     var item: String? = null

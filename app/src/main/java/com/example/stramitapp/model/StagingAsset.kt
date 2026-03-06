@@ -3,7 +3,7 @@ package com.example.stramitapp.model
 import com.example.stramitapp.model.DataObject.BaseDataObject
 
 class StagingAsset : BaseDataObject() {
-    var id: Int = 0
+    override var id: Int = 0
     var txId: Int = 0
     var userId: Int = 0
     var companyAssetId: String = ""

@@ -14,13 +14,16 @@ object StorageKeys {
     private const val KEY_USERNAME          = "LoggedInUsername"
     private const val KEY_PASSWORD          = "LoggedInPassword"
     private const val KEY_LAST_SYNC         = "LastSyncData"
-    private const val KEY_LAST_SYNC_UP      = "LastSyncUpData"
+    public const val KEY_LAST_SYNC_UP      = "LastSyncUpData"
     private const val KEY_LAST_SYNC_JOB     = "LastSyncUpJob"
-    private const val KEY_SYSTEM            = "SelectedSystem"
-    private const val KEY_COMPANY           = "SelectedCompany"
-    private const val KEY_LOCATION          = "SelectedLocation"
+    public const val KEY_SYSTEM            = "SelectedSystem"
+    public const val KEY_COMPANY           = "SelectedCompany"
+    public const val KEY_LOCATION          = "SelectedLocation"
     private const val KEY_FRESH_INSTALL     = "IsFreshInstall"
     const val KEY_FORCE_SYNC        = "ForceSyncRequested"
+
+    const val LastSyncUpDataStorageKey = "LastSyncUpData"
+
 
     // ─── SharedPreferences Instance ──────────────────────────────────
     private fun prefs(context: Context): SharedPreferences =

@@ -3,7 +3,7 @@ package com.example.stramitapp.model
 import com.example.stramitapp.model.DataObject.BaseDataObject
 
 class ReaderTxn : BaseDataObject() {
-    var id: Int = 0
+    override var id: Int = 0
     var readerName: String = ""
     var macAddress: String = ""
     var epc: String = ""

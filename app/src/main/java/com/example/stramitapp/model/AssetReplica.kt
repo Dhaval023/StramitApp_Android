@@ -2,7 +2,7 @@ package com.example.stramitapp.model
 
 import com.example.stramitapp.model.DataObject.BaseDataObject
 
-class AssetReplica : BaseDataObject() {
+class AssetReplica(override val id: Int) : BaseDataObject() {
     var userId: Int = 0
     var companyAssetId: String = ""
     var title: String = ""

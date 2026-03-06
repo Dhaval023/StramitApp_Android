@@ -1,6 +1,5 @@
 package com.example.stramitapp.Repositories
 
-
 import com.example.stramitapp.model.Company
 import com.example.stramitapp.model.CompanyAssetCategory
 import com.example.stramitapp.Repositories.Base.BaseRepository

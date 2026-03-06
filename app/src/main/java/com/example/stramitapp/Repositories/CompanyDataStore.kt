@@ -1,12 +1,12 @@
-package com.example.stramitapp.services.localdatastore
+package com.example.stramitapp.Repositories
 
 import com.example.stramitapp.Repositories.Base.IDataStore
-import com.example.stramitapp.Repositories.BaseRepository
 import com.example.stramitapp.model.Company
 import kotlinx.coroutines.Dispatchers
+import com.example.stramitapp.Repositories.Base.BaseRepository
 import kotlinx.coroutines.withContext
 
-class CompanyDataStore : BaseRepository<Company>(), IDataStore<Company> {
+abstract class CompanyDataStore : BaseRepository<Company>(), IDataStore<Company> {
 
     // ── Read ──────────────────────────────────────────────────────────────────
 
@@ -26,7 +26,7 @@ class CompanyDataStore : BaseRepository<Company>(), IDataStore<Company> {
         }
     }
 
-    override suspend fun getItems(forceRefresh: Boolean): List<Company> = withContext(Dispatchers.IO) {
+    suspend fun getItems(forceRefresh: Boolean): List<Company> = withContext(Dispatchers.IO) {
         runCatching {
             db.companyDao().getAll()
         }.getOrElse { e ->
@@ -36,21 +36,21 @@ class CompanyDataStore : BaseRepository<Company>(), IDataStore<Company> {
 
     // ── Write ─────────────────────────────────────────────────────────────────
 
-    override suspend fun addItem(item: Company): Boolean = withContext(Dispatchers.IO) {
+     suspend fun addItem(item: Company): Boolean = withContext(Dispatchers.IO) {
         runCatching {
             db.companyDao().insert(item)
             true
         }.getOrElse { false }
     }
 
-    override suspend fun updateItem(item: Company): Boolean = withContext(Dispatchers.IO) {
+     suspend fun updateItem(item: Company): Boolean = withContext(Dispatchers.IO) {
         runCatching {
             db.companyDao().update(item)
             true
         }.getOrElse { false }
     }
 
-    override suspend fun deleteItem(item: Company): Boolean = withContext(Dispatchers.IO) {
+     suspend fun deleteItem(item: Company): Boolean = withContext(Dispatchers.IO) {
         runCatching {
             db.companyDao().delete(item)
             true
@@ -87,15 +87,15 @@ class CompanyDataStore : BaseRepository<Company>(), IDataStore<Company> {
 
     // ── Not implemented (stubs kept for interface compliance) ─────────────────
 
-    override suspend fun clear(): Boolean =
+     suspend fun clear(): Boolean =
         throw NotImplementedError("clear() is not implemented")
 
-    override suspend fun initialize() =
+    suspend fun initialize(): Nothing =
         throw NotImplementedError("initialize() is not implemented")
 
-    override suspend fun pullLatest(): Boolean =
+     suspend fun pullLatest(): Boolean =
         throw NotImplementedError("pullLatest() is not implemented")
 
-    override suspend fun sync(): Boolean =
+     suspend fun sync(): Boolean =
         throw NotImplementedError("sync() is not implemented")
 }

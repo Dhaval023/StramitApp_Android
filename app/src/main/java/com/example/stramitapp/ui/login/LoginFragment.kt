@@ -69,6 +69,11 @@ class LoginFragment : Fragment() {
             is LoginUiState.Success -> {
                 setLoading(false)
                 viewModel.resetState()
+//                if (hasStoragePermission()) {
+//                    initFoldersAndNavigate()   // already granted — go straight to home
+//                } else {
+//                    requestStoragePermission() // ask first, navigate in result callback
+//                }
                 findNavController().navigate(R.id.action_nav_login_to_nav_home)
             }
 
@@ -102,7 +107,7 @@ class LoginFragment : Fragment() {
             }
         }
     }
-
+    private val STORAGE_REQUEST_CODE = 101
     // ✅ C# ShowMessageDialog equivalent — optional onDismiss action
     private fun showAlertDialog(
         title: String,

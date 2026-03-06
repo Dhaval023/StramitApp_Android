@@ -10,7 +10,7 @@ class AssetIssueImages : IBaseLocalModel {
 
     @PrimaryKey
     @ColumnInfo(name = "id")
-    var id: Int = 0
+    override var id: Int = 0
 
     @ColumnInfo(name = "asset_issue_id")
     var assetIssueId: Int = 0

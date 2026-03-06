@@ -2,7 +2,7 @@ package com.example.stramitapp.model
 
 import com.example.stramitapp.model.DataObject.BaseDataObject
 
-class AssetHistoryDetail : BaseDataObject() {
+abstract class AssetHistoryDetail : BaseDataObject() {
     var histDetailId: Int = 0
     var histId: Int = 0
     var oldValue: String = ""

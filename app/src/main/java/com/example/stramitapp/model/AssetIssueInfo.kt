@@ -10,7 +10,7 @@ class AssetIssueInfo : BaseDataObject() {
 
     @PrimaryKey
     @ColumnInfo(name = "id")
-    var id: Int = 0
+    override var id: Int = 0
 
     @ColumnInfo(name = "asset_id")
     var assetId: Int = 0

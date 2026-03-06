@@ -2,13 +2,15 @@ package com.example.stramitapp.utilities
 
 import android.content.Context
 import android.content.SharedPreferences
-//import androidx.security.crypto.EncryptedSharedPreferences
-//import androidx.security.crypto.MasterKey
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.example.stramitapp.models.*
 import com.example.stramitapp.models.Local.ReaderTypeModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.example.stramitapp.model.*
+import com.example.stramitapp.Repositories.Repository
+import com.example.stramitapp.models.Database.AppDatabase
 import com.example.stramitapp.models.Constants.StorageKeys
 
 // ─────────────────────────────────────────────
@@ -17,19 +19,19 @@ import com.example.stramitapp.models.Constants.StorageKeys
 object SecurePrefs {
     private lateinit var prefs: SharedPreferences
 
-//    fun init(context: Context) {
-//        val masterKey = MasterKey.Builder(context)
-//            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-//            .build()
-//
-//        prefs = EncryptedSharedPreferences.create(
-//            context,
-//            "secure_app_prefs",
-//            masterKey,
-//            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-//            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-//        )
-//    }
+    fun init(context: Context) {
+        val masterKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+
+        prefs = EncryptedSharedPreferences.create(
+            context,
+            "secure_app_prefs",
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
 
     fun get(key: String): String? = prefs.getString(key, null)
     fun set(key: String, value: String) = prefs.edit().putString(key, value).apply()
@@ -42,20 +44,23 @@ object SecurePrefs {
 object AppSettings {
 
     // ── Connectivity ──────────────────────────────────────────────────────────
+    lateinit var database: AppDatabase
+
 
     /** True when a network connection is available. Supply your own checker impl. */
-//    var isOnline: Boolean = false
-//        get() = ConnectionChecker.isConnected()   // replace with your impl
-//
-//    fun isBluetoothEnabled(): Boolean = BluetoothChecker.isEnabled()  // replace with your impl
-//    fun setBluetoothStatus(enable: Boolean) = BluetoothChecker.setStatus(enable)
-//
-//    fun tryTurnOnBluetooth() {
-//        if (!isBluetoothEnabled()) {
-//            setBluetoothStatus(true)
-//            Thread.sleep(2_000)
-//        }
-//    }
+    fun isOnline(context: Context): Boolean {
+        return ConnectionChecker.isConnected(context)
+    }  // replace with your impl
+
+    fun isBluetoothEnabled(): Boolean = BluetoothChecker.isEnabled()  // replace with your impl
+    fun setBluetoothStatus(enable: Boolean) = BluetoothChecker.setStatus(enable)
+
+    fun tryTurnOnBluetooth() {
+        if (!isBluetoothEnabled()) {
+            setBluetoothStatus(true)
+            Thread.sleep(2_000)
+        }
+    }
 
     // ── Error messages ────────────────────────────────────────────────────────
 
@@ -163,22 +168,22 @@ object AppSettings {
      * Load persisted system / company / location selections from secure storage.
      * Must be called from a coroutine (e.g. `lifecycleScope.launch`).
      */
-//    suspend fun initializeSettings(repository: Repository) = withContext(Dispatchers.IO) {
-//        val systemId   = SecurePrefs.get(StorageKeys.KEY_SYSTEM)
-//        val companyId  = SecurePrefs.get(StorageKeys.KEY_COMPANY)
-//        val locationId = SecurePrefs.get(StorageKeys.KEY_LOCATION)
-//
-//        selectedSystem   = systemId?.toIntOrNull()
-//            ?.let { repository.companyDataStore.getItem(it) }
-//
-//        selectedCompany  = companyId?.toIntOrNull()
-//            ?.let { repository.wpCompanyDataStore.getItem(it) }
-//
-//        selectedLocation = locationId?.toIntOrNull()
-//            ?.let { repository.companyLocationDataStore.getItem(it) }
-//
-//        syncVersion = "1.3.0"
-//    }
+    suspend fun initializeSettings(repository: Repository) = withContext(Dispatchers.IO) {
+        val systemId   = SecurePrefs.get(StorageKeys.KEY_SYSTEM)
+        val companyId  = SecurePrefs.get(StorageKeys.KEY_COMPANY)
+        val locationId = SecurePrefs.get(StorageKeys.KEY_LOCATION)
+
+        selectedSystem   = systemId?.toIntOrNull()
+            ?.let { repository.companyDataStore.getItem(it) }
+
+        selectedCompany  = companyId?.toIntOrNull()
+            ?.let { repository.wpCompanyDataStore.getItem(it) }
+
+        selectedLocation = locationId?.toIntOrNull()
+            ?.let { repository.companyLocationDataStore.getItem(it) }
+
+        syncVersion = "1.3.0"
+    }
 
     /**
      * Copy current selections into the Temp* fields and clear job-specific state.

@@ -5,6 +5,8 @@ import com.example.stramitapp.models.Interfaces.Base.IBaseLocalModel
 
 open class BaseLocalModel : BaseObservable(), IBaseLocalModel {
 
+    override val id: Int = 0
+
     protected fun <T> setProperty(current: T, new: T, onChange: () -> Unit): T {
         return if (current != new) {
             onChange()

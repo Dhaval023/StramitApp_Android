@@ -2,7 +2,7 @@ package com.example.stramitapp.model
 
 import com.example.stramitapp.model.DataObject.BaseDataObject
 
-class ChecklistItem : BaseDataObject() {
+abstract class ChecklistItem : BaseDataObject() {
     var checklistItemId: Int = 0
     var checklistId: Int = 0
     var checklistItemName: String = ""

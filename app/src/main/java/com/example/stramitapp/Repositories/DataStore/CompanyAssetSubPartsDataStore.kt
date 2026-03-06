@@ -1,7 +1,7 @@
 package com.example.stramitapp.Repositories.DataStore
 
 import com.example.stramitapp.model.CompanyAssetSubParts
-import com.example.stramitapp.Repositories.Base.BaseRepository
+//import com.example.stramitapp.Repositories.Base.BaseRepository
 import com.example.stramitapp.Repositories.Base.IDataStore
 //
 //class CompanyAssetSubPartsDataStore : BaseRepository<CompanyAssetSubParts>(), IDataStore<CompanyAssetSubParts> {

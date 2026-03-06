@@ -2,7 +2,7 @@ package com.example.stramitapp.model
 
 import com.example.stramitapp.model.DataObject.BaseDataObject
 
-class AssetInspectionJobTrackInfo : BaseDataObject() {
+abstract class AssetInspectionJobTrackInfo : BaseDataObject() {
     var jobId: Int = 0
     var checklistItemId: Int = 0
     var assetId: Int = 0

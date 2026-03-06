@@ -3,6 +3,7 @@ package com.example.stramitapp.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.stramitapp.models.Interfaces.Base.IBaseLocalModel
 import java.util.Date
 
 @Entity(tableName = "tbl_company_location")
@@ -41,4 +42,9 @@ data class CompanyLocation(
 
     @ColumnInfo(name = "flag_sync")
     var flagSync: Int = 0
-)
+):IBaseLocalModel
+
+{
+override val id: Int
+    get() = locationId
+}

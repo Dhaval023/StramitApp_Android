@@ -8,6 +8,9 @@ import java.util.UUID
 open class BaseDataObject : ObservableObject(), IBaseLocalModel {
 
     @Ignore
+    override open val id: Int = 0
+
+    @Ignore
     var localId: String = UUID.randomUUID().toString()
 
     @Ignore

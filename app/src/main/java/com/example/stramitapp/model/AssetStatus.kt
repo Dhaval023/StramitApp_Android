@@ -10,7 +10,7 @@ class AssetStatus : BaseDataObject() {
 
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    var id: Int = 0
+    override var id: Int = 0
 
     @ColumnInfo(name = "status")
     var status: String? = null

@@ -8,7 +8,7 @@ import com.example.stramitapp.model.DataObject.BaseDataObject
 class ReaderModel1 : BaseDataObject() {
 
     @PrimaryKey(autoGenerate = true)
-    var id: Int = 0
+   override var id: Int = 0
     var name: String = ""
     var imageSource: String = ""
     var series: String = ""
