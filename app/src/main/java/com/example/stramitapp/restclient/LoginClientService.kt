@@ -56,7 +56,7 @@ class LoginClientService : ApiClient() {
                 }
             } else {
                 GetLoginDetailsNewResponse().apply {
-                    statusCode = response.code()
+//                    statusCode = response.code()
                     error = response.message()
                 }
             }

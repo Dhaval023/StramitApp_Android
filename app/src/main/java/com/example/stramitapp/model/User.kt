@@ -50,8 +50,7 @@ class User : BaseDataObject() {
     @ColumnInfo(name = "licensee_id")
     var licenseeId: Int? = null
 
-    @ColumnInfo(name = "is_active")
-    var isActive: Int = 0
+//    var isActive: Int = 0
 
     @Ignore
     var tblLicensees: List<Licensee>? = null

@@ -15,6 +15,7 @@ import com.example.stramitapp.Dao.AssetIssueImagesDao
 import com.example.stramitapp.Dao.AssetLeaseInfoDao
 import com.example.stramitapp.Dao.AssetMovementInfoDao
 import com.example.stramitapp.model.Asset
+import com.example.stramitapp.model.User
 import com.example.stramitapp.model.AssetCondition
 import com.example.stramitapp.model.AssetFinancialInfo
 import com.example.stramitapp.model.AssetInspectionInfo
@@ -23,6 +24,7 @@ import com.example.stramitapp.model.AssetIssueImages
 import com.example.stramitapp.model.AssetMovementInfo
 import com.example.stramitapp.Dao.AssetMemoInfoDao
 import com.example.stramitapp.Dao.AssetMaintenanceInfoDao
+import com.example.stramitapp.Dao.UserDao
 import com.example.stramitapp.model.AssetMaintenanceInfo
 import com.example.stramitapp.model.AssetMemoInfo
 import com.example.stramitapp.model.AssetLeaseInfo
@@ -44,6 +46,7 @@ import java.io.File
         AssetMaintenanceInfo::class,
         AssetMemoInfo::class,
         AssetLeaseInfo::class,
+        User::class,
         Shipment::class
     ],
     version = 1,
@@ -63,6 +66,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun assetMemoInfoDao(): AssetMemoInfoDao
     abstract fun assetMaintenanceInfoDao(): AssetMaintenanceInfoDao
     abstract fun assetLeaseInfoDao(): AssetLeaseInfoDao
+    abstract fun userDao(): UserDao
 //    abstract fun billOfMaterialDao()
 
     companion object {

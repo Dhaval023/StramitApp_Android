@@ -1,16 +1,19 @@
 package com.example.stramitapp.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.stramitapp.Global
 import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentHomeBinding
 import com.example.stramitapp.ui.login.LoginViewModel
+import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
 
@@ -28,14 +31,17 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
         // Updates UI: It sets the text of binding.loggedInUserTextview to "Logged in user : $fullName"
-        loginViewModel.authenticatedUser?.let { user ->
-            val firstName = user.firstName ?: ""
-            val lastName = user.lastName ?: ""
-            val fullName = "$firstName $lastName".trim()
+        viewLifecycleOwner.lifecycleScope.launch {
+            loginViewModel.authenticatedUser.collect { user ->
+                Log.d("HomeFragment", "user received: $user")
+                val firstName = user?.firstName ?: ""
+                val lastName  = user?.lastName  ?: ""
+                val fullName  = "$firstName $lastName".trim()
             
-            if (fullName.isNotEmpty()) {
+//            if (fullName.isNotEmpty()) {
                 // This replaces the "Mitesh Trivedi" placeholder with the dynamic value
-                binding.loggedInUserTextview.text = "Logged in user : $fullName"
+//                binding.loggedInUserTextview.text = "Logged in user : $fullName"
+                binding.fullName = fullName.ifEmpty { "" }
             }
         }
 

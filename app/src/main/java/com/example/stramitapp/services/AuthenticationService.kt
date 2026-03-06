@@ -39,12 +39,12 @@ class AuthenticationService(private val context: Context) {
             ) ?: "unknown"
 
             val request = GetLoginDetailsNewRequest(
-                loginName         = username,
-                password          = password,
-                currentDeviceType = "Android",
-                currentDeviceUdid = androidId,
-                deviceId          = deviceId,
-                licennseeKey      = licenseKey, // ✅ To match C# version
+                loginName          = username,
+                password           = password,
+                currentDeviceType  = "Android",
+                currentDeviceUdid  = androidId,
+                deviceId           = deviceId,
+                licennseeKey       = licenseKey,
                 setForceFullAssign = isForceLogin
             )
 
@@ -52,7 +52,7 @@ class AuthenticationService(private val context: Context) {
 
             Log.d("AuthService", "Login Result: statusCode=${result.statusCode}, error=${result.error}, list=${result.list}")
 
-            if (result.statusCode == 1) {
+            if (result.statusCode == 1L) {
                 val loginDetail = result.list?.firstOrNull()
                 if (loginDetail != null) {
                     authenticatedUser = AuthenticatedUser(
@@ -78,7 +78,7 @@ class AuthenticationService(private val context: Context) {
                 1
             } else {
                 loginErrorMessage = result.error ?: "Unknown login error"
-                result.statusCode
+                result.statusCode.toInt()
             }
 
         } catch (e: Exception) {
@@ -135,7 +135,7 @@ class AuthenticationService(private val context: Context) {
 
             val result = clientService.getDeviceId(request)
 
-            if (result != null && result.statusCode == 1) {
+            if (result != null && result.statusCode.toLong() == 1L) {
                 result.list?.firstOrNull()?.deviceId ?: 0
             } else {
                 Log.w("AuthService", "GetDeviceId failed: ${result?.error}")
@@ -158,7 +158,7 @@ class AuthenticationService(private val context: Context) {
 }
 
 data class AuthenticatedUser(
-    val userId: Int = 0,
+    val userId: Long = 0,
     val firstName: String? = null,
     val middleName: String? = null,
     val lastName: String? = null,
@@ -166,9 +166,9 @@ data class AuthenticatedUser(
     val phone: String? = null,
     val loginName: String? = null,
     val password: String? = null,
-    val parentUserId: Int = 0,
+    val parentUserId: Long = 0,
     val currentDeviceUdid: String? = null,
-    val currentDeviceType: Int? = null,
-    val licenseeId: Int? = null,
-    val isActive: Int = 0
+    val currentDeviceType: Long? = null,
+    val licenseeId: Long? = null,
+    val isActive: Long = 0
 )

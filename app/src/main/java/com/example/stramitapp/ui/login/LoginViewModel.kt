@@ -22,24 +22,21 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow<LoginUiState>(LoginUiState.Idle)
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
+    // ✅ NEW: expose authenticatedUser as StateFlow so HomeFragment can observe it
+    private val _authenticatedUser = MutableStateFlow<AuthenticatedUser?>(null)
+    val authenticatedUser: StateFlow<AuthenticatedUser?> = _authenticatedUser.asStateFlow()
+
     private val authService = AuthenticationService(application)
 
-    val authenticatedUser: AuthenticatedUser?
-        get() = authService.authenticatedUser
-
-    // C#: _isRememberCredentials loaded from storage
     private var isRememberCredentials: Boolean =
         StorageKeys.getRememberCredentials(application)
 
-    // C#: _isLoginOnline = true (hardcoded)
     private var isLoginOnline: Boolean = true
 
     private var lastUsername = ""
     private var lastPassword = ""
 
-    // ─── C# LoginEvent() ──────────────────────────────────────────────
     fun login(username: String, password: String) {
-        // C#: if (!string.IsNullOrEmpty(UsernameText) && !string.IsNullOrEmpty(PasswordText))
         if (username.isBlank() || password.isBlank()) {
             _uiState.value = LoginUiState.ShowDialog(
                 title   = "LOGIN FAILED!",
@@ -48,7 +45,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
 
-        // C#: if (!_service.IsLicenseeKeyAvailable()) 
         if (!authService.isLicenseeKeyAvailable()) {
             _uiState.value = LoginUiState.NoLicenseKey
             return
@@ -65,29 +61,24 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         lastUsername = username
         lastPassword = password
 
-        // C#: await Login(UsernameText, PasswordText, IsRememberCredentials, IsLoginOnline, false)
         performLogin(username, password, forceLogin = false)
     }
 
-    // ─── C# Force Login callback ──────────────────────────────────────
     fun forceLogin() {
         performLogin(lastUsername, lastPassword, forceLogin = true)
     }
 
-    // ─── C# private Login() ───────────────────────────────────────────
     private fun performLogin(
         username: String,
         password: String,
         forceLogin: Boolean
     ) {
         viewModelScope.launch {
-            // C#: IsBusy = true
             _uiState.value = LoginUiState.Loading
 
             try {
                 val statusCode: Int = withContext(Dispatchers.IO) {
                     if (isLoginOnline) {
-                        // C#: _service.LoginOnline(...)
                         authService.loginOnline(
                             username              = username,
                             password              = password,
@@ -95,7 +86,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                             isForceLogin          = forceLogin
                         )
                     } else {
-                        // C#: _service.LoginOffline(...)
                         authService.loginOffline(
                             username              = username,
                             password              = password,
@@ -107,8 +97,10 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 Log.d("LoginViewModel", "Login statusCode: $statusCode")
 
                 when (statusCode) {
-                    // C#: if (isAuthenticated == 1) → save prefs + navigate
                     1 -> {
+                        // ✅ Push the authenticated user into the StateFlow
+                        _authenticatedUser.value = authService.authenticatedUser
+
                         StorageKeys.saveRememberCredentials(
                             getApplication<Application>(), isRememberCredentials)
                         StorageKeys.saveLoginOnline(
@@ -116,7 +108,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                         _uiState.value = LoginUiState.Success
                     }
 
-                    // C#: else if (isAuthenticated == 3) → show force login dialog
                     3 -> {
                         _uiState.value = LoginUiState.ForceLoginRequired(
                             message = authService.loginErrorMessage.ifBlank {
@@ -125,7 +116,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                         )
                     }
 
-                    // C#: else → ShowMessageDialog("LOGIN FAILED!", AppSettings.LoginErrorMessage)
                     else -> {
                         _uiState.value = LoginUiState.ShowDialog(
                             title   = "LOGIN FAILED!",
@@ -156,7 +146,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // ─── C# RememberLogin() ───────────────────────────────────────────
     fun rememberLogin() {
         val username = StorageKeys.getUsername(getApplication<Application>())
         val password = StorageKeys.getPassword(getApplication<Application>())
@@ -171,13 +160,13 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     fun logout() {
         viewModelScope.launch {
             authService.logout()
+            _authenticatedUser.value = null  // ✅ Clear on logout
         }
     }
 
     fun toggleRememberCredentials() { isRememberCredentials = !isRememberCredentials }
-    fun toggleLoginOnline() { isLoginOnline = !isLoginOnline }
-
-    fun resetState() { _uiState.value = LoginUiState.Idle }
+    fun toggleLoginOnline()         { isLoginOnline = !isLoginOnline }
+    fun resetState()                { _uiState.value = LoginUiState.Idle }
 
     private fun isNetworkAvailable(): Boolean {
         val cm = getApplication<Application>()
@@ -188,16 +177,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     }
 }
 
-// ✅ Sealed class matches ALL C# dialog/navigation cases exactly
 sealed class LoginUiState {
-    object Idle : LoginUiState()
+    object Idle    : LoginUiState()
     object Loading : LoginUiState()
     object Success : LoginUiState()
     object NoLicenseKey : LoginUiState()
-
-    // C#: ShowForceLoginDialog — carries server message
     data class ForceLoginRequired(val message: String) : LoginUiState()
-
-    // C#: ShowMessageDialog — carries title + message
     data class ShowDialog(val title: String, val message: String) : LoginUiState()
 }
