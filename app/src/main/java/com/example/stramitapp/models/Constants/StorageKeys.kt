@@ -21,7 +21,9 @@ object StorageKeys {
     public const val KEY_LOCATION          = "SelectedLocation"
     private const val KEY_FRESH_INSTALL     = "IsFreshInstall"
     const val KEY_FORCE_SYNC        = "ForceSyncRequested"
-
+    const val IsFreshInstall            = "IsFreshInstall"
+    const val LastSyncUpJobStorageKey   = "LastSyncUpJob"
+    const val LastSyncDataStorageKey    = "LastSyncData"
     const val LastSyncUpDataStorageKey = "LastSyncUpData"
 
 

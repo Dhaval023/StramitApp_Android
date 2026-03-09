@@ -1,8 +1,9 @@
 package com.example.stramitapp.Repositories
 
+import android.util.Log
 import com.example.stramitapp.Dao.AssetDao
-import com.example.stramitapp.Repositories.Base.IDataStore
 import com.example.stramitapp.Repositories.Base.BaseRepository
+import com.example.stramitapp.Repositories.Base.IDataStore
 import com.example.stramitapp.model.Asset
 import com.example.stramitapp.model.Shipment
 import java.text.SimpleDateFormat
@@ -14,7 +15,7 @@ class AssetDataStore :
 
     private val dao: AssetDao by lazy { db.assetDao() }
 
-    // ---------------- BASIC ----------------
+    private val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
     override suspend fun getItemAsync(id: Int): Asset? {
         return dao.getById(id)
@@ -30,6 +31,7 @@ class AssetDataStore :
             dao.insert(item)
             true
         } catch (e: Exception) {
+            Log.e("AssetDataStore", "Insert failed", e)
             false
         }
     }
@@ -38,6 +40,7 @@ class AssetDataStore :
         return try {
             dao.update(item) > 0
         } catch (e: Exception) {
+            Log.e("AssetDataStore", "Update failed", e)
             false
         }
     }
@@ -47,6 +50,7 @@ class AssetDataStore :
             dao.delete(item)
             true
         } catch (e: Exception) {
+            Log.e("AssetDataStore", "Delete failed", e)
             false
         }
     }
@@ -56,6 +60,7 @@ class AssetDataStore :
             dao.clearAll()
             true
         } catch (e: Exception) {
+            Log.e("AssetDataStore", "Clear failed", e)
             false
         }
     }
@@ -66,15 +71,15 @@ class AssetDataStore :
 
     suspend fun assetCount(): Int = dao.count()
 
-    suspend fun getMaxAssetID(): Int = dao.getMaxAssetId() ?: 0
+    suspend fun getMaxAssetId(): Int = dao.getMaxAssetId() ?: 0
 
-    // ---------------- EXPORT / SYNC ----------------
+    // ---------------- EXPORT ----------------
 
     suspend fun getItemsToExport(lastSync: String): List<Asset> =
         dao.getItemsToExport(lastSync)
 
-    suspend fun getItemsFlagI(lastSync: String): List<Asset> =
-        dao.getItemsFlagI(lastSync)
+    suspend fun getItemsFlagI(): List<Asset> =
+        dao.getItemsFlagI()
 
     suspend fun getAssetsForImageSync(): List<Asset> =
         dao.getAssetsForImageSync()
@@ -91,18 +96,22 @@ class AssetDataStore :
         dao.removeDeactivatedShipmentAssets()
 
     suspend fun deleteAssetsWithinLast3Months(selectedDate: Date): Int {
-        val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
         val toDate = formatter.format(selectedDate)
+
         val fromDate = formatter.format(
             Calendar.getInstance().apply {
                 time = selectedDate
                 add(Calendar.MONTH, -3)
             }.time
         )
+
         return dao.deleteAssetsBetween(fromDate, toDate)
     }
 
     override suspend fun initializeAsync() {}
+
     override suspend fun pullLatestAsync(): Boolean = false
+
     override suspend fun syncAsync(): Boolean = false
 }

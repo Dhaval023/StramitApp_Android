@@ -5,7 +5,8 @@ import com.example.stramitapp.models.Interfaces.Base.IBaseLocalModel
 
 open class BaseLocalModel : BaseObservable(), IBaseLocalModel {
 
-    override val id: Int = 0
+    @Transient
+    override open var id: Int = 0
 
     override fun notifyPropertyChanged(propertyId: Int) {
         super.notifyPropertyChanged(propertyId)

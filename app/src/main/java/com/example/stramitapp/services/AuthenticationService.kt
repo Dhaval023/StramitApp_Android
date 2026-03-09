@@ -3,16 +3,18 @@ package com.example.stramitapp.services
 import android.content.Context
 import android.provider.Settings
 import android.util.Log
+import com.example.stramitapp.model.User
 import com.example.stramitapp.models.Constants.StorageKeys
+import com.example.stramitapp.models.Database.AppDatabase
 import com.example.stramitapp.services.API.request.GetDeviceIdRequest
 import com.example.stramitapp.services.API.request.GetLoginDetailsNewRequest
 import com.example.stramitapp.restclient.LoginClientService
+import com.example.stramitapp.utilities.AppSettings
 
 class AuthenticationService(private val context: Context) {
 
     private val clientService = LoginClientService()
     var authenticatedUser: AuthenticatedUser? = null
-
     var loginErrorMessage: String = ""
 
     suspend fun loginOnline(
@@ -49,12 +51,13 @@ class AuthenticationService(private val context: Context) {
             )
 
             val result = clientService.getLoginDetails(request)
-
-            Log.d("AuthService", "Login Result: statusCode=${result.statusCode}, error=${result.error}, list=${result.list}")
+            Log.d("AuthService", "Login Result: statusCode=${result.statusCode}, error=${result.error}")
 
             if (result.statusCode == 1L) {
                 val loginDetail = result.list?.firstOrNull()
                 if (loginDetail != null) {
+
+                    // ── 1. Build AuthenticatedUser (in-memory DTO) ────────────
                     authenticatedUser = AuthenticatedUser(
                         userId            = loginDetail.userId,
                         firstName         = loginDetail.firstName,
@@ -70,12 +73,30 @@ class AuthenticationService(private val context: Context) {
                         licenseeId        = loginDetail.licenseeId,
                         isActive          = loginDetail.isActive
                     )
+
+                    // ── 2. FIX: Set AppSettings.authenticatedUser ─────────────
+                    // This is what SyncService reads. Was never set — caused NPE.
+                    AppSettings.authenticatedUser = authenticatedUser!!.toUser()
+
+                    // ── 3. FIX: Save User to Room tbl_user ────────────────────
+                    // SyncService.forceSync_internal() calls db.userDao().getFirstUser()
+                    // as a fallback. Without this insert it always returned null.
+                    try {
+                        val db = AppDatabase.getInstance()
+                        db.userDao().insert(authenticatedUser!!.toUser())
+                        Log.d("AuthService", "User saved to Room: userId=${loginDetail.userId}")
+                    } catch (e: Exception) {
+                        // Non-fatal — AppSettings.authenticatedUser is already set above
+                        Log.w("AuthService", "Could not save user to Room: ${e.message}")
+                    }
                 }
+
                 if (isRememberCredentials) {
                     StorageKeys.saveUsername(context, authenticatedUser?.loginName ?: username)
                     StorageKeys.savePassword(context, password)
                 }
                 1
+
             } else {
                 loginErrorMessage = result.error ?: "Unknown login error"
                 result.statusCode.toInt()
@@ -105,6 +126,18 @@ class AuthenticationService(private val context: Context) {
                 loginName = username,
                 password  = password
             )
+
+            // Also restore AppSettings from Room on offline login
+            try {
+                val db = AppDatabase.getInstance()
+                val userFromDb = db.userDao().getFirstUser()
+                if (userFromDb != null) {
+                    AppSettings.authenticatedUser = userFromDb
+                }
+            } catch (e: Exception) {
+                Log.w("AuthService", "Offline login: could not load user from Room: ${e.message}")
+            }
+
             if (isRememberCredentials) {
                 StorageKeys.saveUsername(context, username)
                 StorageKeys.savePassword(context, password)
@@ -117,6 +150,16 @@ class AuthenticationService(private val context: Context) {
     }
 
     fun isLicenseeKeyAvailable(): Boolean = fetchLicenseKey().isNotBlank()
+
+    fun logout() {
+        StorageKeys.savePassword(context, "")
+        StorageKeys.saveSelectedSystem(context, "")
+        StorageKeys.saveSelectedCompany(context, "")
+        StorageKeys.saveSelectedLocation(context, "")
+        AppSettings.authenticatedUser = null   // clear from AppSettings too
+        authenticatedUser = null
+        loginErrorMessage = ""
+    }
 
     private fun fetchLicenseKey(): String = StorageKeys.getLicenseKey(context)
 
@@ -146,16 +189,11 @@ class AuthenticationService(private val context: Context) {
             0
         }
     }
-
-    fun logout() {
-        StorageKeys.savePassword(context, "")
-        StorageKeys.saveSelectedSystem(context, "")
-        StorageKeys.saveSelectedCompany(context, "")
-        StorageKeys.saveSelectedLocation(context, "")
-        authenticatedUser = null
-        loginErrorMessage = ""
-    }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AuthenticatedUser DTO  (unchanged)
+// ─────────────────────────────────────────────────────────────────────────────
 
 data class AuthenticatedUser(
     val userId: Long = 0,
@@ -171,4 +209,23 @@ data class AuthenticatedUser(
     val currentDeviceType: Long? = null,
     val licenseeId: Long? = null,
     val isActive: Long = 0
-)
+) {
+    /**
+     * Converts this login DTO into a Room [User] entity.
+     * Called after successful login to persist the user and populate AppSettings.
+     */
+    fun toUser(): User = User().apply {
+        userId            = this@AuthenticatedUser.userId.toInt()
+        firstName         = this@AuthenticatedUser.firstName
+        middleName        = this@AuthenticatedUser.middleName
+        lastName          = this@AuthenticatedUser.lastName
+        email             = this@AuthenticatedUser.email
+        phone             = this@AuthenticatedUser.phone
+        loginName         = this@AuthenticatedUser.loginName
+        password          = this@AuthenticatedUser.password
+        parentUserId      = this@AuthenticatedUser.parentUserId.toInt()
+        currentDeviceUdid = this@AuthenticatedUser.currentDeviceUdid
+        currentDeviceType = this@AuthenticatedUser.currentDeviceType?.toInt()
+        licenseeId        = this@AuthenticatedUser.licenseeId?.toInt()
+    }
+}

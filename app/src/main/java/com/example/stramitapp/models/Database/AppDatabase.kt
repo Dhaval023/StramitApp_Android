@@ -24,11 +24,15 @@ import com.example.stramitapp.model.AssetIssueImages
 import com.example.stramitapp.model.AssetMovementInfo
 import com.example.stramitapp.Dao.AssetMemoInfoDao
 import com.example.stramitapp.Dao.AssetMaintenanceInfoDao
+import com.example.stramitapp.Dao.CompanyLocationDao
 import com.example.stramitapp.Dao.UserDao
+import com.example.stramitapp.Dao.WpCompanyDao
 import com.example.stramitapp.model.AssetMaintenanceInfo
 import com.example.stramitapp.model.AssetMemoInfo
 import com.example.stramitapp.model.AssetLeaseInfo
 import com.example.stramitapp.model.Company
+import com.example.stramitapp.models.WpCompany
+import com.example.stramitapp.model.CompanyLocation
 import com.example.stramitapp.model.Shipment
 import com.example.stramitapp.utilities.AppSettings
 import java.io.File
@@ -46,6 +50,8 @@ import java.io.File
         AssetMaintenanceInfo::class,
         AssetMemoInfo::class,
         AssetLeaseInfo::class,
+        WpCompany::class,
+        CompanyLocation::class,
         User::class,
         Shipment::class
     ],
@@ -66,27 +72,15 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun assetMemoInfoDao(): AssetMemoInfoDao
     abstract fun assetMaintenanceInfoDao(): AssetMaintenanceInfoDao
     abstract fun assetLeaseInfoDao(): AssetLeaseInfoDao
+    abstract fun companyLocationDao(): CompanyLocationDao
     abstract fun userDao(): UserDao
-//    abstract fun billOfMaterialDao()
+    abstract fun wpCompanyDao(): WpCompanyDao
 
     companion object {
         private const val DB_NAME = "astrack_ams.db"
 
         @Volatile
         private var INSTANCE: AppDatabase? = null
-
-//        fun init(context: Context) {
-//            if (INSTANCE == null) {
-//                synchronized(this) {
-//                    INSTANCE = Room.databaseBuilder(
-//                        context.applicationContext,
-//                        AppDatabase::class.java,
-//                        DB_NAME
-//                    )
-//                        .fallbackToDestructiveMigration() // swap for a Migration strategy in production
-//                        .build()
-//                }
-//            }
 
         fun init(context: Context) {
             if (INSTANCE == null) {

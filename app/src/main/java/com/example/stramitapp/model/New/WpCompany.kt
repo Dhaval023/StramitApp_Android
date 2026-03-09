@@ -20,7 +20,7 @@ class WpCompany : BaseDataObject() {
     var companyDescription: Int = 0
 
     @ColumnInfo(name = "is_active")
-    var isActive: Int = 0
+    var active: Int = 0
 
     @ColumnInfo(name = "created_by")
     var createdBy: Int = 0

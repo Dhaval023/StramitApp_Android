@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 import com.example.stramitapp.model.DataObject.BaseDataObject
 
 @Entity(tableName = "tbl_asset_memo_type")
-class AssetMemoType(override val id: Int) : BaseDataObject() {
+class AssetMemoType(override var id: Int) : BaseDataObject() {
 
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")

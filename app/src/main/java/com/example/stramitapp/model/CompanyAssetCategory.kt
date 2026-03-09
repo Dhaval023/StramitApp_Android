@@ -10,7 +10,7 @@ data class CompanyAssetCategory(
 
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    override val id: Int = 0,
+    override var id: Int = 0,
 
     @ColumnInfo(name = "parent_category_id")
     val parentCatId: Int = 0,

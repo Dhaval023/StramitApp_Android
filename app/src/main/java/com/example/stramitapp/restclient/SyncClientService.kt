@@ -1,4 +1,4 @@
-package com.example.stramitapp.restclient//package com.example.stramitapp.restclient
+package com.example.stramitapp.restclient
 
 import android.util.Log
 import com.example.stramitapp.model.New.SimpleDeviceToServerRequest
@@ -13,6 +13,9 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.ExclusionStrategy
+import com.google.gson.FieldAttributes
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream
 import java.io.*
@@ -25,11 +28,40 @@ import com.example.stramitapp.services.App
 import com.example.stramitapp.services.APIHelper
 import com.example.stramitapp.services.API.request.FloorSweepRequest
 import com.example.stramitapp.services.API.response.FloorSweepResponse
+import com.example.stramitapp.model.DataObject.BaseDataObject
 
 class SyncClientService : ApiClient() {
 
-    private val gson = Gson()
-    private val httpClient = OkHttpClient()
+    // ── FIX: Custom Gson that skips BaseDataObject#id ─────────────────────────
+    // Gson crashes with "multiple JSON fields named 'id'" when a subclass
+    // (BillOfMaterial, Asset, etc.) overrides BaseDataObject#id with its own
+    // @ColumnInfo field. The exclusion strategy below tells Gson to skip any
+    // field named "id" declared directly on BaseDataObject, so only the
+    // subclass's own @ColumnInfo id is serialized.
+    // ─────────────────────────────────────────────────────────────────────────
+    private val gson: Gson = GsonBuilder()
+        .addSerializationExclusionStrategy(object : ExclusionStrategy {
+            override fun shouldSkipField(f: FieldAttributes): Boolean {
+                // Skip the 'id' field ONLY when it is declared on BaseDataObject itself.
+                // Subclass overrides of 'id' (e.g. BillOfMaterial#id) are kept.
+                return f.name == "id" &&
+                        f.declaringClass == BaseDataObject::class.java
+            }
+            override fun shouldSkipClass(clazz: Class<*>): Boolean = false
+        })
+        .addDeserializationExclusionStrategy(object : ExclusionStrategy {
+            override fun shouldSkipField(f: FieldAttributes): Boolean {
+                return f.name == "id" &&
+                        f.declaringClass == BaseDataObject::class.java
+            }
+            override fun shouldSkipClass(clazz: Class<*>): Boolean = false
+        })
+        .create()
+
+//    private val httpClient = OkHttpClient()
+
+    private val httpClient = RestClientService.getUnsafeClient()
+
 
     // ─────────────────────────────────────────────────────────────────────────
     // Upload Image
@@ -43,40 +75,29 @@ class SyncClientService : ApiClient() {
         controller = "uploadAssetImage.do"
 
         try {
-            val resource = "$baseUrl/${request.userId}/${request.currentDeviceUdid}/$controller"
+            val resource = "${baseUrl.trimEnd('/')}/${request.userId}/${request.currentDeviceUdid}/$controller"
             val file = File("${AppSettings.pathAssetNewImages}${item.barcode}.jpg")
 
             val requestBody = MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart(
-                    "fileData",
-                    file.name,
-                    file.asRequestBody("image/jpeg".toMediaType())
-                )
+                .addFormDataPart("fileData", file.name, file.asRequestBody("image/jpeg".toMediaType()))
                 .addFormDataPart("assetId", item.assetId.toString())
                 .addFormDataPart("deviceId", item.deviceId.toString())
                 .addFormDataPart("barcode", item.barcode.toString())
                 .addFormDataPart("companyId", item.companyId.toString())
                 .build()
 
-            val httpRequest = Request.Builder()
-                .url(resource)
-                .post(requestBody)
-                .build()
-
+            val httpRequest = Request.Builder().url(resource).post(requestBody).build()
             val response = httpClient.newCall(httpRequest).execute()
             val body = response.body?.string()
-            if (body != null) {
-                gson.fromJson(body, DeviceToServerResponse::class.java)
-            } else {
+            return@withContext if (body != null) {gson.fromJson(body, DeviceToServerResponse::class.java)
+            } else
+             {
                 result
-            }
+             }
         } catch (ex: Exception) {
             Log.e("SyncClientService", "uploadImage Exception: ${ex.message}", ex)
-            result.apply {
-                statusCode = 0
-                error = ex.message
-            }
+            result.apply { statusCode = 0; error = ex.message }
         }
     }
 
@@ -91,7 +112,7 @@ class SyncClientService : ApiClient() {
         controller = "deviceToServer.do"
 
         try {
-            val resource = "$baseUrl/${request.userId}/${request.currentDeviceUdid}/$controller" +
+            val resource = "${baseUrl.trimEnd('/')}/${request.userId}/${request.currentDeviceUdid}/$controller" +
                     "?syncVersion=${request.syncVersion}"
 
             val parameters = gson.toJson(request.parameters)
@@ -99,17 +120,12 @@ class SyncClientService : ApiClient() {
                 .takeIf { it.isNotEmpty() } ?: parameters
 
             val response = RestClientService.executePostRequestAsync(resource, paramSerialize)
-            if (response != null) {
-                gson.fromJson(response, DeviceToServerResponse::class.java)
-            } else {
-                result
-            }
+            if (response != null) gson.fromJson(response, DeviceToServerResponse::class.java)
+            else result
+
         } catch (ex: Exception) {
             Log.e("SyncClientService", "deviceToServer Exception: ${ex.message}", ex)
-            result.apply {
-                statusCode = 0
-                error = ex.message
-            }
+            result.apply { statusCode = 0; error = ex.message }
         }
     }
 
@@ -124,25 +140,18 @@ class SyncClientService : ApiClient() {
         controller = "deviceToServer.do"
 
         try {
-            val resource = "$baseUrl/${request.userId}/${request.currentDeviceUdid}/$controller"
-
+            val resource = "${baseUrl.trimEnd('/')}/${request.userId}/${request.currentDeviceUdid}/$controller"
             val parameters = gson.toJson(request.parameters)
-            // NOTE: args intentionally reversed vs overload above, matching original C#
             val paramSerialize = APIHelper.regexReplace(parameters, "JsonDateTime", "T", " ")
                 .takeIf { it.isNotEmpty() } ?: parameters
 
             val response = RestClientService.executePostRequestAsync(resource, paramSerialize)
-            if (response != null) {
-                gson.fromJson(response, DeviceToServerResponse::class.java)
-            } else {
-                result
-            }
+            if (response != null) gson.fromJson(response, DeviceToServerResponse::class.java)
+            else result
+
         } catch (ex: Exception) {
             Log.e("SyncClientService", "deviceToServer (simple) Exception: ${ex.message}", ex)
-            result.apply {
-                statusCode = 0
-                error = ex.message
-            }
+            result.apply { statusCode = 0; error = ex.message }
         }
     }
 
@@ -163,13 +172,11 @@ class SyncClientService : ApiClient() {
         val finalDbPath = File(dbPath, AppSettings.databaseName)
 
         try {
-            // Ensure directory exists
             File(dbPath).mkdirs()
 
-            // Build request URL
             val assetCount = App.repository.assetDataStore.assetCount()
             val resource = buildString {
-                append("$baseUrl/${request.userId}/${request.currentDeviceUdid}/$controller?syncVersion=1.3.0")
+                append("${baseUrl.trimEnd('/')}/${request.userId}/${request.currentDeviceUdid}/$controller?syncVersion=1.3.0")
                 append("&currentDeviceType=${request.currentDeviceType}")
                 append("&companyId=${request.companyId}")
                 append("&userLastUpdateTimeStamp=${if (assetCount == 0) "0" else request.userLastUpdateTimeStamp}")
@@ -177,36 +184,52 @@ class SyncClientService : ApiClient() {
                 append("&currentDeviceUdid=${request.currentDeviceUdid}")
             }
 
-            // Delete old temp zip if exists
             if (pathTempDBZip.exists()) pathTempDBZip.delete()
 
-            // Download the zip file
             val emptyBody = "".toRequestBody("application/json".toMediaType())
             val httpRequest = Request.Builder().url(resource).post(emptyBody).build()
 
             httpClient.newCall(httpRequest).execute().use { response ->
                 response.body?.byteStream()?.use { input ->
-                    FileOutputStream(pathTempDBZip).use { output ->
-                        input.copyTo(output)
-                    }
+                    FileOutputStream(pathTempDBZip).use { output -> input.copyTo(output) }
                 }
             }
 
+            // FIX: Added debug log to check file size after download
+            Log.d("SyncClientService", "Downloaded file size: ${pathTempDBZip.length()}")
+
             if (pathTempDBZip.length() <= 0L) throw Exception("Downloaded file is empty")
 
-            // Delete old extracted file if exists
             if (tempDbExtracted.exists()) tempDbExtracted.delete()
 
-            // Extract — Android = GZip, iOS = ZIP
-            if (isAndroid()) {
-                FileInputStream(pathTempDBZip).use { fis ->
-                    GzipCompressorInputStream(BufferedInputStream(fis)).use { gzip ->
+            // --------------------------------------------------------------------
+            // FIX: Detect whether the downloaded file is GZIP or ZIP
+            // --------------------------------------------------------------------
+
+            val fis = FileInputStream(pathTempDBZip)
+            val header = ByteArray(2)
+            fis.read(header)
+            fis.close()
+
+            // GZIP magic number = 1F 8B
+            val isGzip = header[0] == 0x1f.toByte() && header[1] == 0x8b.toByte()
+
+            if (isGzip) {
+
+                Log.d("SyncClientService", "Detected GZIP file")
+
+                FileInputStream(pathTempDBZip).use { fis2 ->
+                    GzipCompressorInputStream(BufferedInputStream(fis2)).use { gzip ->
                         FileOutputStream(tempDbExtracted).use { out ->
                             gzip.copyTo(out)
                         }
                     }
                 }
+
             } else {
+
+                Log.d("SyncClientService", "Detected ZIP file")
+
                 ZipArchiveInputStream(BufferedInputStream(FileInputStream(pathTempDBZip))).use { zis ->
                     var entry = zis.nextZipEntry
                     while (entry != null) {
@@ -214,14 +237,15 @@ class SyncClientService : ApiClient() {
                             FileOutputStream(tempDbExtracted).use { out ->
                                 zis.copyTo(out)
                             }
-                            break // only first file
+                            break
                         }
                         entry = zis.nextZipEntry
                     }
                 }
             }
 
-            // Replace main DB if fresh install or no existing assets
+            // --------------------------------------------------------------------
+
             if (assetCount == 0 || AppSettings.isFreshInstall.equals("Yes", ignoreCase = true)) {
                 if (finalDbPath.exists()) finalDbPath.delete()
                 tempDbExtracted.copyTo(finalDbPath, overwrite = true)
@@ -232,19 +256,136 @@ class SyncClientService : ApiClient() {
             result.statusCode = 1
 
         } catch (ex: Exception) {
+
             result.statusCode = 0
             result.error = ex.message
-            Log.e("SyncClientService", "downloadCompanyAssignToUserWithDBGzip error: ${ex.message}", ex)
+
+            Log.e(
+                "SyncClientService",
+                "downloadCompanyAssignToUserWithDBGzip error: ${ex.message}",
+                ex
+            )
+
         } finally {
+
             try {
                 if (pathTempDBZip.exists()) pathTempDBZip.delete()
             } catch (e: Exception) {
                 Log.w("SyncClientService", "Cleanup failed: ${e.message}")
             }
+
         }
 
         result
     }
+
+//    suspend fun downloadCompanyAssignToUserWithDBGzip(
+//        request: DownloadCompanyAssignToUserWithDBGzipRequest
+//    ): DownloadCompanyAssignToUserWithDBGzipResponse = withContext(Dispatchers.IO) {
+//
+//        val result = DownloadCompanyAssignToUserWithDBGzipResponse()
+//        controller = "downloadCompanyAssignToUserWithDBGzip.do"
+//
+//        val dbPath = AppSettings.pathDatabase
+//        val pathTempDBZip = File(dbPath, "TempDB.zip")
+//        val tempDbExtracted = File(dbPath, "Temp_${AppSettings.databaseName}")
+//        val finalDbPath = File(dbPath, AppSettings.databaseName)
+//
+//        try {
+//            File(dbPath).mkdirs()
+//
+//            val assetCount = App.repository.assetDataStore.assetCount()
+//            val resource = buildString {
+//                append("${baseUrl.trimEnd('/')}/${request.userId}/${request.currentDeviceUdid}/$controller?syncVersion=1.3.0")
+//                append("&currentDeviceType=${request.currentDeviceType}")
+//                append("&companyId=${request.companyId}")
+//                append("&userLastUpdateTimeStamp=${if (assetCount == 0) "0" else request.userLastUpdateTimeStamp}")
+//                append("&userId=${request.userId}")
+//                append("&currentDeviceUdid=${request.currentDeviceUdid}")
+//            }
+//
+//            if (pathTempDBZip.exists()) pathTempDBZip.delete()
+//
+//            val emptyBody = "".toRequestBody("application/json".toMediaType())
+//            val httpRequest = Request.Builder().url(resource).post(emptyBody).build()
+//
+//            httpClient.newCall(httpRequest).execute().use { response ->
+//                response.body?.byteStream()?.use { input ->
+//                    FileOutputStream(pathTempDBZip).use { output -> input.copyTo(output) }
+//                }
+//            }
+//
+//            if (pathTempDBZip.length() <= 0L) throw Exception("Downloaded file is empty")
+//            if (tempDbExtracted.exists()) tempDbExtracted.delete()
+//
+////            if (isAndroid()) {
+////                FileInputStream(pathTempDBZip).use { fis ->
+////                    GzipCompressorInputStream(BufferedInputStream(fis)).use { gzip ->
+////                        FileOutputStream(tempDbExtracted).use { out -> gzip.copyTo(out) }
+////                    }
+////                }
+////            } else {
+////                ZipArchiveInputStream(BufferedInputStream(FileInputStream(pathTempDBZip))).use { zis ->
+////                    var entry = zis.nextZipEntry
+////                    while (entry != null) {
+////                        if (!entry.isDirectory) {
+////                            FileOutputStream(tempDbExtracted).use { out -> zis.copyTo(out) }
+////                            break
+////                        }
+////                        entry = zis.nextZipEntry
+////                    }
+////                }
+//            val fis = FileInputStream(pathTempDBZip)
+//            val header = ByteArray(2)
+//            fis.read(header)
+//            fis.close()
+//
+//            val isGzip = header[0] == 0x1f.toByte() && header[1] == 0x8b.toByte()
+//
+//            if (isGzip) {
+//                Log.d("SyncClientService", "Detected GZIP file")
+//
+//                FileInputStream(pathTempDBZip).use { fis2 ->
+//                    GzipCompressorInputStream(BufferedInputStream(fis2)).use { gzip ->
+//                        FileOutputStream(tempDbExtracted).use { out -> gzip.copyTo(out) }
+//                    }
+//                }
+//
+//            } else {
+//                Log.d("SyncClientService", "Detected ZIP file")
+//
+//                ZipArchiveInputStream(BufferedInputStream(FileInputStream(pathTempDBZip))).use { zis ->
+//                    var entry = zis.nextZipEntry
+//                    while (entry != null) {
+//                        if (!entry.isDirectory) {
+//                            FileOutputStream(tempDbExtracted).use { out -> zis.copyTo(out) }
+//                            break
+//                        }
+//                        entry = zis.nextZipEntry
+//                    }
+//                }
+//            }
+//
+//            if (assetCount == 0 || AppSettings.isFreshInstall.equals("Yes", ignoreCase = true)) {
+//                if (finalDbPath.exists()) finalDbPath.delete()
+//                tempDbExtracted.copyTo(finalDbPath, overwrite = true)
+//            }
+//
+//            if (pathTempDBZip.exists()) pathTempDBZip.delete()
+//            result.statusCode = 1
+//
+//        } catch (ex: Exception) {
+//            result.statusCode = 0
+//            result.error = ex.message
+//            Log.e("SyncClientService", "downloadCompanyAssignToUserWithDBGzip error: ${ex.message}", ex)
+//        } finally {
+//            try { if (pathTempDBZip.exists()) pathTempDBZip.delete() } catch (e: Exception) {
+//                Log.w("SyncClientService", "Cleanup failed: ${e.message}")
+//            }
+//        }
+//
+//        result
+//    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // Get Assign Company List To User
@@ -258,23 +399,18 @@ class SyncClientService : ApiClient() {
         controller = "getAssignCompanyListToUser.do"
 
         try {
-            val resource = "$baseUrl/${request.userId}/${request.currentDeviceUdid}/$controller" +
+            val resource = "${baseUrl.trimEnd('/')}/${request.userId}/${request.currentDeviceUdid}/$controller" +
                     "?userId=${request.userId}" +
                     "&currentDeviceType=${request.currentDeviceType}" +
                     "&currentDeviceUdid=${request.currentDeviceUdid}"
 
             val response = RestClientService.executeSimpleGetRequestAsync(resource)
-            if (response != null) {
-                gson.fromJson(response, GetAssignCompanyListToUserResponse::class.java)
-            } else {
-                result
-            }
+            if (response != null) gson.fromJson(response, GetAssignCompanyListToUserResponse::class.java)
+            else result
+
         } catch (ex: Exception) {
             Log.e("SyncClientService", "getAssignCompanyListToUser Exception: ${ex.message}", ex)
-            result.apply {
-                statusCode = 0
-                error = ex.message
-            }
+            result.apply { statusCode = 0; error = ex.message }
         }
     }
 
@@ -298,20 +434,12 @@ class SyncClientService : ApiClient() {
                 .takeIf { it.isNotEmpty() } ?: parameters
 
             val response = RestClientService.executePostRequestAsync(resource, paramSerialize)
-            if (response != null) {
-                gson.fromJson(response, FloorSweepResponse::class.java)
-            } else {
-                result.apply {
-                    statusCode = 0
-                    error = "No response received from server"
-                }
-            }
+            if (response != null) gson.fromJson(response, FloorSweepResponse::class.java)
+            else result.apply { statusCode = 0; error = "No response received from server" }
+
         } catch (ex: Exception) {
             Log.e("SyncClientService", "floorSweepDataTransfer Exception: ${ex.message}", ex)
-            result.apply {
-                statusCode = 0
-                error = ex.message
-            }
+            result.apply { statusCode = 0; error = ex.message }
         }
     }
 

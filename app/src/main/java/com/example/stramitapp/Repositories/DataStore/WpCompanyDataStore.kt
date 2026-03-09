@@ -1,80 +1,67 @@
 package com.example.stramitapp.Repositories.DataStore
 
-import com.example.stramitapp.models.WpCompany
 import com.example.stramitapp.Repositories.Base.BaseRepository
 import com.example.stramitapp.Repositories.Base.IDataStore
+import com.example.stramitapp.models.WpCompany
+import com.example.stramitapp.utilities.AppSettings.database
 
-abstract class WpCompanyDataStore : BaseRepository<WpCompany>(), IDataStore<WpCompany> {
-    abstract fun getItem(it: Int): com.example.stramitapp.models.WpCompany?
+class WpCompanyDataStore : BaseRepository<WpCompany>(), IDataStore<WpCompany> {
 
-    /*
-    suspend fun getItemAsync(id: Int): WpCompany? {
-    return try {
-    val conn = getConnection()
-    conn.use { it.queryAll<WpCompany>().firstOrNull { item -> item.companyWpId == id } }
-    } catch (ex: Exception) {
-    val d = ex.message
-    throw ex
-    }
+    private val dao = database.wpCompanyDao()
+
+    override suspend fun getItemAsync(id: Int): WpCompany? {
+        return dao.getItem(id)
     }
 
-    suspend fun getItemsAsync(forceRefresh: Boolean = false): List<WpCompany> {
-    return try {
-    val conn = getConnection()
-    conn.use { it.queryAll<WpCompany>() }
-    } catch (ex: Exception) {
-    val d = ex.message
-    throw ex
-    }
+    override suspend fun getItemsAsync(forceRefresh: Boolean): List<WpCompany> {
+        return dao.getAll()
     }
 
-    suspend fun addItemAsync(item: WpCompany): Boolean {
-    return try {
-    val conn = getConnection()
-    conn.use { it.insert(item) }
-    true
-    } catch (ex: Exception) {
-    val d = ex.message
-    false
-    }
+    override suspend fun addItemAsync(item: WpCompany): Boolean {
+        return try {
+            dao.insert(item)
+            true
+        } catch (ex: Exception) {
+            false
+        }
     }
 
-    suspend fun updateItemAsync(item: WpCompany): Boolean {
-    return try {
-    val conn = getConnection()
-    conn.use { it.update(item) }
-    true
-    } catch (ex: Exception) {
-    val d = ex.message
-    false
-    }
+    override suspend fun updateItemAsync(item: WpCompany): Boolean {
+        return try {
+            dao.update(item)
+            true
+        } catch (ex: Exception) {
+            false
+        }
     }
 
-    suspend fun deleteItemAsync(item: WpCompany): Boolean {
-    return try {
-    val conn = getConnection()
-    conn.use { it.delete(item) }
-    true
-    } catch (ex: Exception) {
-    val d = ex.message
-    false
-    }
+    override suspend fun deleteItemAsync(item: WpCompany): Boolean {
+        return try {
+            dao.delete(item)
+            true
+        } catch (ex: Exception) {
+            false
+        }
     }
 
-    suspend fun clearAsync(): Boolean {
-    throw NotImplementedError("clearAsync is not implemented")
+    override suspend fun clearAsync(): Boolean {
+        return try {
+            dao.clear()
+            true
+        } catch (ex: Exception) {
+            false
+        }
     }
 
-    suspend fun initializeAsync() {
-    throw NotImplementedError("initializeAsync is not implemented")
+    override suspend fun initializeAsync() {
+        throw NotImplementedError()
     }
 
-    suspend fun pullLatestAsync(): Boolean {
-    throw NotImplementedError("pullLatestAsync is not implemented")
+    override suspend fun pullLatestAsync(): Boolean {
+        throw NotImplementedError()
     }
 
-    suspend fun syncAsync(): Boolean {
-    throw NotImplementedError("syncAsync is not implemented")
+    override suspend fun syncAsync(): Boolean {
+        throw NotImplementedError()
     }
-    */
 }

@@ -11,12 +11,18 @@ abstract class BaseRepository<T : IBaseLocalModel> {
         AppDatabase.getInstance()
     }
 
-    protected val localDatabase: String
-        get() = "${AppSettings.pathDatabase}/${AppSettings.databaseName}"
+    open class BaseRepository<T> {
 
-    companion object {
-        fun init(context: Context) {
-            AppDatabase.init(context)
+        protected val db: AppDatabase
+            get() = AppDatabase.getInstance()
+
+        protected val localDatabase: String
+            get() = "${AppSettings.pathDatabase}/${AppSettings.databaseName}"
+
+        companion object {
+            fun init(context: Context) {
+                AppDatabase.init(context)
+            }
         }
     }
 }

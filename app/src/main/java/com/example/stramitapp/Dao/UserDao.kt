@@ -32,4 +32,7 @@ interface UserDao {
 
     @Query("SELECT COUNT(*) FROM tbl_user WHERE user_id = :userId")
     suspend fun countByUserId(userId: Int): Int
+
+    @Query("SELECT * FROM tbl_user LIMIT 1")
+    suspend fun getFirstUser(): User?
 }

@@ -1,57 +1,65 @@
 package com.example.stramitapp.Repositories
 
+import android.util.Log
+import com.example.stramitapp.Repositories.Base.BaseRepository
+import com.example.stramitapp.Repositories.Base.IDataStore
 import com.example.stramitapp.model.User
-import com.example.stramitapp.models.Database.AppDatabase
 
-class UserDataStore {
+class UserDataStore :
+    BaseRepository<User>(),
+    IDataStore<User> {
 
-    private val dao = AppDatabase.getInstance().userDao()
+    private val dao by lazy { db.userDao() }
 
-    suspend fun getItemAsync(id: Int): User? {
+    override suspend fun getItemAsync(id: Int): User? {
         return dao.getItem(id)
     }
 
-    suspend fun addItemAsync(item: User): Boolean {
+    override suspend fun addItemAsync(item: User): Boolean {
         return try {
             dao.insert(item)
             true
-        } catch (ex: Exception) {
+        } catch (e: Exception) {
+            Log.e("UserDataStore", "Insert failed", e)
             false
         }
     }
 
-    suspend fun updateItemAsync(item: User): Boolean {
+    override suspend fun updateItemAsync(item: User): Boolean {
         return try {
             dao.update(item)
             true
-        } catch (ex: Exception) {
+        } catch (e: Exception) {
+            Log.e("UserDataStore", "Update failed", e)
             false
         }
     }
 
-    suspend fun deleteItemAsync(item: User): Boolean {
+    override suspend fun deleteItemAsync(item: User): Boolean {
         return try {
             dao.delete(item)
             true
-        } catch (ex: Exception) {
+        } catch (e: Exception) {
+            Log.e("UserDataStore", "Delete failed", e)
             false
         }
     }
 
-    suspend fun clearAsync(): Boolean {
+    override suspend fun clearAsync(): Boolean {
         return try {
             dao.clear()
             true
-        } catch (ex: Exception) {
+        } catch (e: Exception) {
+            Log.e("UserDataStore", "Clear failed", e)
             false
         }
     }
 
-    suspend fun getItemsAsync(): List<User> {
+    override suspend fun getItemsAsync(forceRefresh: Boolean): List<User> {
         return dao.getAll()
     }
 
-    suspend fun getItemsAsync(licenseeId: Int): List<User> {
+    suspend fun getUsersByLicensee(licenseeId: Int): List<User> {
         return dao.getByLicenseeId(licenseeId)
     }
 
@@ -62,4 +70,10 @@ class UserDataStore {
     suspend fun hasItem(user: User): Boolean {
         return dao.countByUserId(user.userId) > 0
     }
+
+    override suspend fun initializeAsync() {}
+
+    override suspend fun pullLatestAsync(): Boolean = false
+
+    override suspend fun syncAsync(): Boolean = false
 }

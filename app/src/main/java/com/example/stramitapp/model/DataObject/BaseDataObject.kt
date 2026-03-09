@@ -2,13 +2,15 @@ package com.example.stramitapp.model.DataObject
 
 import androidx.room.Ignore
 import com.example.stramitapp.models.Interfaces.Base.IBaseLocalModel
+import com.google.gson.annotations.Expose
 import java.time.OffsetDateTime
 import java.util.UUID
 
 open class BaseDataObject : ObservableObject(), IBaseLocalModel {
 
     @Ignore
-    override open val id: Int = 0
+    @Expose(serialize = false, deserialize = false)
+    override open var id: Int = 0
 
     @Ignore
     var localId: String = UUID.randomUUID().toString()

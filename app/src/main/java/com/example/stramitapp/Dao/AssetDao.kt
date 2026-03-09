@@ -61,13 +61,18 @@ interface AssetDao {
     """)
     suspend fun getByTagOrBarcode(companyId: Int, barcodeTag: String): Asset?
 
-    // ---------------- SHIPMENT ----------------
+    // ---------------- BULK FETCH ----------------
+
+    @Query("SELECT * FROM tbl_asset")
+    suspend fun getAll(): List<Asset>
 
     @Query("""
         SELECT * FROM tbl_asset 
         WHERE update_flag != 'D'
     """)
     suspend fun getActiveAssets(): List<Asset>
+
+    // ---------------- SHIPMENT ----------------
 
     @Query("""
         SELECT * FROM tbl_asset 
@@ -76,8 +81,6 @@ interface AssetDao {
     """)
     suspend fun getShipmentAssets(shipmentNumber: String): List<Asset>
 
-    @Query("SELECT * FROM tbl_asset")
-    fun getAll(): List<Asset>
     @Query("""
         DELETE FROM tbl_asset 
         WHERE custom_18 IN 
@@ -101,24 +104,42 @@ interface AssetDao {
     """)
     suspend fun getRecentAssets(): List<Asset>
 
+    // ---------------- SYNC ----------------
+
+    /**
+     * Returns assets changed since the last sync upload.
+     * Mirrors Xamarin: AssetDataStore.GetItemsToExportAsync(lastSyncUpData)
+     *
+     * Checks BOTH create_date and last_update_date so newly created
+     * AND recently updated assets are included.
+     */
     @Query("""
         SELECT * FROM tbl_asset
-        WHERE last_update_date > :lastSync
+        WHERE create_date > :lastSync
+           OR last_update_date > :lastSync
     """)
     suspend fun getItemsToExport(lastSync: String): List<Asset>
 
+    /**
+     * Returns assets with update_flag = 'I' (Insert — not yet confirmed by server).
+     * Called with NO parameters — mirrors Xamarin: GetItemsFlagI() with no date filter.
+     *
+     * Fixed: removed the wrong :lastSync parameter that was previously here.
+     */
     @Query("""
         SELECT * FROM tbl_asset
         WHERE update_flag = 'I'
-        AND create_date <= :lastSync
     """)
-    suspend fun getItemsFlagI(lastSync: String): List<Asset>
+    suspend fun getItemsFlagI(): List<Asset>
 
     @Query("""
         SELECT * FROM tbl_asset
         WHERE image_sync = 1
     """)
     suspend fun getAssetsForImageSync(): List<Asset>
+
+    @Query("SELECT * FROM tbl_asset WHERE update_flag = :assetUpdateFlag")
+    suspend fun getByUpdateFlag(assetUpdateFlag: String): List<Asset>
 
     // ---------------- SHIPMENT TABLE ----------------
 
@@ -131,7 +152,4 @@ interface AssetDao {
         LIMIT 1
     """)
     suspend fun getShipment(shipmentNumber: String): Shipment?
-
-    @Query("SELECT * FROM tbl_asset WHERE update_flag = :assetUpdateFlag")
-    suspend fun getByUpdateFlag(assetUpdateFlag: String): List<Asset>
 }

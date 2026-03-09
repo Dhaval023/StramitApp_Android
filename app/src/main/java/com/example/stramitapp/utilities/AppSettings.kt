@@ -173,14 +173,14 @@ object AppSettings {
         val companyId  = SecurePrefs.get(StorageKeys.KEY_COMPANY)
         val locationId = SecurePrefs.get(StorageKeys.KEY_LOCATION)
 
-        selectedSystem   = systemId?.toIntOrNull()
-            ?.let { repository.companyDataStore.getItem(it) }
-
-        selectedCompany  = companyId?.toIntOrNull()
-            ?.let { repository.wpCompanyDataStore.getItem(it) }
-
-        selectedLocation = locationId?.toIntOrNull()
-            ?.let { repository.companyLocationDataStore.getItem(it) }
+//        selectedSystem   = systemId?.toIntOrNull()
+//            ?.let { repository.companyDataStore.getItem(it) }
+//
+//        selectedCompany  = companyId?.toIntOrNull()
+//            ?.let { repository.wpCompanyDataStore.getItem(it) }
+//
+//        selectedLocation = locationId?.toIntOrNull()
+//            ?.let { repository.companyLocationDataStore.getItem(it) }
 
         syncVersion = "1.3.0"
     }

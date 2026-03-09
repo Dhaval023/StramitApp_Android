@@ -6,85 +6,58 @@ import kotlinx.coroutines.Dispatchers
 import com.example.stramitapp.Repositories.Base.BaseRepository
 import kotlinx.coroutines.withContext
 
-abstract class CompanyDataStore : BaseRepository<Company>(), IDataStore<Company> {
+class CompanyDataStore : BaseRepository<Company>(), IDataStore<Company> {  // ← removed "abstract"
 
-    // ── Read ──────────────────────────────────────────────────────────────────
+    // ── IDataStore overrides ──────────────────────────────────────────────────
 
-    suspend fun getItem(id: Int): Company? = withContext(Dispatchers.IO) {
-        runCatching {
-            db.companyDao().getById(id)
-        }.getOrElse { e ->
-            throw e
-        }
+    override suspend fun getItemAsync(id: Int): Company? = withContext(Dispatchers.IO) {
+        runCatching { db.companyDao().getById(id) }.getOrElse { throw it }
     }
+
+    override suspend fun getItemsAsync(forceRefresh: Boolean): List<Company> = withContext(Dispatchers.IO) {
+        runCatching { db.companyDao().getAll() }.getOrElse { throw it }
+    }
+
+    override suspend fun addItemAsync(item: Company): Boolean = withContext(Dispatchers.IO) {
+        runCatching { db.companyDao().insert(item); true }.getOrElse { false }
+    }
+
+    override suspend fun updateItemAsync(item: Company): Boolean = withContext(Dispatchers.IO) {
+        runCatching { db.companyDao().update(item); true }.getOrElse { false }
+    }
+
+    override suspend fun deleteItemAsync(item: Company): Boolean = withContext(Dispatchers.IO) {
+        runCatching { db.companyDao().delete(item); true }.getOrElse { false }
+    }
+
+    override suspend fun clearAsync(): Boolean = withContext(Dispatchers.IO) {
+        runCatching { db.companyDao().deleteAll(); true }.getOrElse { false }
+    }
+
+    override suspend fun initializeAsync() {}
+
+    override suspend fun pullLatestAsync(): Boolean = false
+
+    override suspend fun syncAsync(): Boolean = false
+
+    // ── Extra methods ─────────────────────────────────────────────────────────
 
     suspend fun getFirstCompany(): Company? = withContext(Dispatchers.IO) {
-        runCatching {
-            db.companyDao().getFirst()
-        }.getOrElse { e ->
-            throw e
-        }
+        runCatching { db.companyDao().getFirst() }.getOrElse { throw it }
     }
 
-    suspend fun getItems(forceRefresh: Boolean): List<Company> = withContext(Dispatchers.IO) {
-        runCatching {
-            db.companyDao().getAll()
-        }.getOrElse { e ->
-            throw e
-        }
-    }
-
-    // ── Write ─────────────────────────────────────────────────────────────────
-
-     suspend fun addItem(item: Company): Boolean = withContext(Dispatchers.IO) {
-        runCatching {
-            db.companyDao().insert(item)
-            true
-        }.getOrElse { false }
-    }
-
-     suspend fun updateItem(item: Company): Boolean = withContext(Dispatchers.IO) {
-        runCatching {
-            db.companyDao().update(item)
-            true
-        }.getOrElse { false }
-    }
-
-     suspend fun deleteItem(item: Company): Boolean = withContext(Dispatchers.IO) {
-        runCatching {
-            db.companyDao().delete(item)
-            true
-        }.getOrElse { false }
-    }
-
-    // ── Bulk operations ───────────────────────────────────────────────────────
-
-    /**
-     * Deletes all companies whose companyId is NOT in [idCompanyKeep].
-     * Returns true on success, false on failure.
-     */
     suspend fun resetCompany(idCompanyKeep: List<Int>): Boolean = withContext(Dispatchers.IO) {
         runCatching {
-            val toDelete = db.companyDao().getAll()
+            db.companyDao().getAll()
                 .filter { it.companyId !in idCompanyKeep }
-
-            toDelete.forEach { company ->
-                db.companyDao().deleteById(company.companyId)
-            }
+                .forEach { db.companyDao().deleteById(it.companyId) }
             true
         }.getOrElse { false }
     }
 
-    /**
-     * Deletes every Company row.
-     * Returns the number of rows deleted, or -1 on error.
-     */
     suspend fun clearAll(): Int = withContext(Dispatchers.IO) {
-        runCatching {
-            db.companyDao().deleteAll()
-        }.getOrElse { -1 }
+        runCatching { db.companyDao().deleteAll() }.getOrElse { -1 }
     }
-
     // ── Not implemented (stubs kept for interface compliance) ─────────────────
 
      suspend fun clear(): Boolean =
