@@ -23,7 +23,7 @@ class Company : IBaseLocalModel {
     var licenseeId: Int = 0
 
     @ColumnInfo(name = "admin_id")
-    var adminId: Int? = null
+    var adminId: Int = 0
 
     @ColumnInfo(name = "update_flag")
     var updateFlag: String? = null

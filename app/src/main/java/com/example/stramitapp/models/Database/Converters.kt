@@ -2,16 +2,31 @@ package com.example.stramitapp.models.Database
 
 import androidx.room.TypeConverter
 import java.time.OffsetDateTime
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.Date
 import java.time.format.DateTimeFormatter
 
 class Converters {
     private val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
+    private val localFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    private val localFormatterWithMillis = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
 
     @TypeConverter
     fun toOffsetDateTime(value: String?): OffsetDateTime? {
-        return value?.let {
-            return formatter.parse(it, OffsetDateTime::from)
+        if (value == null) return null
+        return try {
+            OffsetDateTime.parse(value, formatter)
+        } catch (e: Exception) {
+            try {
+                LocalDateTime.parse(value, localFormatter).atOffset(ZoneOffset.UTC)
+            } catch (e2: Exception) {
+                try {
+                    LocalDateTime.parse(value, localFormatterWithMillis).atOffset(ZoneOffset.UTC)
+                } catch (e3: Exception) {
+                    null
+                }
+            }
         }
     }
 
