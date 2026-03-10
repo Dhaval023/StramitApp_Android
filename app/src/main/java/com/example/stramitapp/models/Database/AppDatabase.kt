@@ -24,12 +24,14 @@ import com.example.stramitapp.model.AssetIssueImages
 import com.example.stramitapp.model.AssetMovementInfo
 import com.example.stramitapp.Dao.AssetMemoInfoDao
 import com.example.stramitapp.Dao.AssetMaintenanceInfoDao
+import com.example.stramitapp.Dao.AssetStatusDao
 import com.example.stramitapp.Dao.CompanyLocationDao
 import com.example.stramitapp.Dao.UserDao
 import com.example.stramitapp.Dao.WpCompanyDao
 import com.example.stramitapp.model.AssetMaintenanceInfo
 import com.example.stramitapp.model.AssetMemoInfo
 import com.example.stramitapp.model.AssetLeaseInfo
+import com.example.stramitapp.model.AssetStatus
 import com.example.stramitapp.model.Company
 import com.example.stramitapp.models.WpCompany
 import com.example.stramitapp.model.CompanyLocation
@@ -52,6 +54,7 @@ import java.io.File
         AssetLeaseInfo::class,
         WpCompany::class,
         CompanyLocation::class,
+        AssetStatus::class,
         User::class,
         Shipment::class
     ],
@@ -75,6 +78,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun companyLocationDao(): CompanyLocationDao
     abstract fun userDao(): UserDao
     abstract fun wpCompanyDao(): WpCompanyDao
+    abstract fun assetStatusDao(): AssetStatusDao
 
     companion object {
         private const val DB_NAME = "astrack_ams.db"

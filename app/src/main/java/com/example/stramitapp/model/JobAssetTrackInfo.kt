@@ -3,6 +3,7 @@ package com.example.stramitapp.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
+import androidx.room.PrimaryKey
 import com.example.stramitapp.model.DataObject.BaseDataObject
 
 @Entity(
@@ -10,6 +11,10 @@ import com.example.stramitapp.model.DataObject.BaseDataObject
     indices = [Index(value = ["job_id", "asset_id"], unique = true)]
 )
 class JobAssetTrackInfo : BaseDataObject() {
+
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
+    override var id: Int = 0
 
     @ColumnInfo(name = "job_id")
     var jobId: Int = 0

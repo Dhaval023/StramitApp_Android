@@ -1,90 +1,70 @@
 package com.example.stramitapp.Repositories
 
+import com.example.stramitapp.Dao.BillOfMaterialDao
 import com.example.stramitapp.model.BillOfMaterial
 import com.example.stramitapp.Repositories.Base.BaseRepository
 import com.example.stramitapp.Repositories.Base.IDataStore
-//
-//class BillOfMaterialDataStore : BaseRepository<BillOfMaterial>(), IDataStore<BillOfMaterial> {
-//
-//    suspend fun getItemAsync(id: Int): BillOfMaterial? {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<BillOfMaterial>().firstOrNull { item -> item.id == id } }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    suspend fun addItemAsync(item: BillOfMaterial): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.insert(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun updateItemAsync(item: BillOfMaterial): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.update(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun deleteItemAsync(item: BillOfMaterial): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.delete(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun clearAsync(): Boolean {
-//        throw NotImplementedError("clearAsync is not implemented")
-//    }
-//
-//    suspend fun getItemsAsync(forceRefresh: Boolean = false): List<BillOfMaterial> {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<BillOfMaterial>() }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    // TODO: WHERE last_update_date > LastSyncUpData from config file
-//    suspend fun getItemsToExportAsync(lastSyncUpData: String): List<BillOfMaterial> {
-//        return try {
-//            val conn = getConnection()
-//            conn.use {
-//                it.rawQuery("SELECT * FROM tbl_bill_of_material WHERE last_update_date > '$lastSyncUpData'")
-//            }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    suspend fun initializeAsync() {
-//        throw NotImplementedError("initializeAsync is not implemented")
-//    }
-//
-//    suspend fun pullLatestAsync(): Boolean {
-//        throw NotImplementedError("pullLatestAsync is not implemented")
-//    }
-//
-//    suspend fun syncAsync(): Boolean {
-//        throw NotImplementedError("syncAsync is not implemented")
-//    }
-//}
+
+class BillOfMaterialDataStore(
+    private val dao: BillOfMaterialDao
+) : BaseRepository<BillOfMaterial>(), IDataStore<BillOfMaterial> {
+
+    override suspend fun getItemAsync(id: Int): BillOfMaterial? {
+        return try {
+            dao.getItem(id)
+        } catch (ex: Exception) {
+            throw ex
+        }
+    }
+
+    override suspend fun addItemAsync(item: BillOfMaterial): Boolean {
+        return try {
+            dao.insert(item)
+            true
+        } catch (ex: Exception) {
+            false
+        }
+    }
+
+    override suspend fun updateItemAsync(item: BillOfMaterial): Boolean {
+        return try {
+            val rows = dao.update(item)
+            rows == 1
+        } catch (ex: Exception) {
+            false
+        }
+    }
+
+    override suspend fun deleteItemAsync(item: BillOfMaterial): Boolean {
+        return try {
+            val rows = dao.delete(item)
+            rows == 1
+        } catch (ex: Exception) {
+            false
+        }
+    }
+
+    override suspend fun getItemsAsync(forceRefresh: Boolean): List<BillOfMaterial> {
+        return dao.getAll()
+    }
+
+    suspend fun getItemsToExportAsync(lastSyncUpData: String): List<BillOfMaterial> {
+        return dao.getItemsToExport(lastSyncUpData)
+    }
+
+    override suspend fun clearAsync(): Boolean {
+        throw NotImplementedError("clearAsync not implemented")
+    }
+
+    override suspend fun initializeAsync() {
+        throw NotImplementedError("initializeAsync not implemented")
+    }
+
+    override suspend fun pullLatestAsync(): Boolean {
+        throw NotImplementedError("pullLatestAsync not implemented")
+    }
+
+    override suspend fun syncAsync(): Boolean {
+        throw NotImplementedError("syncAsync not implemented")
+    }
+}

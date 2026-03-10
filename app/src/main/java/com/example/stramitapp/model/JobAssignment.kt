@@ -5,7 +5,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.stramitapp.model.DataObject.BaseDataObject
 
-@Entity(tableName = "tbl_job_assignment")
+@Entity(
+    tableName = "tbl_job_assignment",
+    primaryKeys = ["job_id", "assign_to"])
 class JobAssignment : BaseDataObject() {
 
     @PrimaryKey
