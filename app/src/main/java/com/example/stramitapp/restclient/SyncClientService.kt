@@ -3,6 +3,7 @@ package com.example.stramitapp.restclient
 import android.util.Log
 import com.example.stramitapp.model.New.SimpleDeviceToServerRequest
 import com.example.stramitapp.model.Asset
+import com.example.stramitapp.models.Database.AppDatabase
 import com.example.stramitapp.services.API.Sync.request.DeviceToServerRequest
 import com.example.stramitapp.services.API.Sync.response.DeviceToServerResponse
 import com.example.stramitapp.services.API.Sync.response.GetAssignCompanyListToUserResponse
@@ -24,26 +25,15 @@ import com.example.stramitapp.models.Constants.ApiClient
 import com.example.stramitapp.services.API.Sync.request.DownloadCompanyAssignToUserWithDBGzipRequest
 import com.example.stramitapp.services.API.Sync.request.GetAssignCompanyListToUserRequest
 import com.example.stramitapp.services.API.Sync.response.DownloadCompanyAssignToUserWithDBGzipResponse
-import com.example.stramitapp.services.App
 import com.example.stramitapp.services.APIHelper
 import com.example.stramitapp.services.API.request.FloorSweepRequest
 import com.example.stramitapp.services.API.response.FloorSweepResponse
 import com.example.stramitapp.model.DataObject.BaseDataObject
 
 class SyncClientService : ApiClient() {
-
-    // ── FIX: Custom Gson that skips BaseDataObject#id ─────────────────────────
-    // Gson crashes with "multiple JSON fields named 'id'" when a subclass
-    // (BillOfMaterial, Asset, etc.) overrides BaseDataObject#id with its own
-    // @ColumnInfo field. The exclusion strategy below tells Gson to skip any
-    // field named "id" declared directly on BaseDataObject, so only the
-    // subclass's own @ColumnInfo id is serialized.
-    // ─────────────────────────────────────────────────────────────────────────
     private val gson: Gson = GsonBuilder()
         .addSerializationExclusionStrategy(object : ExclusionStrategy {
             override fun shouldSkipField(f: FieldAttributes): Boolean {
-                // Skip the 'id' field ONLY when it is declared on BaseDataObject itself.
-                // Subclass overrides of 'id' (e.g. BillOfMaterial#id) are kept.
                 return f.name == "id" &&
                         f.declaringClass == BaseDataObject::class.java
             }
@@ -58,14 +48,7 @@ class SyncClientService : ApiClient() {
         })
         .create()
 
-//    private val httpClient = OkHttpClient()
-
     private val httpClient = RestClientService.getUnsafeClient()
-
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Upload Image
-    // ─────────────────────────────────────────────────────────────────────────
 
     suspend fun uploadImage(
         item: Asset,
@@ -90,20 +73,16 @@ class SyncClientService : ApiClient() {
             val httpRequest = Request.Builder().url(resource).post(requestBody).build()
             val response = httpClient.newCall(httpRequest).execute()
             val body = response.body?.string()
-            return@withContext if (body != null) {gson.fromJson(body, DeviceToServerResponse::class.java)
-            } else
-             {
+            return@withContext if (body != null) {
+                gson.fromJson(body, DeviceToServerResponse::class.java)
+            } else {
                 result
-             }
+            }
         } catch (ex: Exception) {
             Log.e("SyncClientService", "uploadImage Exception: ${ex.message}", ex)
             result.apply { statusCode = 0; error = ex.message }
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Device To Server (with syncVersion)
-    // ─────────────────────────────────────────────────────────────────────────
 
     suspend fun deviceToServer(
         request: DeviceToServerRequest
@@ -129,10 +108,6 @@ class SyncClientService : ApiClient() {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Device To Server (simple, no syncVersion)
-    // ─────────────────────────────────────────────────────────────────────────
-
     suspend fun deviceToServer(
         request: SimpleDeviceToServerRequest
     ): DeviceToServerResponse = withContext(Dispatchers.IO) {
@@ -155,10 +130,6 @@ class SyncClientService : ApiClient() {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Download Company DB (GZip / ZIP)
-    // ─────────────────────────────────────────────────────────────────────────
-
     suspend fun downloadCompanyAssignToUserWithDBGzip(
         request: DownloadCompanyAssignToUserWithDBGzipRequest
     ): DownloadCompanyAssignToUserWithDBGzipResponse = withContext(Dispatchers.IO) {
@@ -174,7 +145,13 @@ class SyncClientService : ApiClient() {
         try {
             File(dbPath).mkdirs()
 
-            val assetCount = App.repository.assetDataStore.assetCount()
+            val assetCount = try {
+                AppDatabase.getInstance().assetDao().count()
+            } catch (ex: Exception) {
+                Log.w("SyncClientService", "assetCount failed, defaulting to 0: ${ex.message}")
+                0
+            }
+
             val resource = buildString {
                 append("${baseUrl.trimEnd('/')}/${request.userId}/${request.currentDeviceUdid}/$controller?syncVersion=1.3.0")
                 append("&currentDeviceType=${request.currentDeviceType}")
@@ -195,29 +172,22 @@ class SyncClientService : ApiClient() {
                 }
             }
 
-            // FIX: Added debug log to check file size after download
             Log.d("SyncClientService", "Downloaded file size: ${pathTempDBZip.length()}")
 
             if (pathTempDBZip.length() <= 0L) throw Exception("Downloaded file is empty")
 
             if (tempDbExtracted.exists()) tempDbExtracted.delete()
 
-            // --------------------------------------------------------------------
-            // FIX: Detect whether the downloaded file is GZIP or ZIP
-            // --------------------------------------------------------------------
-
+            // Detect whether the downloaded file is GZIP or ZIP
             val fis = FileInputStream(pathTempDBZip)
             val header = ByteArray(2)
             fis.read(header)
             fis.close()
 
-            // GZIP magic number = 1F 8B
             val isGzip = header[0] == 0x1f.toByte() && header[1] == 0x8b.toByte()
 
             if (isGzip) {
-
                 Log.d("SyncClientService", "Detected GZIP file")
-
                 FileInputStream(pathTempDBZip).use { fis2 ->
                     GzipCompressorInputStream(BufferedInputStream(fis2)).use { gzip ->
                         FileOutputStream(tempDbExtracted).use { out ->
@@ -225,11 +195,8 @@ class SyncClientService : ApiClient() {
                         }
                     }
                 }
-
             } else {
-
                 Log.d("SyncClientService", "Detected ZIP file")
-
                 ZipArchiveInputStream(BufferedInputStream(FileInputStream(pathTempDBZip))).use { zis ->
                     var entry = zis.nextZipEntry
                     while (entry != null) {
@@ -244,8 +211,6 @@ class SyncClientService : ApiClient() {
                 }
             }
 
-            // --------------------------------------------------------------------
-
             if (assetCount == 0 || AppSettings.isFreshInstall.equals("Yes", ignoreCase = true)) {
                 if (finalDbPath.exists()) finalDbPath.delete()
                 tempDbExtracted.copyTo(finalDbPath, overwrite = true)
@@ -256,141 +221,19 @@ class SyncClientService : ApiClient() {
             result.statusCode = 1
 
         } catch (ex: Exception) {
-
             result.statusCode = 0
             result.error = ex.message
-
-            Log.e(
-                "SyncClientService",
-                "downloadCompanyAssignToUserWithDBGzip error: ${ex.message}",
-                ex
-            )
-
+            Log.e("SyncClientService", "downloadCompanyAssignToUserWithDBGzip error: ${ex.message}", ex)
         } finally {
-
             try {
                 if (pathTempDBZip.exists()) pathTempDBZip.delete()
             } catch (e: Exception) {
                 Log.w("SyncClientService", "Cleanup failed: ${e.message}")
             }
-
         }
 
         result
     }
-
-//    suspend fun downloadCompanyAssignToUserWithDBGzip(
-//        request: DownloadCompanyAssignToUserWithDBGzipRequest
-//    ): DownloadCompanyAssignToUserWithDBGzipResponse = withContext(Dispatchers.IO) {
-//
-//        val result = DownloadCompanyAssignToUserWithDBGzipResponse()
-//        controller = "downloadCompanyAssignToUserWithDBGzip.do"
-//
-//        val dbPath = AppSettings.pathDatabase
-//        val pathTempDBZip = File(dbPath, "TempDB.zip")
-//        val tempDbExtracted = File(dbPath, "Temp_${AppSettings.databaseName}")
-//        val finalDbPath = File(dbPath, AppSettings.databaseName)
-//
-//        try {
-//            File(dbPath).mkdirs()
-//
-//            val assetCount = App.repository.assetDataStore.assetCount()
-//            val resource = buildString {
-//                append("${baseUrl.trimEnd('/')}/${request.userId}/${request.currentDeviceUdid}/$controller?syncVersion=1.3.0")
-//                append("&currentDeviceType=${request.currentDeviceType}")
-//                append("&companyId=${request.companyId}")
-//                append("&userLastUpdateTimeStamp=${if (assetCount == 0) "0" else request.userLastUpdateTimeStamp}")
-//                append("&userId=${request.userId}")
-//                append("&currentDeviceUdid=${request.currentDeviceUdid}")
-//            }
-//
-//            if (pathTempDBZip.exists()) pathTempDBZip.delete()
-//
-//            val emptyBody = "".toRequestBody("application/json".toMediaType())
-//            val httpRequest = Request.Builder().url(resource).post(emptyBody).build()
-//
-//            httpClient.newCall(httpRequest).execute().use { response ->
-//                response.body?.byteStream()?.use { input ->
-//                    FileOutputStream(pathTempDBZip).use { output -> input.copyTo(output) }
-//                }
-//            }
-//
-//            if (pathTempDBZip.length() <= 0L) throw Exception("Downloaded file is empty")
-//            if (tempDbExtracted.exists()) tempDbExtracted.delete()
-//
-////            if (isAndroid()) {
-////                FileInputStream(pathTempDBZip).use { fis ->
-////                    GzipCompressorInputStream(BufferedInputStream(fis)).use { gzip ->
-////                        FileOutputStream(tempDbExtracted).use { out -> gzip.copyTo(out) }
-////                    }
-////                }
-////            } else {
-////                ZipArchiveInputStream(BufferedInputStream(FileInputStream(pathTempDBZip))).use { zis ->
-////                    var entry = zis.nextZipEntry
-////                    while (entry != null) {
-////                        if (!entry.isDirectory) {
-////                            FileOutputStream(tempDbExtracted).use { out -> zis.copyTo(out) }
-////                            break
-////                        }
-////                        entry = zis.nextZipEntry
-////                    }
-////                }
-//            val fis = FileInputStream(pathTempDBZip)
-//            val header = ByteArray(2)
-//            fis.read(header)
-//            fis.close()
-//
-//            val isGzip = header[0] == 0x1f.toByte() && header[1] == 0x8b.toByte()
-//
-//            if (isGzip) {
-//                Log.d("SyncClientService", "Detected GZIP file")
-//
-//                FileInputStream(pathTempDBZip).use { fis2 ->
-//                    GzipCompressorInputStream(BufferedInputStream(fis2)).use { gzip ->
-//                        FileOutputStream(tempDbExtracted).use { out -> gzip.copyTo(out) }
-//                    }
-//                }
-//
-//            } else {
-//                Log.d("SyncClientService", "Detected ZIP file")
-//
-//                ZipArchiveInputStream(BufferedInputStream(FileInputStream(pathTempDBZip))).use { zis ->
-//                    var entry = zis.nextZipEntry
-//                    while (entry != null) {
-//                        if (!entry.isDirectory) {
-//                            FileOutputStream(tempDbExtracted).use { out -> zis.copyTo(out) }
-//                            break
-//                        }
-//                        entry = zis.nextZipEntry
-//                    }
-//                }
-//            }
-//
-//            if (assetCount == 0 || AppSettings.isFreshInstall.equals("Yes", ignoreCase = true)) {
-//                if (finalDbPath.exists()) finalDbPath.delete()
-//                tempDbExtracted.copyTo(finalDbPath, overwrite = true)
-//            }
-//
-//            if (pathTempDBZip.exists()) pathTempDBZip.delete()
-//            result.statusCode = 1
-//
-//        } catch (ex: Exception) {
-//            result.statusCode = 0
-//            result.error = ex.message
-//            Log.e("SyncClientService", "downloadCompanyAssignToUserWithDBGzip error: ${ex.message}", ex)
-//        } finally {
-//            try { if (pathTempDBZip.exists()) pathTempDBZip.delete() } catch (e: Exception) {
-//                Log.w("SyncClientService", "Cleanup failed: ${e.message}")
-//            }
-//        }
-//
-//        result
-//    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Get Assign Company List To User
-    // ─────────────────────────────────────────────────────────────────────────
-
     suspend fun getAssignCompanyListToUser(
         request: GetAssignCompanyListToUserRequest
     ): GetAssignCompanyListToUserResponse = withContext(Dispatchers.IO) {
@@ -413,10 +256,6 @@ class SyncClientService : ApiClient() {
             result.apply { statusCode = 0; error = ex.message }
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Floor Sweep Data Transfer
-    // ─────────────────────────────────────────────────────────────────────────
 
     suspend fun floorSweepDataTransfer(
         request: FloorSweepRequest
@@ -442,10 +281,6 @@ class SyncClientService : ApiClient() {
             result.apply { statusCode = 0; error = ex.message }
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Helper
-    // ─────────────────────────────────────────────────────────────────────────
 
     private fun isAndroid(): Boolean =
         System.getProperty("java.vm.name") == "Dalvik"

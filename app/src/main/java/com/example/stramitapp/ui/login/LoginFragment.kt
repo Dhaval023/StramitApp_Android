@@ -51,20 +51,15 @@ class LoginFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.loginButton.setOnClickListener {
-
             val username = binding.usernameEditText.text.toString().trim()
             val password = binding.passwordEditText.text.toString().trim()
-
             viewModel.login(username, password)
         }
     }
 
     private fun observeViewModel() {
-
         viewLifecycleOwner.lifecycleScope.launch {
-
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-
                 viewModel.uiState.collect { state ->
                     handleState(state)
                 }
@@ -73,13 +68,9 @@ class LoginFragment : Fragment() {
     }
 
     private fun handleState(state: LoginUiState) {
-
         when (state) {
-
             is LoginUiState.Idle -> setLoading(false)
-
             is LoginUiState.Loading -> setLoading(true)
-
             is LoginUiState.Success -> {
                 setLoading(false)
                 viewModel.resetState()
@@ -88,13 +79,10 @@ class LoginFragment : Fragment() {
                 } else {
                     requestStoragePermission()
                 }
-//                findNavController().navigate(R.id.action_nav_login_to_nav_home)
             }
-
             is LoginUiState.NoLicenseKey -> {
                 setLoading(false)
                 viewModel.resetState()
-
                 showAlertDialog(
                     title = "ERROR!",
                     message = "Please configure your licensee settings in the Setting page."
@@ -102,29 +90,33 @@ class LoginFragment : Fragment() {
                     findNavController().navigate(R.id.nav_settings)
                 }
             }
-
             is LoginUiState.ForceLoginRequired -> {
                 setLoading(false)
                 viewModel.resetState()
                 showForceLoginDialog(state.message)
             }
-
             is LoginUiState.ShowDialog -> {
                 setLoading(false)
                 viewModel.resetState()
-
-                showAlertDialog(
-                    title = state.title,
-                    message = state.message
-                )
+                showAlertDialog(title = state.title, message = state.message)
             }
         }
     }
 
+    // ─── Init DB → Navigate with fromLogin flag ───────────────────────────────
+
+    private fun initializeDatabaseAndNavigate() {
+        val app = requireActivity().application as App
+        app.initializeDatabase()
+        val bundle = Bundle().apply { putBoolean("fromLogin", true) }
+        findNavController().navigate(R.id.action_nav_login_to_nav_home, bundle)
+    }
+
+    // ─── Storage Permission ────────────────────────────────────────────────────
+
     private val STORAGE_REQUEST_CODE = 101
 
     private fun hasStoragePermission(): Boolean {
-
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             android.os.Environment.isExternalStorageManager()
         } else {
@@ -136,9 +128,7 @@ class LoginFragment : Fragment() {
     }
 
     private fun requestStoragePermission() {
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-
             try {
                 startActivityForResult(
                     Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
@@ -147,15 +137,12 @@ class LoginFragment : Fragment() {
                     STORAGE_REQUEST_CODE
                 )
             } catch (e: Exception) {
-
                 startActivityForResult(
                     Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION),
                     STORAGE_REQUEST_CODE
                 )
             }
-
         } else {
-
             requestPermissions(
                 arrayOf(
                     Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -165,22 +152,9 @@ class LoginFragment : Fragment() {
             )
         }
     }
-    private fun showAlertDialog(title: String,message: String, onDismiss: (() -> Unit)? = null
-    ) {
-        AlertDialog.Builder(requireContext())
-            .setTitle(title)
-            .setMessage(message)
-            .setPositiveButton("OK") { dialog, _ ->
-                dialog.dismiss()
-                onDismiss?.invoke()
-            }
-            .setCancelable(false)
-            .show()
-    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
         if (requestCode == STORAGE_REQUEST_CODE) {
             if (hasStoragePermission()) {
                 initializeDatabaseAndNavigate()
@@ -195,11 +169,8 @@ class LoginFragment : Fragment() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
         if (requestCode == STORAGE_REQUEST_CODE) {
-
             if (grantResults.isNotEmpty() &&
                 grantResults[0] == PackageManager.PERMISSION_GRANTED
             ) {
@@ -210,32 +181,35 @@ class LoginFragment : Fragment() {
         }
     }
 
-    private fun initializeDatabaseAndNavigate() {
+    // ─── Dialogs ───────────────────────────────────────────────────────────────
 
-        val app = requireActivity().application as App
-        app.initializeDatabase()
-
-        findNavController().navigate(R.id.action_nav_login_to_nav_home)
-    }
-
-    private fun showPermissionDeniedDialog() {
-
+    private fun showAlertDialog(
+        title: String,
+        message: String,
+        onDismiss: (() -> Unit)? = null
+    ) {
         AlertDialog.Builder(requireContext())
-            .setTitle("Permission Required")
-            .setMessage(
-                "Storage permission is required to store database and images."
-            )
-            .setPositiveButton("Try Again") { _, _ ->
-                requestStoragePermission()
-            }
-            .setNegativeButton("Exit") { _, _ ->
-                requireActivity().finish()
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+                onDismiss?.invoke()
             }
             .setCancelable(false)
             .show()
     }
-    private fun showForceLoginDialog(message: String) {
 
+    private fun showPermissionDeniedDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Permission Required")
+            .setMessage("Storage permission is required to store database and images.")
+            .setPositiveButton("Try Again") { _, _ -> requestStoragePermission() }
+            .setNegativeButton("Exit") { _, _ -> requireActivity().finish() }
+            .setCancelable(false)
+            .show()
+    }
+
+    private fun showForceLoginDialog(message: String) {
         AlertDialog.Builder(requireContext())
             .setTitle("LOGIN")
             .setMessage(message)
@@ -247,11 +221,11 @@ class LoginFragment : Fragment() {
             .show()
     }
 
-    private fun setLoading(isLoading: Boolean) {
+    // ─── UI helpers ───────────────────────────────────────────────────────────
 
+    private fun setLoading(isLoading: Boolean) {
         binding.loginButton.isEnabled = !isLoading
-        binding.progressBar.visibility =
-            if (isLoading) View.VISIBLE else View.GONE
+        binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
     }
 
     override fun onDestroyView() {

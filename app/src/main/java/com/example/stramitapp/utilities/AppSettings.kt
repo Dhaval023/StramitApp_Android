@@ -13,9 +13,6 @@ import com.example.stramitapp.Repositories.Repository
 import com.example.stramitapp.models.Database.AppDatabase
 import com.example.stramitapp.models.Constants.StorageKeys
 
-// ─────────────────────────────────────────────
-//  Secure Prefs helper (replaces CrossSecureStorage)
-// ─────────────────────────────────────────────
 object SecurePrefs {
     private lateinit var prefs: SharedPreferences
 
@@ -38,21 +35,17 @@ object SecurePrefs {
     fun remove(key: String) = prefs.edit().remove(key).apply()
 }
 
-// ─────────────────────────────────────────────
-//  AppSettings  (singleton object — thread-safe)
-// ─────────────────────────────────────────────
 object AppSettings {
 
-    // ── Connectivity ──────────────────────────────────────────────────────────
+    lateinit var appContext: Context
+
     lateinit var database: AppDatabase
 
-
-    /** True when a network connection is available. Supply your own checker impl. */
     fun isOnline(context: Context): Boolean {
         return ConnectionChecker.isConnected(context)
-    }  // replace with your impl
+    }
 
-    fun isBluetoothEnabled(): Boolean = BluetoothChecker.isEnabled()  // replace with your impl
+    fun isBluetoothEnabled(): Boolean = BluetoothChecker.isEnabled()
     fun setBluetoothStatus(enable: Boolean) = BluetoothChecker.setStatus(enable)
 
     fun tryTurnOnBluetooth() {
@@ -100,7 +93,6 @@ object AppSettings {
     var isZebraReader: Boolean = false
     var isNoneReader: Boolean = false
 
-    /** Callback invoked whenever [currentReaderType] changes. */
     var onReaderTypeChanged: ((ReaderTypeModel) -> Unit)? = null
 
     private var _currentReaderType: ReaderTypeModel = ReaderTypeModel.RFID
@@ -113,7 +105,6 @@ object AppSettings {
             onReaderTypeChanged?.invoke(value)
         }
 
-    /** Convenience alias — setting this also updates [currentReaderType]. */
     var isRFIDReaderConnection: Boolean
         get() = currentReaderType == ReaderTypeModel.RFID
         set(value) {
@@ -134,11 +125,10 @@ object AppSettings {
     var selectedSystem: Company? = null
     var selectedCompany: WpCompany? = null
     var selectedLocation: CompanyLocation? = null
-    var lastSyncData: Long? = null          // store as epoch millis
+    var lastSyncData: Long? = null
     var lastSyncUpData: String = ""
     var lastSyncUpJob: String = ""
 
-    /** Persisted securely across app launches. */
     var isForceSyncRequested: Boolean
         get() = SecurePrefs.get(StorageKeys.KEY_FORCE_SYNC)
             ?.lowercase() == "true"
@@ -164,31 +154,14 @@ object AppSettings {
 
     // ── Init helpers ──────────────────────────────────────────────────────────
 
-    /**
-     * Load persisted system / company / location selections from secure storage.
-     * Must be called from a coroutine (e.g. `lifecycleScope.launch`).
-     */
     suspend fun initializeSettings(repository: Repository) = withContext(Dispatchers.IO) {
         val systemId   = SecurePrefs.get(StorageKeys.KEY_SYSTEM)
         val companyId  = SecurePrefs.get(StorageKeys.KEY_COMPANY)
         val locationId = SecurePrefs.get(StorageKeys.KEY_LOCATION)
 
-//        selectedSystem   = systemId?.toIntOrNull()
-//            ?.let { repository.companyDataStore.getItem(it) }
-//
-//        selectedCompany  = companyId?.toIntOrNull()
-//            ?.let { repository.wpCompanyDataStore.getItem(it) }
-//
-//        selectedLocation = locationId?.toIntOrNull()
-//            ?.let { repository.companyLocationDataStore.getItem(it) }
-
         syncVersion = "1.3.0"
     }
 
-    /**
-     * Copy current selections into the Temp* fields and clear job-specific state.
-     * Safe to call on any thread.
-     */
     fun initializeSelectedItems() {
         tempSelectedSystem        = selectedSystem
         tempSelectedCompany       = selectedCompany

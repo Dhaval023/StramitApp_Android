@@ -1,7 +1,6 @@
 package com.example.stramitapp
 
 import android.app.Application
-import android.os.Build
 import android.os.Environment
 import com.example.stramitapp.Repositories.Repository
 import com.example.stramitapp.models.Database.AppDatabase
@@ -21,20 +20,31 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-
         SecurePrefs.init(this)
-
-//        setupAppSettings()          // set paths FIRST
-//        AppDatabase.init(this)      // init DB AFTER paths are set
     }
 
     fun initializeDatabase() {
         setupAppSettings()
+
+        // Store app context so SyncService can re-init Room after full sync
+
+        AppSettings.appContext = this
+
         AppDatabase.init(this)
 
         val db = AppDatabase.getInstance()
         AppSettings.database = db
 
+        buildRepository(db)
+    }
+    fun reinitializeRepository() {
+        val db = AppDatabase.getInstance()
+        buildRepository(db)
+    }
+
+    // ── private helpers ───────────────────────────────────────────────────────
+
+    private fun buildRepository(db: AppDatabase) {
         com.example.stramitapp.services.App.repository =
             Repository(
                 assetDataStore = AssetDataStore(),
@@ -54,7 +64,6 @@ class App : Application() {
     private fun setupAppSettings() {
 
         AppSettings.databaseName = "st_astrack2_0.db"
-//        AppSettings.deviceUdid   = getDeviceId()
         AppSettings.deviceType   = "Android"
         AppSettings.syncVersion  = "1.3.0"
 
@@ -88,11 +97,4 @@ class App : Application() {
         AppSettings.pathAssetIssueImages  = issueImages.absolutePath + "/"
         AppSettings.pathAssetReturnImages = returnImages.absolutePath + "/"
     }
-
-//    private fun getDeviceId(): String {
-//        return android.provider.Settings.Secure.getString(
-//            contentResolver,
-//            android.provider.Settings.Secure.ANDROID_ID
-//        ) ?: ""
-//    }
 }

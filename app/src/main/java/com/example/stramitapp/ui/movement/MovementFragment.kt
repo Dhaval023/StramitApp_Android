@@ -60,23 +60,89 @@ class MovementFragment : Fragment() {
             setupBarcodeMode()
         }
 
+        // Show initial status immediately when fragment opens,
+        // then keep it live via observation
+        updateReaderStatusUI()
         observeConnectionStatus()
     }
 
-    private fun observeConnectionStatus() {
-        rfidHandler?.connectionStatus?.observe(viewLifecycleOwner) { isConnected ->
-            if (isConnected) {
-                binding.readerStatus.text = "Reader Connected"
-                binding.readerStatus.setTextColor(resources.getColor(android.R.color.holo_green_dark, null))
-            } else {
-                binding.readerStatus.text = "Reader Disconnected"
-                binding.readerStatus.setTextColor(resources.getColor(android.R.color.holo_red_dark, null))
-            }
+    // ─────────────────────────────────────────────────────────────────────────
+    // Reader status
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Sets the status text once synchronously based on current mode/state.
+     * Called on first load so the user sees a status straight away instead
+     * of a blank label.
+     */
+    private fun updateReaderStatusUI() {
+        if (Global.isRfidSelected) {
+            // RFID mode — check the current connection state right now
+            val isConnected = rfidHandler?.connectionStatus?.value ?: false
+            setReaderStatusUI(isConnected)
+        } else {
+            // Barcode mode — no physical reader needed, always "ready"
+            binding.readerStatus.text = "Barcode Mode — Ready"
+            binding.readerStatus.setTextColor(
+                resources.getColor(android.R.color.holo_green_dark, null)
+            )
         }
     }
 
+    /**
+     * Observes the RFID connection LiveData so the label updates automatically
+     * whenever the reader connects or disconnects while the fragment is visible.
+     *
+     * In barcode mode there is no LiveData to observe, so we just skip it —
+     * the initial status set by updateReaderStatusUI() is sufficient.
+     */
+    private fun observeConnectionStatus() {
+        if (!Global.isRfidSelected) {
+            // Nothing to observe in barcode mode
+            return
+        }
+
+        val handler = rfidHandler
+        if (handler == null) {
+            // RFID is selected but handler isn't available yet
+            binding.readerStatus.text = "Reader Not Initialized"
+            binding.readerStatus.setTextColor(
+                resources.getColor(android.R.color.holo_red_dark, null)
+            )
+            Log.w("MovementFragment", "RFID selected but rfidHandler is null")
+            return
+        }
+
+        handler.connectionStatus.observe(viewLifecycleOwner) { isConnected ->
+            setReaderStatusUI(isConnected)
+        }
+    }
+
+    /**
+     * Single place that applies connected/disconnected colors and text.
+     * Keeps UI updates consistent whether called from the initial check
+     * or from the LiveData observer.
+     */
+    private fun setReaderStatusUI(isConnected: Boolean) {
+        if (isConnected) {
+            binding.readerStatus.text = "Connected"
+        } else {
+            binding.readerStatus.text = "Not Connected"
+
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Lifecycle
+    // ─────────────────────────────────────────────────────────────────────────
+
     override fun onResume() {
         super.onResume()
+
+        // Refresh status every time the fragment comes back into view
+        // (e.g. user navigated away and came back while reader disconnected)
+        updateReaderStatusUI()
+
         if (!Global.isRfidSelected) {
             barcodeHandler?.registerBarcodeReceiver()
             Log.d("MovementFragment", "Barcode receiver registered")
@@ -92,6 +158,10 @@ class MovementFragment : Fragment() {
         rfidHandler?.stopInventory()
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Scan modes
+    // ─────────────────────────────────────────────────────────────────────────
+
     private fun setupRfidMode() {
         Log.d("MovementFragment", "RFID Mode Active")
 
@@ -105,7 +175,6 @@ class MovementFragment : Fragment() {
 
         tagDataViewModel.getInventoryItem().observe(viewLifecycleOwner) { items ->
             val tagIds = items.map { it.tagID }
-
             tagIds.forEach { tagId ->
                 if (!scannedTagsList.contains(tagId)) {
                     scannedTagsList.add(tagId)
@@ -138,11 +207,14 @@ class MovementFragment : Fragment() {
                     Toast.makeText(requireContext(), "Barcode already scanned", Toast.LENGTH_SHORT).show()
                 }
 
-                // It's important to clear the live data to ensure new scans are detected
                 barcodeHandler?.clearBarcodeData()
             }
         }
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // UI helpers
+    // ─────────────────────────────────────────────────────────────────────────
 
     private fun updateItemCount() {
         binding.itemCount.text = if (scannedTagsList.size == 1) {
@@ -177,9 +249,7 @@ class MovementFragment : Fragment() {
 
         AlertDialog.Builder(requireContext())
             .setTitle("Delete Item")
-            .setMessage("""Delete this item?
-
-$tagId""")
+            .setMessage("Delete this item?\n\n$tagId")
             .setPositiveButton("Delete") { _, _ ->
                 scannedListAdapter?.removeItem(position)
                 scannedTagsList.removeAt(position)

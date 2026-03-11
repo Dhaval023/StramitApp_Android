@@ -81,38 +81,52 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun assetStatusDao(): AssetStatusDao
 
     companion object {
-        private const val DB_NAME = "astrack_ams.db"
-
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
         fun init(context: Context) {
-            if (INSTANCE == null) {
-                synchronized(this) {
-                    if (INSTANCE == null) {
-                        val dbFile = File(
-                            AppSettings.pathDatabase,   // /sdcard/Download/TsTAsTrack2-3
-                            AppSettings.databaseName    // st_astrack2_0.db
-                        )
-                        dbFile.parentFile?.mkdirs()
-
-                        INSTANCE = Room.databaseBuilder(
-                            context.applicationContext,
-                            AppDatabase::class.java,
-                            dbFile.absolutePath         // ← full custom path
-                        )
-                            .fallbackToDestructiveMigration()
-                            .build()
-
-                    }
+            synchronized(this) {
+                if (INSTANCE == null) {
+                    INSTANCE = build(context)
                 }
             }
         }
-                fun getInstance(): AppDatabase =
-                    INSTANCE ?: throw IllegalStateException(
-                        "AppDatabase not initialized. Call AppDatabase.init(context) in your Application.onCreate()."
-                    )
 
+        /**
+         * Safely closes the DB connection and nulls the singleton.
+         * Uses the underlying SQLite helper directly to avoid
+         * triggering Room's internal coroutine scope cancellation,
+         * which would cascade and cancel the calling coroutine.
+         */
+        fun resetInstance() {
+            synchronized(this) {
+                try {
+                    // Close only the SQLite connection, not Room's coroutine scope
+                    INSTANCE?.openHelper?.close()
+                } catch (_: Exception) {}
+                INSTANCE = null
+            }
+        }
 
+        private fun build(context: Context): AppDatabase {
+            val dbFile = File(
+                AppSettings.pathDatabase,
+                AppSettings.databaseName
+            )
+            dbFile.parentFile?.mkdirs()
+
+            return Room.databaseBuilder(
+                context.applicationContext,
+                AppDatabase::class.java,
+                dbFile.absolutePath
+            )
+                .fallbackToDestructiveMigration()
+                .build()
+        }
+
+        fun getInstance(): AppDatabase =
+            INSTANCE ?: throw IllegalStateException(
+                "AppDatabase not initialized. Call AppDatabase.init(context) in your Application.onCreate()."
+            )
     }
 }

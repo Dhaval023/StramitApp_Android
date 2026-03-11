@@ -14,7 +14,7 @@ class SyncViewModel : ViewModel() {
 
     private val db = AppDatabase.getInstance()
 
-    private val syncService = SyncService(db)
+    private val syncService = SyncService()
 
     private val _date = MutableLiveData<String>()
     val date: LiveData<String> = _date
@@ -37,7 +37,7 @@ class SyncViewModel : ViewModel() {
 
             try {
 
-                val syncService = SyncService(db)
+                val syncService = SyncService()
 
                 val result = if (force) {
                     syncService.forceSync()

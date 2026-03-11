@@ -11,27 +11,28 @@ import com.example.stramitapp.model.Company
 @Dao
 interface CompanyDao {
 
+
     @Query("SELECT * FROM tbl_company WHERE company_id = :id LIMIT 1")
-    fun getById(id: Int): Company?
+    suspend fun getById(id: Int): Company?
 
     @Query("SELECT * FROM tbl_company LIMIT 1")
-    fun getFirst(): Company?
+    suspend fun getFirst(): Company?
 
     @Query("SELECT * FROM tbl_company")
-    fun getAll(): List<Company>
+    suspend fun getAll(): List<Company>
 
-    @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
-    fun insert(company: Company)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(company: Company)
 
     @Update
-    fun update(company: Company)
+    suspend fun update(company: Company)
 
     @Delete
-    fun delete(company: Company)
+    suspend fun delete(company: Company)
 
     @Query("DELETE FROM tbl_company WHERE company_id = :id")
-    fun deleteById(id: Int)
+    suspend fun deleteById(id: Int)
 
     @Query("DELETE FROM tbl_company")
-    fun deleteAll(): Int
+    suspend fun deleteAll(): Int
 }

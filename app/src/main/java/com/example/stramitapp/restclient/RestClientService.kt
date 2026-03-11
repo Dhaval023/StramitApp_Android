@@ -12,12 +12,22 @@ import javax.net.ssl.X509TrustManager
 
 object RestClientService {
 
-//    private val client = OkHttpClient()
-     val client = getUnsafeOkHttpClient()
+    val client = getUnsafeOkHttpClient()
 
     fun getUnsafeClient(): OkHttpClient {
         return client
     }
+
+    private fun logSafe(tag: String, message: String, body: String?) {
+        if (body == null) {
+            Log.d(tag, "$message null")
+        } else if (body.length > 1000) {
+            Log.d(tag, "$message (truncated): ${body.take(1000)}... [Total Length: ${body.length}]")
+        } else {
+            Log.d(tag, "$message $body")
+        }
+    }
+
     suspend fun executeSimpleGetRequestAsync(request: String): String? {
         return withContext(Dispatchers.IO) {
             try {
@@ -31,7 +41,7 @@ object RestClientService {
                 client.newCall(httpRequest).execute().use { response ->
                     val responseBody = response.body?.string()
                     Log.d("RestClientService", "Response code: ${response.code}, successful: ${response.isSuccessful}")
-                    Log.d("RestClientService", "Response body: $responseBody")
+                    logSafe("RestClientService", "Response body:", responseBody)
                     if (response.isSuccessful) responseBody else null
                 }
             } catch (e: Exception) {
@@ -40,6 +50,7 @@ object RestClientService {
             }
         }
     }
+
     suspend fun executeSimplePostRequestAsync(request: String, parameters: Map<String, String>): String? {
         return withContext(Dispatchers.IO) {
             try {
@@ -58,11 +69,11 @@ object RestClientService {
                 client.newCall(httpRequest).execute().use { response ->
                     val responseBody = response.body?.string()
                     Log.d("RestClientService", "Response code: ${response.code}, successful: ${response.isSuccessful}")
-                    Log.d("RestClientService", "Response body: $responseBody") // <-- check this in logcat
+                    logSafe("RestClientService", "Response body:", responseBody)
                     if (response.isSuccessful) {
                         responseBody
                     } else {
-                        Log.e("RestClientService", "Failed! Code: ${response.code}, Body: $responseBody") // <-- added
+                        Log.e("RestClientService", "Failed! Code: ${response.code}")
                         null
                     }
                 }
@@ -106,7 +117,7 @@ object RestClientService {
                 client.newCall(request).execute().use { response ->
                     val responseBody = response.body?.string()
                     Log.d("RestClientService", "Response code: ${response.code}, successful: ${response.isSuccessful}")
-                    Log.d("RestClientService", "Response body: $responseBody")
+                    logSafe("RestClientService", "Response body:", responseBody)
                     if (response.isSuccessful) {
                         responseBody
                     } else null
@@ -121,7 +132,7 @@ object RestClientService {
     suspend fun executePostRequestAsync(resource: String, item: String): String? {
         return withContext(Dispatchers.IO) {
             try {
-                Log.d("RestClientService", "Executing POST request to: $resource with body: $item")
+                logSafe("RestClientService", "Executing POST request to: $resource with body:", item)
                 val mediaType = "application/json; charset=utf-8".toMediaType()
                 val body = item.toRequestBody(mediaType)
 
@@ -134,7 +145,7 @@ object RestClientService {
                 client.newCall(request).execute().use { response ->
                     val responseBody = response.body?.string()
                     Log.d("RestClientService", "Response code: ${response.code}, successful: ${response.isSuccessful}")
-                    Log.d("RestClientService", "Response body: $responseBody")
+                    logSafe("RestClientService", "Response body:", responseBody)
                     if (response.isSuccessful) {
                         responseBody
                     } else null
@@ -153,7 +164,7 @@ object RestClientService {
                 client.newCall(request).execute().use { response ->
                     val responseBody = response.body?.string()
                     Log.d("RestClientService", "Response code: ${response.code}, successful: ${response.isSuccessful}")
-                    Log.d("RestClientService", "Response body: $responseBody")
+                    logSafe("RestClientService", "Response body:", responseBody)
                     if (response.isSuccessful) {
                         responseBody
                     } else null
@@ -172,7 +183,7 @@ object RestClientService {
                 client.newCall(request).execute().use { response ->
                     val responseBody = response.body?.string()
                     Log.d("RestClientService", "Response code: ${response.code}, successful: ${response.isSuccessful}")
-                    Log.d("RestClientService", "Response body: $responseBody")
+                    logSafe("RestClientService", "Response body:", responseBody)
                     if (response.isSuccessful) {
                         responseBody
                     } else null

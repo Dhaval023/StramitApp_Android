@@ -1,6 +1,7 @@
 package com.example.stramitapp.services
 
 import android.util.Log
+import com.example.stramitapp.App
 import com.example.stramitapp.models.Database.AppDatabase
 import com.example.stramitapp.model.*
 import com.example.stramitapp.restclient.SyncClientService
@@ -17,14 +18,13 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
-
-class SyncService(private val db: AppDatabase) {
+class SyncService {
 
     private val syncClientService = SyncClientService()
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Public entry points
-    // ─────────────────────────────────────────────────────────────────────────
+    companion object {
+        private const val FLAG_BATCH_SIZE = 300
+    }
 
     suspend fun sync(): Boolean = withContext(Dispatchers.IO) {
         try {
@@ -47,34 +47,19 @@ class SyncService(private val db: AppDatabase) {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Core pipeline
-    // ─────────────────────────────────────────────────────────────────────────
-
     private suspend fun forceSync_internal(): Boolean {
 
-        // ── CRITICAL FIX ──────────────────────────────────────────────────────
-        // The log shows NullPointerException at SyncService.kt:94 on this line:
-        //   userId = AppSettings.authenticatedUser!!.userId
-        //
-        // Root cause: AppSettings.authenticatedUser is never set after login.
-        // The log shows the user IS logged in (userId=27, Mitesh Trivedi) but
-        // it was saved somewhere else (likely UserDao or SecurePrefs) and
-        // never copied into AppSettings.authenticatedUser.
-        //
-        // Fix: if null, load the user from the local Room DB before proceeding.
-        // ─────────────────────────────────────────────────────────────────────
         if (AppSettings.authenticatedUser == null) {
             Log.w("SyncService", "authenticatedUser is null — loading from local DB...")
             val userFromDb = withContext(Dispatchers.IO) {
-                db.userDao().getFirstUser()
+                AppDatabase.getInstance().userDao().getFirstUser()
             }
             if (userFromDb == null) {
-                Log.e("SyncService", "No user in local DB either. Cannot sync — user must log in first.")
+                Log.e("SyncService", "No user in local DB. Cannot sync — user must log in first.")
                 return false
             }
             AppSettings.authenticatedUser = userFromDb
-            Log.d("SyncService", "Loaded user from DB: userId=${userFromDb.userId}, udid=${userFromDb.currentDeviceUdid}")
+            Log.d("SyncService", "Loaded user from DB: userId=${userFromDb.userId}")
         }
 
         val deviceToServerSuccess = syncDeviceToServer()
@@ -84,49 +69,50 @@ class SyncService(private val db: AppDatabase) {
         }
         return syncServerToDevice()
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Step 1 — Device → Server
-    // ─────────────────────────────────────────────────────────────────────────
-
     private suspend fun syncDeviceToServer(): Boolean {
         getSettings()
 
-        // Safe — guaranteed non-null after forceSync_internal() guard above
         val user = AppSettings.authenticatedUser ?: run {
             Log.e("SyncService", "authenticatedUser still null in syncDeviceToServer")
             return false
         }
 
-        return try {
-            val objAsset: List<Asset> = if (AppSettings.isFreshInstall == "No") {
-                db.assetDao().getItemsToExport(AppSettings.lastSyncUpData)
-            } else emptyList()
+        if (AppSettings.isFreshInstall != "No") {
+            Log.d("SyncService", "Fresh install — skipping Device→Server.")
+            return true
+        }
 
-            val objAssetMovement: List<AssetMovementInfo> = if (AppSettings.isFreshInstall == "No") {
-                db.assetMovementInfoDao().getItemsToExport(AppSettings.lastSyncUpData)
-            } else emptyList()
+        return try {
+            val currentDb = AppDatabase.getInstance()
+
+            val objAsset: List<Asset> = currentDb.assetDao()
+                .getItemsToExport(AppSettings.lastSyncUpData)
+
+            val objAssetMovement: List<AssetMovementInfo> = currentDb
+                .assetMovementInfoDao()
+                .getItemsToExport(AppSettings.lastSyncUpData)
 
             Log.d("SyncService", "Uploading ${objAsset.size} assets, ${objAssetMovement.size} movements")
+
             if (objAsset.isEmpty() && objAssetMovement.isEmpty()) {
                 Log.d("SyncService", "Nothing to sync. Skipping deviceToServer call.")
                 return true
             }
 
             val request = DeviceToServerRequest(
-                syncVersion = AppSettings.syncVersion,
-                userId = user.userId,
+                syncVersion       = AppSettings.syncVersion,
+                userId            = user.userId,
                 currentDeviceUdid = user.currentDeviceUdid ?: AppSettings.deviceUdid,
-                parameters = DeviceToServerRequest.Parameters(
+                parameters        = DeviceToServerRequest.Parameters(
                     tblAssetExtraInfo = DeviceToServerRequest.AssetExtraInfoList(
-                        tblAssetMovementInfos = objAssetMovement,
-                        tblAssetMemoInfos = emptyList(),
+                        tblAssetMovementInfos    = objAssetMovement,
+                        tblAssetMemoInfos        = emptyList(),
                         tblAssetMaintenanceInfos = emptyList(),
-                        tblAssetLeaseInfos = emptyList(),
-                        tblAssetInsuranceInfos = emptyList(),
-                        tblAssetInspectionInfos = emptyList(),
-                        tblAssetFinancialInfos = emptyList(),
-                        tblAssetBOMInfos = emptyList()
+                        tblAssetLeaseInfos       = emptyList(),
+                        tblAssetInsuranceInfos   = emptyList(),
+                        tblAssetInspectionInfos  = emptyList(),
+                        tblAssetFinancialInfos   = emptyList(),
+                        tblAssetBOMInfos         = emptyList()
                     ),
                     tblAssets = objAsset
                 )
@@ -154,11 +140,6 @@ class SyncService(private val db: AppDatabase) {
             false
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Step 2 — Server → Device
-    // ─────────────────────────────────────────────────────────────────────────
-
     private suspend fun syncServerToDevice(): Boolean {
         getSettings()
 
@@ -204,10 +185,10 @@ class SyncService(private val db: AppDatabase) {
                 else AppSettings.lastSyncData!!.toString()
 
                 val downloadRequest = DownloadCompanyAssignToUserWithDBGzipRequest(
-                    userId = user.userId,
-                    currentDeviceType = AppSettings.deviceType,
-                    currentDeviceUdid = user.currentDeviceUdid ?: AppSettings.deviceUdid,
-                    companyId = company.companyId,
+                    userId                  = user.userId,
+                    currentDeviceType       = AppSettings.deviceType,
+                    currentDeviceUdid       = user.currentDeviceUdid ?: AppSettings.deviceUdid,
+                    companyId               = company.companyId,
                     userLastUpdateTimeStamp = dateTimeStamp
                 )
 
@@ -247,10 +228,6 @@ class SyncService(private val db: AppDatabase) {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Full DB replacement
-    // ─────────────────────────────────────────────────────────────────────────
-
     private suspend fun performFullDatabaseSync(companyId: Int): Boolean {
         return try {
             val mainDb = File(AppSettings.pathDatabase, AppSettings.databaseName)
@@ -261,59 +238,76 @@ class SyncService(private val db: AppDatabase) {
                 return false
             }
 
-            db.close()
-            if (mainDb.exists()) mainDb.delete()
-            tempDb.copyTo(mainDb, overwrite = true)
-            Log.d("SyncService", "Full DB replaced.")
+            // Step 1 — Close SQLite connection only (does NOT cancel coroutine scope)
+            AppDatabase.resetInstance()
+            Log.d("SyncService", "Room instance closed and reset.")
 
+            // Step 2 — Delete old DB files so Room starts completely fresh
+            if (mainDb.exists()) mainDb.delete()
+            File("${mainDb.path}-wal").takeIf { it.exists() }?.delete()
+            File("${mainDb.path}-shm").takeIf { it.exists() }?.delete()
+            Log.d("SyncService", "Old DB files deleted.")
+
+            // Step 3 — Re-init Room with a fresh schema
+            AppDatabase.init(AppSettings.appContext)
+            Log.d("SyncService", "Room re-initialized with fresh schema.")
+
+            (AppSettings.appContext as? App)?.reinitializeRepository()
+            Log.d("SyncService", "Repository re-initialized with fresh DAOs.")
+
+            // Step 5 — Merge temp DB data into the new Room DB
             insertUpdateAllTables(companyId = companyId)
+
         } catch (ex: Exception) {
             Log.e("SyncService", "performFullDatabaseSync error: ${ex.message}", ex)
             false
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Incremental table merge
-    // ─────────────────────────────────────────────────────────────────────────
-
     private suspend fun insertUpdateAllTables(companyId: Int): Boolean =
         withContext(Dispatchers.IO) {
-            val mainDbPath = File(AppSettings.pathDatabase, AppSettings.databaseName).absolutePath
-            val tempDbPath = File(AppSettings.pathDatabase, "Temp_${AppSettings.databaseName}").absolutePath
-            val rawDb = db.openHelper.writableDatabase
+            val tempDbPath = File(
+                AppSettings.pathDatabase,
+                "Temp_${AppSettings.databaseName}"
+            ).absolutePath
+
+            val rawDb = AppDatabase.getInstance().openHelper.writableDatabase
             var success = true
 
             try {
-                rawDb.execSQL("ATTACH DATABASE '$mainDbPath' AS firstDB")
                 rawDb.execSQL("ATTACH DATABASE '$tempDbPath' AS secondDB")
 
-                val userCols = getColumnNames(rawDb, "firstDB", "tbl_user")
+                // tbl_user first (FK dependency)
+                val userCols = getColumnNames(rawDb, "tbl_user")
                 if (userCols.isNotEmpty()) {
                     rawDb.execSQL(
-                        "INSERT OR REPLACE INTO firstDB.tbl_user " +
+                        "INSERT OR REPLACE INTO tbl_user " +
                                 "SELECT ${userCols.joinToString(",")} FROM secondDB.tbl_user"
                     )
+                    Log.d("SyncService", "tbl_user merged (${userCols.size} cols)")
                 }
 
-                val firstTables  = getTableNames(rawDb, "firstDB")
+                val mainTables   = getTableNames(rawDb, null)
                 val secondTables = getTableNames(rawDb, "secondDB")
 
-                for (table in firstTables) {
+                for (table in mainTables) {
                     if (table == "tbl_user" || table == "tbl_asset_movement_info") continue
                     if (!secondTables.contains(table)) continue
-                    val cols = getColumnNames(rawDb, "firstDB", table)
+
+                    val cols = getColumnNames(rawDb, table)
                     if (cols.isEmpty()) continue
+
                     rawDb.execSQL(
-                        "INSERT OR REPLACE INTO firstDB.$table " +
+                        "INSERT OR REPLACE INTO $table " +
                                 "SELECT ${cols.joinToString(",")} FROM secondDB.$table"
                     )
+                    Log.d("SyncService", "Merged $table (${cols.size} cols)")
                 }
+
             } catch (ex: Exception) {
                 Log.e("SyncService", "insertUpdateAllTables error: ${ex.message}", ex)
                 success = false
             } finally {
-                try { rawDb.execSQL("DETACH DATABASE firstDB") } catch (_: Exception) {}
                 try { rawDb.execSQL("DETACH DATABASE secondDB") } catch (_: Exception) {}
             }
 
@@ -323,10 +317,6 @@ class SyncService(private val db: AppDatabase) {
             }
             success
         }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Helpers
-    // ─────────────────────────────────────────────────────────────────────────
 
     private fun getSettings() {
         AppSettings.lastSyncUpData =
@@ -352,7 +342,7 @@ class SyncService(private val db: AppDatabase) {
         return try {
             syncClientService.getAssignCompanyListToUser(
                 GetAssignCompanyListToUserRequest(
-                    userId = user.userId,
+                    userId            = user.userId,
                     currentDeviceType = AppSettings.deviceType,
                     currentDeviceUdid = user.currentDeviceUdid ?: AppSettings.deviceUdid
                 )
@@ -366,12 +356,24 @@ class SyncService(private val db: AppDatabase) {
 
     private suspend fun updateAssetsFlag() = withContext(Dispatchers.IO) {
         try {
-            val now = nowDateTimeSQLite()
-            db.assetDao().getItemsFlagI().forEach { asset ->
-                asset.updateFlag = "U"
-                asset.lastUpdateDate = now
-                db.assetDao().update(asset)
+            val dao   = AppDatabase.getInstance().assetDao()
+            val now   = nowDateTimeSQLite()
+            val total = dao.getItemsFlagICount()
+            var offset = 0
+
+            while (offset < total) {
+                val batch = dao.getItemsFlagIPaged(limit = FLAG_BATCH_SIZE, offset = offset)
+                if (batch.isEmpty()) break
+
+                batch.forEach { asset ->
+                    asset.updateFlag     = "U"
+                    asset.lastUpdateDate = now
+                    dao.update(asset)
+                }
+                offset += FLAG_BATCH_SIZE
             }
+
+            Log.d("SyncService", "updateAssetsFlag done — updated $total assets.")
         } catch (ex: Exception) {
             Log.e("SyncService", "updateAssetsFlag error: ${ex.message}", ex)
         }
@@ -379,7 +381,7 @@ class SyncService(private val db: AppDatabase) {
 
     private suspend fun deleteMovementHistory() = withContext(Dispatchers.IO) {
         try {
-            db.assetMovementInfoDao().deleteAll()
+            AppDatabase.getInstance().assetMovementInfoDao().deleteAll()
         } catch (ex: Exception) {
             Log.e("SyncService", "deleteMovementHistory error: ${ex.message}", ex)
         }
@@ -387,22 +389,23 @@ class SyncService(private val db: AppDatabase) {
 
     private fun getTableNames(
         rawDb: androidx.sqlite.db.SupportSQLiteDatabase,
-        schema: String
+        schema: String?
     ): List<String> {
         val tables = mutableListOf<String>()
-        rawDb.query(
+        val query = if (schema != null)
             "SELECT name FROM $schema.sqlite_master WHERE type='table' AND name LIKE 'tbl_%' ORDER BY name"
-        ).use { c -> while (c.moveToNext()) tables.add(c.getString(0)) }
+        else
+            "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'tbl_%' ORDER BY name"
+        rawDb.query(query).use { c -> while (c.moveToNext()) tables.add(c.getString(0)) }
         return tables
     }
 
     private fun getColumnNames(
         rawDb: androidx.sqlite.db.SupportSQLiteDatabase,
-        schema: String,
         table: String
     ): List<String> {
         val cols = mutableListOf<String>()
-        rawDb.query("PRAGMA $schema.table_info($table)").use { c ->
+        rawDb.query("PRAGMA table_info($table)").use { c ->
             val idx = c.getColumnIndex("name")
             while (c.moveToNext()) if (idx >= 0) cols.add(c.getString(idx))
         }

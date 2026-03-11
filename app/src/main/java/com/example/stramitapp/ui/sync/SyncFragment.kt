@@ -163,6 +163,9 @@ class SyncFragment : Fragment() {
         viewModel.isSyncing.observe(viewLifecycleOwner) { syncing ->
             binding.syncButton.isEnabled = !syncing
             binding.forceSyncButton.isEnabled = !syncing
+
+            binding.syncLoaderContainer.visibility =
+                if (syncing) View.VISIBLE else View.GONE
         }
     }
 

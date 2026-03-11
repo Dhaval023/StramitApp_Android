@@ -107,30 +107,63 @@ interface AssetDao {
     // ---------------- SYNC ----------------
 
     /**
-     * Returns assets changed since the last sync upload.
-     * Mirrors Xamarin: AssetDataStore.GetItemsToExportAsync(lastSyncUpData)
+     * Returns ONLY assets created on this device (update_flag = 'I') since
+     * the last upload.
      *
-     * Checks BOTH create_date and last_update_date so newly created
-     * AND recently updated assets are included.
+     * IMPORTANT: Assets downloaded from the server have update_flag = 'U'
+     * and must NOT be sent back — the server returns HTTP 400 if you do.
+     * The old query had no flag filter so it returned all 59k server assets
+     * on every sync, causing OOM and HTTP 400.
      */
     @Query("""
         SELECT * FROM tbl_asset
-        WHERE create_date > :lastSync
-           OR last_update_date > :lastSync
+        WHERE update_flag = 'I'
+        AND (create_date > :lastSync OR last_update_date > :lastSync)
     """)
     suspend fun getItemsToExport(lastSync: String): List<Asset>
 
     /**
-     * Returns assets with update_flag = 'I' (Insert — not yet confirmed by server).
-     * Called with NO parameters — mirrors Xamarin: GetItemsFlagI() with no date filter.
-     *
-     * Fixed: removed the wrong :lastSync parameter that was previously here.
+     * COUNT of device-created assets pending upload.
+     * Cheap check — no rows loaded into memory.
+     */
+    @Query("""
+        SELECT COUNT(*) FROM tbl_asset
+        WHERE update_flag = 'I'
+        AND (create_date > :lastSync OR last_update_date > :lastSync)
+    """)
+    suspend fun getItemsToExportCount(lastSync: String): Int
+
+    /**
+     * Returns assets with update_flag = 'I' (not yet confirmed by server).
+     * Used by updateAssetsFlag after a successful upload.
      */
     @Query("""
         SELECT * FROM tbl_asset
         WHERE update_flag = 'I'
     """)
     suspend fun getItemsFlagI(): List<Asset>
+
+    /**
+     * COUNT of assets still flagged 'I'.
+     * Used to drive the batched flag-update loop.
+     */
+    @Query("""
+        SELECT COUNT(*) FROM tbl_asset
+        WHERE update_flag = 'I'
+    """)
+    suspend fun getItemsFlagICount(): Int
+
+    /**
+     * Paginated fetch of 'I'-flagged assets.
+     * Prevents loading all flag-update candidates into memory at once.
+     */
+    @Query("""
+        SELECT * FROM tbl_asset
+        WHERE update_flag = 'I'
+        ORDER BY asset_id ASC
+        LIMIT :limit OFFSET :offset
+    """)
+    suspend fun getItemsFlagIPaged(limit: Int, offset: Int): List<Asset>
 
     @Query("""
         SELECT * FROM tbl_asset

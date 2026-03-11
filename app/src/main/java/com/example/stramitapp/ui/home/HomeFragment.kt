@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -12,6 +13,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.stramitapp.Global
 import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentHomeBinding
+import com.example.stramitapp.services.SyncService
 import com.example.stramitapp.ui.login.LoginViewModel
 import kotlinx.coroutines.launch
 
@@ -19,8 +21,7 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    
-    // Shared ViewModel from Activity to access authenticated user data
+
     private val loginViewModel: LoginViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -30,29 +31,23 @@ class HomeFragment : Fragment() {
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
-        // Updates UI: It sets the text of binding.loggedInUserTextview to "Logged in user : $fullName"
+        // Logged in user
         viewLifecycleOwner.lifecycleScope.launch {
             loginViewModel.authenticatedUser.collect { user ->
                 Log.d("HomeFragment", "user received: $user")
                 val firstName = user?.firstName ?: ""
                 val lastName  = user?.lastName  ?: ""
                 val fullName  = "$firstName $lastName".trim()
-            
-//            if (fullName.isNotEmpty()) {
-                // This replaces the "Mitesh Trivedi" placeholder with the dynamic value
-//                binding.loggedInUserTextview.text = "Logged in user : $fullName"
                 binding.fullName = fullName.ifEmpty { "" }
             }
         }
 
-        // Initialize radio group with current global state
+        // Radio group
         if (Global.isRfidSelected) {
             binding.readerModeRadioGroup?.check(R.id.rfid_radiobutton)
         } else {
             binding.readerModeRadioGroup?.check(R.id.barcode_radiobutton)
         }
-
-        // Setup radio group listener
         binding.readerModeRadioGroup?.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
                 R.id.rfid_radiobutton -> Global.setRfidMode()
@@ -60,7 +55,7 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // Setup Click Listeners
+        // Click listeners
         binding.searchAssetButton.setOnClickListener {
             findNavController().navigate(R.id.nav_search_asset)
         }
@@ -80,7 +75,42 @@ class HomeFragment : Fragment() {
             findNavController().navigate(R.id.nav_floor_sweep)
         }
 
+        // ── Only sync when coming from Login ──────────────────────────────
+        val fromLogin = arguments?.getBoolean("fromLogin", false) ?: false
+        if (fromLogin) {
+            startAutoSync()
+        }
+
         return binding.root
+    }
+
+    private fun startAutoSync() {
+        viewLifecycleOwner.lifecycleScope.launch {
+
+            setSyncLoading(true, "Syncing in progress...")
+            kotlinx.coroutines.delay(100)
+
+            try {
+                val success = SyncService().sync()
+
+                if (success) {
+                    setSyncLoading(true, "Sync successful! ✓")
+                    kotlinx.coroutines.delay(1500)
+                    setSyncLoading(false)
+                } else {
+                    setSyncLoading(false)
+                    Toast.makeText(requireContext(), "Sync failed", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                setSyncLoading(false)
+                Toast.makeText(requireContext(), "Sync failed: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun setSyncLoading(isLoading: Boolean, message: String = "") {
+        binding.syncLoaderOverlay?.visibility = if (isLoading) View.VISIBLE else View.GONE
+        if (message.isNotEmpty()) binding.syncLoaderMessage?.text = message
     }
 
     override fun onDestroyView() {

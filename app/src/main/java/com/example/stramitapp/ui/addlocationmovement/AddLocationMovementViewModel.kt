@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.stramitapp.model.Company
 import com.example.stramitapp.model.CompanyLocation
 import com.example.stramitapp.models.Database.AppDatabase
-import com.example.stramitapp.utilities.AppSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,21 +21,23 @@ class AddLocationMovementViewModel : ViewModel() {
 
     fun loadCompanies() {
         viewModelScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                AppSettings.database.companyDao().getAll()
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    AppDatabase.getInstance().companyDao().getAll()
+                }
+                android.util.Log.d("DB_DEBUG", "Companies loaded: ${result.size}")
+                _companies.value = result
+            } catch (e: Exception) {
+                android.util.Log.e("DB_DEBUG", "loadCompanies error: ${e.message}")
             }
-            android.util.Log.d("DB_DEBUG", "Companies loaded: ${result.size}")
-            _companies.value = result
         }
-
     }
 
     fun loadLocationsByCompany(companyId: Int) {
         viewModelScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
-                    // ✅ Use AppSettings.database instead of AppDatabase.getInstance()
-                    AppSettings.database.companyLocationDao().getItemByCompany(companyId)
+                    AppDatabase.getInstance().companyLocationDao().getItemByCompany(companyId)
                 }
                 android.util.Log.d("DB_DEBUG", "Locations loaded: ${result.size}")
                 _locations.value = result
