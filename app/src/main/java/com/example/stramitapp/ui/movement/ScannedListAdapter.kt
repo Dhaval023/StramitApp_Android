@@ -7,15 +7,16 @@ import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import com.example.stramitapp.R
+import com.example.stramitapp.model.Asset
 
 class ScannedListAdapter(
-    private val tagIds: MutableList<String>,
+    private val items: MutableList<Asset>,
     private val onDeleteClick: (Int) -> Unit
 ) : BaseAdapter() {
 
-    override fun getCount(): Int = tagIds.size
+    override fun getCount(): Int = items.size
 
-    override fun getItem(position: Int): String = tagIds[position]
+    override fun getItem(position: Int): Asset = items[position]
 
     override fun getItemId(position: Int): Long = position.toLong()
 
@@ -23,10 +24,18 @@ class ScannedListAdapter(
         val view = convertView ?: LayoutInflater.from(parent.context)
             .inflate(R.layout.item_scanned, parent, false)
 
+        val asset = items[position]
+
         val tagIdTextView = view.findViewById<TextView>(R.id.tag_id_text_view)
         val deleteButton = view.findViewById<ImageView>(R.id.delete_item)
 
-        tagIdTextView.text = tagIds[position]
+        // Show title if available, otherwise fall back to barcode or tag
+        tagIdTextView.text = when {
+            !asset.title.isNullOrBlank() -> asset.title
+            !asset.barcode.isNullOrBlank() -> asset.barcode
+            !asset.tag.isNullOrBlank() -> asset.tag
+            else -> "Unknown"
+        }
 
         deleteButton.setOnClickListener {
             onDeleteClick(position)
@@ -35,21 +44,21 @@ class ScannedListAdapter(
         return view
     }
 
-    fun updateData(newData: List<String>) {
-        tagIds.clear()
-        tagIds.addAll(newData)
+    fun updateData(newData: List<Asset>) {
+        items.clear()
+        items.addAll(newData)
         notifyDataSetChanged()
     }
 
     fun removeItem(position: Int) {
-        if (position in 0 until tagIds.size) {
-            tagIds.removeAt(position)
+        if (position in 0 until items.size) {
+            items.removeAt(position)
             notifyDataSetChanged()
         }
     }
 
     fun clearAll() {
-        tagIds.clear()
+        items.clear()
         notifyDataSetChanged()
     }
 }

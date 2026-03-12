@@ -73,7 +73,30 @@ class AssetDataStore :
 
     suspend fun getMaxAssetId(): Int = dao.getMaxAssetId() ?: 0
 
-    // ---------------- EXPORT ----------------
+    // ── Barcode / Tag lookup (used by MovementViewModel) ─────────────────────
+
+    /**
+     * Mirrors Xamarin's GetItemByBarcodeAsync.
+     * Looks up an asset by companyId + barcode.
+     */
+    suspend fun getItemByBarcodeAsync(companyId: Int, barcode: String): Asset? {
+        return try {
+            dao.getByBarcode(companyId, barcode)
+        } catch (e: Exception) {
+            Log.e("AssetDataStore", "getItemByBarcodeAsync failed", e)
+            null
+        }
+    }
+    suspend fun getItemByTagAsync(companyId: Int, tag: String): Asset? {
+        return try {
+            dao.getByTag(companyId, tag)
+        } catch (e: Exception) {
+            Log.e("AssetDataStore", "getItemByTagAsync failed", e)
+            null
+        }
+    }
+
+    // ── Export ────────────────────────────────────────────────────────────────
 
     suspend fun getItemsToExport(lastSync: String): List<Asset> =
         dao.getItemsToExport(lastSync)
@@ -84,7 +107,7 @@ class AssetDataStore :
     suspend fun getAssetsForImageSync(): List<Asset> =
         dao.getAssetsForImageSync()
 
-    // ---------------- SHIPMENT ----------------
+    // ── Shipment ──────────────────────────────────────────────────────────────
 
     suspend fun getShipmentItems(): List<Shipment> =
         dao.getShipments()
@@ -96,22 +119,17 @@ class AssetDataStore :
         dao.removeDeactivatedShipmentAssets()
 
     suspend fun deleteAssetsWithinLast3Months(selectedDate: Date): Int {
-
         val toDate = formatter.format(selectedDate)
-
         val fromDate = formatter.format(
             Calendar.getInstance().apply {
                 time = selectedDate
                 add(Calendar.MONTH, -3)
             }.time
         )
-
         return dao.deleteAssetsBetween(fromDate, toDate)
     }
 
     override suspend fun initializeAsync() {}
-
     override suspend fun pullLatestAsync(): Boolean = false
-
     override suspend fun syncAsync(): Boolean = false
 }

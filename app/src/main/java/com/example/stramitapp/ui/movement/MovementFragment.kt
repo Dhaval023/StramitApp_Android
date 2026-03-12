@@ -2,17 +2,19 @@ package com.example.stramitapp.ui.movement
 
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import com.example.stramitapp.Global
 import com.example.stramitapp.MainActivity
 import com.example.stramitapp.databinding.FragmentMovementBinding
-import com.example.stramitapp.zebraconnection.BarcodeHandler
 import com.example.stramitapp.zebraconnection.Inventory.TagDataViewModel
 import com.example.stramitapp.zebraconnection.RFIDHandler
 
@@ -22,11 +24,13 @@ class MovementFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var rfidHandler: RFIDHandler? = null
-    private var barcodeHandler: BarcodeHandler? = null
     private lateinit var tagDataViewModel: TagDataViewModel
-    private var scannedListAdapter: ScannedListAdapter? = null
 
-    private val scannedTagsList = mutableListOf<String>()
+    private val movementViewModel: MovementViewModel by viewModels {
+        MovementViewModelFactory()
+    }
+
+    private var scannedListAdapter: ScannedListAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,7 +52,6 @@ class MovementFragment : Fragment() {
 
         val mainActivity = requireActivity() as? MainActivity
         rfidHandler = mainActivity?.getRfidHandler()
-        barcodeHandler = mainActivity?.getBarcodeHandler()
         tagDataViewModel = ViewModelProvider(requireActivity()).get(TagDataViewModel::class.java)
 
         scannedListAdapter = ScannedListAdapter(mutableListOf()) { position ->
@@ -60,6 +63,19 @@ class MovementFragment : Fragment() {
             showDeleteAllConfirmation()
         }
 
+        // Observe scanned assets from ViewModel
+        movementViewModel.scannedAssets.observe(viewLifecycleOwner) { assets ->
+            scannedListAdapter?.updateData(assets)
+            updateItemCount(assets.size)
+        }
+
+        // Observe toast messages
+        movementViewModel.toastMessage.observe(viewLifecycleOwner) { message ->
+            if (!message.isNullOrEmpty()) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+            }
+        }
+
         if (Global.isRfidSelected) {
             setupRfidMode()
         } else {
@@ -69,6 +85,142 @@ class MovementFragment : Fragment() {
         updateReaderStatusUI()
         observeConnectionStatus()
     }
+
+    // ── Barcode mode: hidden EditText captures DataWedge keystrokes ───────────
+    // This mirrors exactly how Xamarin's hidden bentry works
+
+    private fun setupBarcodeMode() {
+        Log.d("MovementFragment", "Barcode Mode Setup — using hidden bentry EditText")
+
+        val bentry = binding.bentry
+
+        // Make focusable so DataWedge keystrokes land here
+        bentry.isFocusable = true
+        bentry.isFocusableInTouchMode = true
+        bentry.requestFocus()
+
+        // Prevent soft keyboard from appearing
+        bentry.setShowSoftInputOnFocus(false)
+
+        // Keep bentry focused if user taps elsewhere
+        binding.root.setOnClickListener { bentry.requestFocus() }
+        binding.scannedList.setOnTouchListener { _, _ ->
+            bentry.requestFocus()
+            false
+        }
+
+        // Method 1: Enter key after scan (most common DataWedge keystroke config)
+        bentry.setOnEditorActionListener { _, actionId, event ->
+            val isEnterKey = event?.keyCode == KeyEvent.KEYCODE_ENTER
+                    && event.action == KeyEvent.ACTION_DOWN
+            val isImeAction = actionId == EditorInfo.IME_ACTION_DONE
+                    || actionId == EditorInfo.IME_ACTION_NEXT
+                    || actionId == EditorInfo.IME_NULL
+
+            if (isEnterKey || isImeAction) {
+                val scanned = bentry.text.toString().trim()
+                Log.d("MovementFragment", "bentry EditorAction — scanned: '$scanned'")
+                if (scanned.isNotEmpty()) {
+                    movementViewModel.onBarcodeScanned(scanned)
+                    bentry.setText("")
+                }
+                true
+            } else false
+        }
+
+        // Method 2: Key listener — catches Enter/Tab even if EditorAction doesn't fire
+        bentry.setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN &&
+                (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_TAB)
+            ) {
+                val scanned = bentry.text.toString().trim()
+                Log.d("MovementFragment", "bentry KeyListener — scanned: '$scanned'")
+                if (scanned.isNotEmpty()) {
+                    movementViewModel.onBarcodeScanned(scanned)
+                    bentry.setText("")
+                }
+                true
+            } else false
+        }
+
+        // Method 3: TextWatcher fallback — for DataWedge configs that don't send Enter
+        // DataWedge pastes the full barcode at once, so we wait 300ms for text to settle
+        bentry.addTextChangedListener(object : android.text.TextWatcher {
+            private var lastChangeTime = 0L
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                lastChangeTime = System.currentTimeMillis()
+            }
+
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val text = s?.toString()?.trim() ?: return
+                if (text.isEmpty()) return
+
+                val capturedTime = lastChangeTime
+                binding.root.postDelayed({
+                    if (_binding == null) return@postDelayed
+                    if (lastChangeTime == capturedTime) {
+                        val current = bentry.text.toString().trim()
+                        if (current.isNotEmpty()) {
+                            Log.d("MovementFragment", "bentry TextWatcher — scanned: '$current'")
+                            movementViewModel.onBarcodeScanned(current)
+                            bentry.setText("")
+                        }
+                    }
+                }, 300)
+            }
+        })
+
+        Log.d("MovementFragment", "bentry setup complete, focus requested")
+    }
+
+    // ── RFID mode ─────────────────────────────────────────────────────────────
+
+    private fun setupRfidMode() {
+        Log.d("MovementFragment", "RFID Mode Active")
+
+        rfidHandler?.triggerPressedLiveData?.observe(viewLifecycleOwner) { isPressed ->
+            if (isPressed) rfidHandler?.performInventory()
+            else rfidHandler?.stopInventory()
+        }
+
+        tagDataViewModel.getInventoryItem().observe(viewLifecycleOwner) { tags ->
+            tags?.forEach { tagData ->
+                val tagId = tagData.tagID
+                if (!tagId.isNullOrBlank()) {
+                    movementViewModel.onTagScanned(tagId)
+                }
+            }
+        }
+    }
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────────
+
+    override fun onResume() {
+        super.onResume()
+        updateReaderStatusUI()
+
+        if (!Global.isRfidSelected) {
+            // Always re-focus bentry when fragment resumes
+            binding.bentry.post {
+                binding.bentry.requestFocus()
+                Log.d("MovementFragment", "onResume — bentry focus requested")
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        rfidHandler?.stopInventory()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    // ── UI helpers ────────────────────────────────────────────────────────────
 
     private fun updateReaderStatusUI() {
         if (Global.isRfidSelected) {
@@ -83,146 +235,51 @@ class MovementFragment : Fragment() {
     }
 
     private fun observeConnectionStatus() {
-        if (!Global.isRfidSelected) {
-            return
-        }
-
-        val handler = rfidHandler
-        if (handler == null) {
+        if (!Global.isRfidSelected) return
+        val handler = rfidHandler ?: run {
             binding.readerStatus.text = "Reader Not Initialized"
             binding.readerStatus.setTextColor(
                 resources.getColor(android.R.color.holo_red_dark, null)
             )
-            Log.w("MovementFragment", "RFID selected but rfidHandler is null")
             return
         }
-
         handler.connectionStatus.observe(viewLifecycleOwner) { isConnected ->
             setReaderStatusUI(isConnected)
         }
     }
+
     private fun setReaderStatusUI(isConnected: Boolean) {
-        if (isConnected) {
-            binding.readerStatus.text = "Connected"
-        } else {
-            binding.readerStatus.text = "Not Connected"
-
-        }
+        binding.readerStatus.text = if (isConnected) "Connected" else "Not Connected"
     }
 
-    override fun onResume() {
-        super.onResume()
-        updateReaderStatusUI()
-
-        if (!Global.isRfidSelected) {
-            barcodeHandler?.registerBarcodeReceiver()
-            Log.d("MovementFragment", "Barcode receiver registered")
-        }
+    private fun updateItemCount(count: Int) {
+        binding.itemCount.text = if (count == 1) "1 item" else "$count items"
     }
 
-    override fun onPause() {
-        super.onPause()
-        if (!Global.isRfidSelected) {
-            barcodeHandler?.unregisterBarcodeReceiver()
-            Log.d("MovementFragment", "Barcode receiver unregistered")
-        }
-        rfidHandler?.stopInventory()
-    }
-    private fun setupRfidMode() {
-        Log.d("MovementFragment", "RFID Mode Active")
-
-        rfidHandler?.triggerPressedLiveData?.observe(viewLifecycleOwner) { isPressed ->
-            if (isPressed) {
-                rfidHandler?.performInventory()
-            } else {
-                rfidHandler?.stopInventory()
-            }
-        }
-
-        tagDataViewModel.getInventoryItem().observe(viewLifecycleOwner) { items ->
-            val tagIds = items.map { it.tagID }
-            tagIds.forEach { tagId ->
-                if (!scannedTagsList.contains(tagId)) {
-                    scannedTagsList.add(tagId)
-                }
-            }
-            scannedListAdapter?.updateData(scannedTagsList)
-            updateItemCount()
-        }
-    }
-
-    private fun setupBarcodeMode() {
-        Log.d("MovementFragment", "Barcode Mode Active")
-
-        if (barcodeHandler == null) {
-            Log.e("MovementFragment", "BarcodeHandler is NULL!")
-            Toast.makeText(requireContext(), "Barcode handler not initialized", Toast.LENGTH_LONG).show()
-            return
-        }
-
-        barcodeHandler?.getBarcodeDataLiveData()?.observe(viewLifecycleOwner) { barcodeData ->
-            if (barcodeData.isNotEmpty()) {
-                Log.d("MovementFragment", "Barcode scanned: $barcodeData")
-
-                if (!scannedTagsList.contains(barcodeData)) {
-                    scannedTagsList.add(barcodeData)
-                    scannedListAdapter?.updateData(scannedTagsList)
-                    updateItemCount()
-                    Toast.makeText(requireContext(), "Barcode added", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(requireContext(), "Barcode already scanned", Toast.LENGTH_SHORT).show()
-                }
-
-                barcodeHandler?.clearBarcodeData()
-            }
-        }
-    }
-
-    private fun updateItemCount() {
-        binding.itemCount.text = if (scannedTagsList.size == 1) {
-            "1 item"
-        } else {
-            "${scannedTagsList.size} items"
-        }
-    }
+    // ── Dialogs ───────────────────────────────────────────────────────────────
 
     private fun showDeleteAllConfirmation() {
-        val itemCount = scannedListAdapter?.getCount() ?: 0
-        if (itemCount == 0) {
+        val count = movementViewModel.getCount()
+        if (count == 0) {
             Toast.makeText(requireContext(), "No items to delete", Toast.LENGTH_SHORT).show()
             return
         }
-
         AlertDialog.Builder(requireContext())
             .setTitle("Delete All Items")
-            .setMessage("Are you sure you want to delete all $itemCount items?")
-            .setPositiveButton("Delete") { _, _ ->
-                scannedListAdapter?.clearAll()
-                scannedTagsList.clear()
-                binding.itemCount.text = "0 items"
-                Toast.makeText(requireContext(), "All items deleted", Toast.LENGTH_SHORT).show()
-            }
+            .setMessage("Are you sure you want to delete all $count items?")
+            .setPositiveButton("Delete") { _, _ -> movementViewModel.clearAll() }
             .setNegativeButton("Cancel", null)
             .show()
     }
-    private fun showDeleteSingleConfirmation(position: Int) {
-        val tagId = scannedListAdapter?.getItem(position) ?: return
 
+    private fun showDeleteSingleConfirmation(position: Int) {
+        val asset = movementViewModel.scannedAssets.value?.getOrNull(position) ?: return
+        val displayName = asset.title ?: asset.barcode ?: asset.tag ?: "Unknown"
         AlertDialog.Builder(requireContext())
             .setTitle("Delete Item")
-            .setMessage("Delete this item?\n\n$tagId")
-            .setPositiveButton("Delete") { _, _ ->
-                scannedListAdapter?.removeItem(position)
-                scannedTagsList.removeAt(position)
-                updateItemCount()
-                Toast.makeText(requireContext(), "Item deleted", Toast.LENGTH_SHORT).show()
-            }
+            .setMessage("Delete this item?\n\n$displayName")
+            .setPositiveButton("Delete") { _, _ -> movementViewModel.deleteItemAt(position) }
             .setNegativeButton("Cancel", null)
             .show()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }
