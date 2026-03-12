@@ -56,7 +56,12 @@
         android:id="@+id/nav_movement_scanned_items"
         android:name="com.example.stramitapp.ui.movement.MovementFragment"
         android:label="Movement"
-        tools:layout="@layout/fragment_movement" />
+        tools:layout="@layout/fragment_movement">
+        <argument
+            android:name="locationName"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_reader_list"

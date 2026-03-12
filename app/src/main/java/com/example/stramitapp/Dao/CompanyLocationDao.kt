@@ -45,4 +45,7 @@ interface CompanyLocationDao {
 
     @Query("SELECT * FROM tbl_company_location")
     suspend fun getAll(): List<CompanyLocation>
+
+    @Query("SELECT * FROM tbl_company_location WHERE location_id = :locationId LIMIT 1")
+    suspend fun getById(locationId: Int): CompanyLocation?
 }

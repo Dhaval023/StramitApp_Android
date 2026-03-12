@@ -118,8 +118,12 @@ class AddLocationMovementFragment : Fragment() {
                     .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
                     .show()
             } else {
+                val bundle = Bundle().apply {
+                    putString("locationName", selectedLocation?.locationName ?: "")
+                }
                 findNavController().navigate(
-                    R.id.action_nav_movement_to_nav_movement_scanned_items
+                    R.id.action_nav_movement_to_nav_movement_scanned_items,
+                    bundle
                 )
             }
         }

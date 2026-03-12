@@ -5,16 +5,22 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.stramitapp.Global
 import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentHomeBinding
+import com.example.stramitapp.model.Company
 import com.example.stramitapp.services.SyncService
 import com.example.stramitapp.ui.login.LoginViewModel
+import com.example.stramitapp.utilities.AppSettings
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
@@ -23,6 +29,7 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val loginViewModel: LoginViewModel by activityViewModels()
+    private lateinit var homeViewModel: HomeViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,6 +37,7 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
 
         // Logged in user
         viewLifecycleOwner.lifecycleScope.launch {
@@ -55,6 +63,48 @@ class HomeFragment : Fragment() {
             }
         }
 
+        // Load companies and set up autocomplete
+        homeViewModel.loadCompanies()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                homeViewModel.companies.collect { companies: List<Company> ->
+                    val names = companies.map { it.companyName ?: "" }
+                    val adapter = ArrayAdapter(
+                        requireContext(),
+                        R.layout.item_dropdown,
+                        names
+                    )
+                    binding.companyAutocompleteTextview?.setAdapter(adapter)
+
+                    val itemHeight = 48 // dp per item
+                    val maxVisibleItems = 5
+                    val visibleItems = minOf(companies.size, maxVisibleItems)
+                    val density = resources.displayMetrics.density
+                    val dropdownHeight = (itemHeight * visibleItems * density).toInt()
+                    binding.companyAutocompleteTextview?.dropDownHeight = dropdownHeight
+
+                    val saved = AppSettings.tempSelectedSystem
+                    if (saved != null) {
+                        val match = companies.find { it.companyId == saved.companyId }
+                        if (match != null) {
+                            binding.companyAutocompleteTextview?.setText(
+                                match.companyName ?: "", false
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        // Company selection from dropdown
+        binding.companyAutocompleteTextview?.setOnItemClickListener { _, _, position, _ ->
+            val company: Company = homeViewModel.companies.value[position]
+            AppSettings.tempSelectedSystem = company
+
+            // Clear saved location since company changed
+            AppSettings.tempSelectedLocation = null
+        }
+
         // Click listeners
         binding.searchAssetButton.setOnClickListener {
             findNavController().navigate(R.id.nav_search_asset)
@@ -75,7 +125,7 @@ class HomeFragment : Fragment() {
             findNavController().navigate(R.id.nav_floor_sweep)
         }
 
-        // ── Only sync when coming from Login ──────────────────────────────
+        // Only sync when coming from Login
         val fromLogin = arguments?.getBoolean("fromLogin", false) ?: false
         if (fromLogin) {
             startAutoSync()
@@ -86,16 +136,13 @@ class HomeFragment : Fragment() {
 
     private fun startAutoSync() {
         viewLifecycleOwner.lifecycleScope.launch {
-
             setSyncLoading(true, "Syncing in progress...")
             kotlinx.coroutines.delay(100)
-
             try {
                 val success = SyncService().sync()
-
                 if (success) {
-                    setSyncLoading(true, "Sync successful! ✓")
-                    kotlinx.coroutines.delay(1500)
+                    setSyncLoading(true, "Sync successful! ")
+                    kotlinx.coroutines.delay(1000)
                     setSyncLoading(false)
                 } else {
                     setSyncLoading(false)

@@ -45,6 +45,16 @@ interface AssetDao {
     """)
     suspend fun getByBarcode(companyId: Int?, barcode: String): Asset?
 
+
+    @Query("""
+    SELECT * FROM tbl_asset
+    WHERE update_flag != 'D'
+    AND company_id = :companyId
+    AND (:locationId = 0 OR location_id = :locationId)
+    AND (:barcode = '' OR barcode = :barcode)
+    ORDER BY asset_id DESC""")
+    suspend fun searchAssets(companyId: Int,locationId: Int,barcode: String): List<Asset>
+
     @Query("""
         SELECT * FROM tbl_asset 
         WHERE company_id = :companyId 
