@@ -75,10 +75,6 @@ class AssetDataStore :
 
     // ── Barcode / Tag lookup (used by MovementViewModel) ─────────────────────
 
-    /**
-     * Mirrors Xamarin's GetItemByBarcodeAsync.
-     * Looks up an asset by companyId + barcode.
-     */
     suspend fun getItemByBarcodeAsync(companyId: Int, barcode: String): Asset? {
         return try {
             dao.getByBarcode(companyId, barcode)
@@ -107,7 +103,8 @@ class AssetDataStore :
     suspend fun getAssetsForImageSync(): List<Asset> =
         dao.getAssetsForImageSync()
 
-    // ── Shipment ──────────────────────────────────────────────────────────────
+    // ── Shipment ─────────────────────────────────────────────────────────────
+
 
     suspend fun getShipmentItems(): List<Shipment> =
         dao.getShipments()

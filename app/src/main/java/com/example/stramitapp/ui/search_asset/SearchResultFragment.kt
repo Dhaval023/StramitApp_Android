@@ -6,7 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentSearchResultBinding
 
 class SearchResultFragment : DialogFragment() {
@@ -16,6 +19,7 @@ class SearchResultFragment : DialogFragment() {
 
     companion object {
         private const val ARG_RESULTS = "search_results"
+        const val TAG = "SearchResultFragment"
 
         fun newInstance(results: ArrayList<SearchResultItem>): SearchResultFragment {
             val fragment = SearchResultFragment()
@@ -27,8 +31,7 @@ class SearchResultFragment : DialogFragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentSearchResultBinding.inflate(inflater, container, false)
@@ -37,15 +40,11 @@ class SearchResultFragment : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        val displayMetrics = resources.displayMetrics
-        val screenHeight = displayMetrics.heightPixels
-        val dialogHeight = (screenHeight * 0.75).toInt() // 75% of screen height
-
+        val screenHeight = resources.displayMetrics.heightPixels
         dialog?.window?.setLayout(
             WindowManager.LayoutParams.MATCH_PARENT,
-            dialogHeight
+            (screenHeight * 0.90).toInt()
         )
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -55,18 +54,34 @@ class SearchResultFragment : DialogFragment() {
         val results = arguments?.getSerializable(ARG_RESULTS) as? ArrayList<SearchResultItem>
             ?: arrayListOf()
 
-        val adapter = SearchResultAdapter()
+        val adapter = SearchResultAdapter { item ->
+            openDetailPage(item)
+        }
+
         binding.searchResultRecyclerview.apply {
             layoutManager = LinearLayoutManager(context)
             this.adapter = adapter
+            addItemDecoration(
+                DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL)
+            )
         }
 
         adapter.submitList(results)
         binding.itemCountTextview.text = "${results.size} items"
 
-        binding.closeButton.setOnClickListener {
-            dismiss()
-        }
+        binding.closeButton.setOnClickListener { dismiss() }
+    }
+
+    private fun openDetailPage(item: SearchResultItem) {
+        // 1. Dismiss the popup
+        dismiss()
+
+        // 2. Navigate to full page using parent fragment's NavController
+        val bundle = Bundle()
+        bundle.putSerializable("asset_item", item)
+        requireParentFragment()
+            .findNavController()
+            .navigate(R.id.nav_asset_detail, bundle)
     }
 
     override fun onDestroyView() {

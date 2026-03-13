@@ -7,7 +7,9 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.stramitapp.databinding.ItemSearchResultBinding
 
-class SearchResultAdapter : ListAdapter<SearchResultItem, SearchResultAdapter.SearchResultViewHolder>(DiffCallback()) {
+class SearchResultAdapter(
+    private val onItemClick: (SearchResultItem) -> Unit
+) : ListAdapter<SearchResultItem, SearchResultAdapter.SearchResultViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchResultViewHolder {
         val binding = ItemSearchResultBinding.inflate(
@@ -30,18 +32,14 @@ class SearchResultAdapter : ListAdapter<SearchResultItem, SearchResultAdapter.Se
             binding.pAccTextview.text = item.custom13
             binding.bgpbTextview.text = item.barcode
             binding.idTextview.text   = item.custom18
+            binding.root.setOnClickListener { onItemClick(item) }
         }
     }
 
     class DiffCallback : DiffUtil.ItemCallback<SearchResultItem>() {
-        override fun areItemsTheSame(
-            oldItem: SearchResultItem,
-            newItem: SearchResultItem
-        ): Boolean = oldItem.assetId == newItem.assetId
-
-        override fun areContentsTheSame(
-            oldItem: SearchResultItem,
-            newItem: SearchResultItem
-        ): Boolean = oldItem == newItem
+        override fun areItemsTheSame(old: SearchResultItem, new: SearchResultItem) =
+            old.assetId == new.assetId
+        override fun areContentsTheSame(old: SearchResultItem, new: SearchResultItem) =
+            old == new
     }
 }

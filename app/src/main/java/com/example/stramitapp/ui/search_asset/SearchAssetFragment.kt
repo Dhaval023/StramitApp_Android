@@ -57,7 +57,6 @@ class SearchAssetFragment : Fragment() {
                     )
                     binding.companyAutocompleteTextview.setAdapter(adapter)
 
-                    // Dynamic dropdown height
                     val itemHeight = 48
                     val maxVisibleItems = 5
                     val visibleItems = minOf(companies.size, maxVisibleItems)
@@ -65,7 +64,6 @@ class SearchAssetFragment : Fragment() {
                     binding.companyAutocompleteTextview.dropDownHeight =
                         (itemHeight * visibleItems * density).toInt()
 
-                    // Pre-select saved company
                     val saved = AppSettings.tempSelectedSystem
                     if (saved != null) {
                         val match = companies.find { it.companyId == saved.companyId }
@@ -85,8 +83,6 @@ class SearchAssetFragment : Fragment() {
             val company = viewModel.companies.value[position]
             selectedCompany = company
             AppSettings.tempSelectedSystem = company
-
-            // Reset location when company changes
             selectedLocation = null
             binding.locationAutocompleteTextview.setText("", false)
             viewModel.loadLocationsByCompany(company.companyId)
@@ -105,7 +101,6 @@ class SearchAssetFragment : Fragment() {
                     )
                     binding.locationAutocompleteTextview.setAdapter(adapter)
 
-                    // Dynamic dropdown height
                     val itemHeight = 48
                     val maxVisibleItems = 5
                     val visibleItems = minOf(locations.size, maxVisibleItems)
@@ -113,7 +108,6 @@ class SearchAssetFragment : Fragment() {
                     binding.locationAutocompleteTextview.dropDownHeight =
                         (itemHeight * visibleItems * density).toInt()
 
-                    // Pre-select saved location
                     val saved = AppSettings.tempSelectedLocation
                     if (saved != null) {
                         val match = locations.find { it.locationId == saved.locationId }
@@ -136,7 +130,6 @@ class SearchAssetFragment : Fragment() {
     }
 
     private fun setupSearchResults() {
-        // Observe loading state
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.isLoading.collect { isLoading ->
@@ -147,7 +140,6 @@ class SearchAssetFragment : Fragment() {
             }
         }
 
-        // Observe error messages
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.errorMessage.collect { message ->
@@ -158,18 +150,13 @@ class SearchAssetFragment : Fragment() {
             }
         }
 
-        // Observe search results — open SearchResultFragment when results arrive
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.searchResults.collect { results ->
                     if (results.isNotEmpty()) {
-                        val searchResultFragment = SearchResultFragment.newInstance(
-                            ArrayList(results)
-                        )
-                        searchResultFragment.show(
-                            childFragmentManager,
-                            "SearchResultFragment"
-                        )
+                        // Show as popup dialog (not full page navigation)
+                        SearchResultFragment.newInstance(ArrayList(results))
+                            .show(childFragmentManager, SearchResultFragment.TAG)
                     }
                 }
             }

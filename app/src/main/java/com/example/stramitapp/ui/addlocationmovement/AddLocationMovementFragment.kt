@@ -51,7 +51,7 @@ class AddLocationMovementFragment : Fragment() {
                     val names = companies.map { c: Company -> c.companyName ?: "" }
                     val adapter = ArrayAdapter(
                         requireContext(),
-                        android.R.layout.simple_dropdown_item_1line,
+                        R.layout.item_dropdown,
                         names
                     )
                     binding.companyAutocompleteTextview.setAdapter(adapter)
@@ -93,7 +93,7 @@ class AddLocationMovementFragment : Fragment() {
                     val names = locations.map { l: CompanyLocation -> l.locationName ?: "" }
                     val adapter = ArrayAdapter(
                         requireContext(),
-                        android.R.layout.simple_dropdown_item_1line,
+                        R.layout.item_dropdown,
                         names
                     )
                     binding.destinationLocationAutocompleteTextview.setAdapter(adapter)

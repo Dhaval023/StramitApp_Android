@@ -75,6 +75,20 @@
         android:label="@string/menu_search_asset"
         tools:layout="@layout/fragment_search_asset" />
 
+    <!-- ── Search Results (was a DialogFragment popup — now a full page) ── -->
+    <fragment
+        android:id="@+id/nav_search_result"
+        android:name="com.example.stramitapp.ui.search_asset.SearchResultFragment"
+        android:label="Search Results"
+        tools:layout="@layout/fragment_search_result" />
+
+    <!-- ── Asset Detail (was a nested DialogFragment — now full page) ───── -->
+    <fragment
+        android:id="@+id/nav_asset_detail"
+        android:name="com.example.stramitapp.ui.search_asset.AssetDetailFragment"
+        android:label="Asset Details"
+        tools:layout="@layout/fragment_asset_detail" />
+
     <fragment
         android:id="@+id/nav_load_shipment"
         android:name="com.example.stramitapp.ui.load_shipment.LoadShipmentFragment"

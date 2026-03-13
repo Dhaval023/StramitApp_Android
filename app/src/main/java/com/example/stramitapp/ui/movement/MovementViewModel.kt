@@ -15,8 +15,6 @@ import kotlinx.coroutines.withContext
 class MovementViewModel : ViewModel() {
 
     private val assetDataStore = AssetDataStore()
-
-    // The list of scanned Asset objects — mirrors Xamarin's ScannedItemsList
     private val _scannedAssets = MutableLiveData<List<Asset>>(emptyList())
     val scannedAssets: LiveData<List<Asset>> = _scannedAssets
 
@@ -25,11 +23,7 @@ class MovementViewModel : ViewModel() {
 
     private val _isBusy = MutableLiveData(false)
     val isBusy: LiveData<Boolean> = _isBusy
-
-    // Internal mutable list — same as Xamarin's ObservableCollection<Asset>
     private val internalList = mutableListOf<Asset>()
-
-    // ── Barcode scan (mirrors Xamarin AddBarcodeEvent) ────────────────────────
 
     fun onBarcodeScanned(barcode: String) {
         if (barcode.isBlank()) return
@@ -41,7 +35,6 @@ class MovementViewModel : ViewModel() {
                     return@launch
                 }
 
-                // 1. Check if barcode already in list (same as Xamarin duplicate check)
                 val alreadyInList = internalList.any { it.barcode == barcode }
                 if (alreadyInList) {
                     _toastMessage.value = "Barcode already scanned"
@@ -49,7 +42,6 @@ class MovementViewModel : ViewModel() {
                     return@launch
                 }
 
-                // 2. Look up asset in local DB by barcode (mirrors DetermineBarcode)
                 val asset = withContext(Dispatchers.IO) {
                     assetDataStore.getItemByBarcodeAsync(companyId, barcode)
                 }
@@ -60,7 +52,6 @@ class MovementViewModel : ViewModel() {
                     return@launch
                 }
 
-                // 3. Check if asset location has changed (mirrors IsAssetLocationModified)
                 val destinationLocationId = AppSettings.tempSelectedLocation?.locationId
                 if (asset.locationId == destinationLocationId) {
                     _toastMessage.value = "Asset was not moved. Please change its destination location to proceed."
@@ -68,7 +59,6 @@ class MovementViewModel : ViewModel() {
                     return@launch
                 }
 
-                // 4. Add to list
                 internalList.add(asset)
                 _scannedAssets.value = internalList.toList()
                 _toastMessage.value = "Asset added: ${asset.title ?: barcode}"
@@ -81,8 +71,6 @@ class MovementViewModel : ViewModel() {
         }
     }
 
-    // ── RFID tag scan (mirrors Xamarin AddEvent) ──────────────────────────────
-
     fun onTagScanned(tagId: String) {
         if (tagId.isBlank()) return
 
@@ -93,7 +81,6 @@ class MovementViewModel : ViewModel() {
                     return@launch
                 }
 
-                // 1. Check if tag already in list
                 val alreadyInList = internalList.any {
                     it.tag?.uppercase() == tagId.uppercase()
                 }
@@ -102,7 +89,6 @@ class MovementViewModel : ViewModel() {
                     return@launch
                 }
 
-                // 2. Look up asset by tag (mirrors DetermineTag)
                 val asset = withContext(Dispatchers.IO) {
                     assetDataStore.getItemByTagAsync(companyId, tagId)
                 }
@@ -112,14 +98,12 @@ class MovementViewModel : ViewModel() {
                     return@launch
                 }
 
-                // 3. Check if asset location has changed
                 val destinationLocationId = AppSettings.tempSelectedLocation?.locationId
                 if (asset.locationId == destinationLocationId) {
                     Log.d("MovementVM", "Asset location unchanged, skipping tag: $tagId")
                     return@launch
                 }
 
-                // 4. Add to list
                 internalList.add(asset)
                 _scannedAssets.value = internalList.toList()
                 Log.d("MovementVM", "Tag asset added: ${asset.title}, total: ${internalList.size}")
@@ -130,8 +114,13 @@ class MovementViewModel : ViewModel() {
         }
     }
 
-    // ── Delete single item (mirrors Xamarin DeleteEvent) ─────────────────────
+    fun submitMovement() {
+        val assets = scannedAssets.value ?: return
+        // TODO: call your API / repository here, e.g.:
 
+        clearAll()
+        _toastMessage.value = "Movement submitted successfully"
+    }
     fun deleteItem(asset: Asset) {
         internalList.remove(asset)
         _scannedAssets.value = internalList.toList()
@@ -145,8 +134,6 @@ class MovementViewModel : ViewModel() {
             _toastMessage.value = "Item deleted"
         }
     }
-
-    // ── Clear all (mirrors Xamarin ClearAllEvent) ─────────────────────────────
 
     fun clearAll() {
         internalList.clear()

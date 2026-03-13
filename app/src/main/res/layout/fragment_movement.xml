@@ -37,30 +37,30 @@
             <EditText
                 android:id="@+id/bentry"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:minHeight="50dp"
-                android:layout_marginTop="16dp"
-                android:background="@android:drawable/edit_text"
-                android:hint="Barcode"
-                android:padding="12dp"
-                android:textColor="@android:color/black"
+                android:layout_height="1dp"
+                android:alpha="0"
+                android:background="@null"
                 android:enabled="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
                 android:visibility="visible"
-                app:layout_constraintTop_toBottomOf="@id/reader_status_label"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/reader_status_label" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/scanned_items_container"
                 android:layout_width="0dp"
-                android:layout_height="500dp"
+                android:layout_height="450dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/bordered_background"
                 android:elevation="4dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/bentry">
+                app:layout_constraintTop_toBottomOf="@id/bentry"
+                app:layout_constraintVertical_bias="0.62">
 
                 <TextView
                     android:id="@+id/scanned_items_label"
@@ -123,7 +123,6 @@
                     android:text="0 item"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
-
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

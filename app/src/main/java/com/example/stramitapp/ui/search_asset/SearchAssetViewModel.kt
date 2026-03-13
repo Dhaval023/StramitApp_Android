@@ -71,12 +71,55 @@ class SearchAssetViewModel : ViewModel() {
                         } else ""
 
                         SearchResultItem(
-                            locationName = locName,
+                            assetId        = asset.assetId,
+                            locationName   = locName,
+                            barcode        = asset.barcode        ?: "",
                             companyAssetId = asset.companyAssetId ?: "",
-                            custom13 = asset.custom13 ?: "",
-                            barcode = asset.barcode ?: "",
-                            custom18 = asset.custom18 ?: "",
-                            assetId = asset.assetId
+                            title          = asset.title          ?: "",  // Product Description
+                            tag            = asset.tag            ?: "",
+                            serialNumber   = asset.serialNumber   ?: "",
+                            assetValue     = asset.assetValue?.toString() ?: "",
+                            weight         = asset.weight?.toString()     ?: "",
+                            weightUom      = asset.weightUom?.toString()  ?: "",
+                            longDesc       = asset.longDesc       ?: "",
+                            purchaseDate   = asset.purchaseDate   ?: "",  // Departure Date
+                            createDate     = asset.createDate     ?: "",  // Received Date
+                            custom1        = asset.custom1        ?: "",  // Length
+                            custom2        = asset.custom2        ?: "",  // Width
+                            custom3        = asset.custom3        ?: "",  // Girth
+                            custom4        = asset.custom4        ?: "",  // Colour
+                            custom5        = asset.custom5        ?: "",  // Number of Bends
+                            custom6        = asset.custom6        ?: "",  // Pack Number
+                            custom7        = asset.custom7        ?: "",  // Total Pack Number
+                            custom8        = asset.custom8        ?: "",  // Split Number
+                            custom9        = asset.custom9        ?: "",  // Supplier Reference
+                            custom10       = asset.custom10       ?: "",  // Supplier Number
+                            custom11       = asset.custom11       ?: "",  // Docket Number
+                            custom12       = asset.custom12       ?: "",  // PO Number
+                            custom13       = asset.custom13       ?: "",  // M3 CO
+                            custom14       = asset.custom14       ?: "",  // Customer Name
+                            custom15       = asset.custom15       ?: "",  // Customer Reference
+                            custom16       = asset.custom16       ?: "",  // Delivery Number
+                            custom17       = asset.custom17       ?: "",  // Drop Number
+                            custom18       = asset.custom18       ?: "",  // Shipment Number
+                            custom19       = asset.custom19       ?: "",  // Route
+                            custom20       = asset.custom20       ?: "",  // Delivery Instruction
+                            custom21       = asset.custom21       ?: "",  // Address
+                            custom22       = asset.custom22       ?: "",  // M3 DO
+                            custom23       = asset.custom23       ?: "",  // Quantity alt
+                            custom24       = asset.custom24       ?: "",  // QuantityUOM
+                            custom25       = asset.custom25       ?: "",  // LengthUOM
+                            custom26       = asset.custom26       ?: "",  // HeightUOM
+                            custom27       = asset.custom27       ?: "",  // WidthUOM
+                            custom28       = asset.custom28       ?: "",  // WeightUOM
+                            custom29       = asset.custom29       ?: "",  // GirthUOM
+                            custom30       = asset.custom30       ?: "",  // ColourUOM
+                            custom31       = asset.custom31       ?: "",  // Package Structure
+                            custom32       = asset.custom32       ?: "",  // Manufacturing Instruction
+                            custom33       = asset.custom33       ?: "",  // Schedule Number
+                            custom34       = asset.custom34       ?: "",  // Mark Number
+                            custom35       = asset.custom35       ?: "",  // Pack Description
+                            custom36       = asset.custom36       ?: ""   // Package Number
                         )
                     }
                 }

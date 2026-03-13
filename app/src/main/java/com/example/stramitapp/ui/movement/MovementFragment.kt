@@ -4,6 +4,9 @@ import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
@@ -14,6 +17,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import com.example.stramitapp.Global
 import com.example.stramitapp.MainActivity
+import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentMovementBinding
 import com.example.stramitapp.zebraconnection.Inventory.TagDataViewModel
 import com.example.stramitapp.zebraconnection.RFIDHandler
@@ -43,6 +47,7 @@ class MovementFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setHasOptionsMenu(true)
 
         val locationName = arguments?.getString("locationName")
         if (!locationName.isNullOrEmpty()) {
@@ -63,13 +68,11 @@ class MovementFragment : Fragment() {
             showDeleteAllConfirmation()
         }
 
-        // Observe scanned assets from ViewModel
         movementViewModel.scannedAssets.observe(viewLifecycleOwner) { assets ->
             scannedListAdapter?.updateData(assets)
             updateItemCount(assets.size)
         }
 
-        // Observe toast messages
         movementViewModel.toastMessage.observe(viewLifecycleOwner) { message ->
             if (!message.isNullOrEmpty()) {
                 Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
@@ -86,30 +89,57 @@ class MovementFragment : Fragment() {
         observeConnectionStatus()
     }
 
-    // ── Barcode mode: hidden EditText captures DataWedge keystrokes ───────────
-    // This mirrors exactly how Xamarin's hidden bentry works
+    @Deprecated("Deprecated in Java")
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_movement, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    @Deprecated("Deprecated in Java")
+   override  fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_submit -> {
+                onSubmitClicked()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun onSubmitClicked() {
+        val assets = movementViewModel.scannedAssets.value
+        if (assets.isNullOrEmpty()) {
+            Toast.makeText(requireContext(), "No items to submit", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Submit Movement")
+            .setMessage("Submit ${assets.size} item(s)?")
+            .setPositiveButton("Submit") { _, _ ->
+                movementViewModel.submitMovement()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
 
     private fun setupBarcodeMode() {
         Log.d("MovementFragment", "Barcode Mode Setup — using hidden bentry EditText")
 
         val bentry = binding.bentry
 
-        // Make focusable so DataWedge keystrokes land here
         bentry.isFocusable = true
         bentry.isFocusableInTouchMode = true
         bentry.requestFocus()
 
-        // Prevent soft keyboard from appearing
         bentry.setShowSoftInputOnFocus(false)
 
-        // Keep bentry focused if user taps elsewhere
         binding.root.setOnClickListener { bentry.requestFocus() }
         binding.scannedList.setOnTouchListener { _, _ ->
             bentry.requestFocus()
             false
         }
 
-        // Method 1: Enter key after scan (most common DataWedge keystroke config)
         bentry.setOnEditorActionListener { _, actionId, event ->
             val isEnterKey = event?.keyCode == KeyEvent.KEYCODE_ENTER
                     && event.action == KeyEvent.ACTION_DOWN
@@ -128,7 +158,6 @@ class MovementFragment : Fragment() {
             } else false
         }
 
-        // Method 2: Key listener — catches Enter/Tab even if EditorAction doesn't fire
         bentry.setOnKeyListener { _, keyCode, event ->
             if (event.action == KeyEvent.ACTION_DOWN &&
                 (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_TAB)
@@ -143,8 +172,6 @@ class MovementFragment : Fragment() {
             } else false
         }
 
-        // Method 3: TextWatcher fallback — for DataWedge configs that don't send Enter
-        // DataWedge pastes the full barcode at once, so we wait 300ms for text to settle
         bentry.addTextChangedListener(object : android.text.TextWatcher {
             private var lastChangeTime = 0L
 
