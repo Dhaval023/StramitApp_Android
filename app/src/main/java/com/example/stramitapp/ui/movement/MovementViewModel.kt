@@ -7,6 +7,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stramitapp.model.Asset
 import com.example.stramitapp.Repositories.AssetDataStore
+import com.example.stramitapp.Repositories.AssetMovementInfoDataStore
+import com.example.stramitapp.model.AssetMovementInfo
+import com.example.stramitapp.models.Database.AppDatabase
+import com.example.stramitapp.services.App
+import com.example.stramitapp.services.SyncService
 import com.example.stramitapp.utilities.AppSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -15,6 +20,7 @@ import kotlinx.coroutines.withContext
 class MovementViewModel : ViewModel() {
 
     private val assetDataStore = AssetDataStore()
+    private val assetMovementInfoDataStore = AssetMovementInfoDataStore()
     private val _scannedAssets = MutableLiveData<List<Asset>>(emptyList())
     val scannedAssets: LiveData<List<Asset>> = _scannedAssets
 
@@ -115,11 +121,119 @@ class MovementViewModel : ViewModel() {
     }
 
     fun submitMovement() {
-        val assets = scannedAssets.value ?: return
-        // TODO: call your API / repository here, e.g.:
+        val assets = internalList.toList()
 
-        clearAll()
-        _toastMessage.value = "Movement submitted successfully"
+        if (assets.isEmpty()) {
+            _toastMessage.value = "No scanned items. Please scan and try again."
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                _isBusy.value = true
+
+                val destinationLocationId = AppSettings.tempSelectedLocation?.locationId ?: run {
+                    _toastMessage.value = "No destination location selected."
+                    _isBusy.value = false
+                    return@launch
+                }
+
+                val authenticatedUser = AppSettings.authenticatedUser ?: run {
+                    _toastMessage.value = "User not authenticated. Please login again."
+                    _isBusy.value = false
+                    return@launch
+                }
+
+                var isSuccess = false
+                val addedMovementInfoList = mutableListOf<AssetMovementInfo>()
+                val nowDateStr = getCurrentUtcDateString()
+
+                for (item in assets) {
+                    val sourceLocationId = item.locationId ?: 0
+
+                    item.locationId = destinationLocationId
+                    item.lastUpdatedBy = authenticatedUser.userId
+                    item.lastUpdateDeviceId = AppSettings.deviceId
+                    item.lastUpdateDate = nowDateStr
+
+                    assetDataStore.updateItemAsync(item)
+
+                    val movementInfo = AssetMovementInfo().apply {
+                        assetId = item.assetId
+                        this.sourceLocationId = sourceLocationId
+                        this.destinationLocationId = destinationLocationId
+                        deviceId = item.deviceId
+                        movedBy = authenticatedUser.userId
+                        movementRecordedBy = authenticatedUser.userId
+                        movementDate = nowDateStr
+                        updatedBy = authenticatedUser.userId
+                        lastUpdateDate = nowDateStr
+                        updateFlag = "I"
+                        flagSync = item.flagSync ?: 0
+                        attributeDeviceId = item.deviceId
+                        movementType = "in"
+                        workOrderNumber = ""
+                    }
+
+                    val isItemAdded = withContext(Dispatchers.IO) {
+                        assetMovementInfoDataStore.addItemAsync(movementInfo)
+                    }
+
+                    Log.d("MovementVM", "addItemAsync result: $isItemAdded for assetId: ${item.assetId}")
+
+                    if (isItemAdded) {
+                        addedMovementInfoList.add(movementInfo)
+                        isSuccess = true
+                    } else {
+                        isSuccess = false
+                        break
+                    }
+                }
+
+                if (isSuccess) {
+                    clearAll()
+                    _toastMessage.value = "Asset moved successfully."
+
+                    withContext(Dispatchers.IO) {
+                        try {
+                            val syncService = SyncService()
+                            syncService.forceSync()
+                        } catch (ex: Exception) {
+                            Log.e("MovementVM", "Post-submit sync error: ${ex.message}", ex)
+                        } finally {
+                            try {
+                                val app = AppSettings.appContext
+                                if (app is com.example.stramitapp.App) {
+                                    app.reinitializeRepository()
+                                }
+                            } catch (ex: Exception) {
+                                Log.e("MovementVM", "DB reinit failed: ${ex.message}", ex)
+                            }
+                        }
+                    }
+
+                } else {
+                    withContext(Dispatchers.IO) {
+                        for (movementInfo in addedMovementInfoList) {
+                            assetMovementInfoDataStore.deleteItemAsync(movementInfo)
+                        }
+                    }
+                    _toastMessage.value = "An error occurred while moving asset."
+                }
+
+            } catch (e: Exception) {
+                Log.e("MovementVM", "submitMovement EXCEPTION: ${e.javaClass.simpleName} — ${e.message}", e)
+                _toastMessage.value = "Error: ${e.message}"
+            } finally {
+                _isBusy.value = false
+            }
+        }
+    }
+
+    private fun getCurrentUtcDateString(): String {
+        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
+        sdf.timeZone = java.util.TimeZone.getTimeZone("UTC")
+        return sdf.format(java.util.Date())
     }
     fun deleteItem(asset: Asset) {
         internalList.remove(asset)

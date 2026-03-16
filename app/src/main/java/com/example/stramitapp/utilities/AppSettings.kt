@@ -39,7 +39,9 @@ object AppSettings {
 
     lateinit var appContext: Context
 
-    lateinit var database: AppDatabase
+    // ── Always returns the current live DB instance, auto-reinits if closed ──
+    val database: AppDatabase
+        get() = AppDatabase.getInstance()
 
     fun isOnline(context: Context): Boolean {
         return ConnectionChecker.isConnected(context)

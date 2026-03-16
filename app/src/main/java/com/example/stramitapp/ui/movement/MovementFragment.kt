@@ -23,7 +23,7 @@ import com.example.stramitapp.zebraconnection.Inventory.TagDataViewModel
 import com.example.stramitapp.zebraconnection.RFIDHandler
 
 class MovementFragment : Fragment() {
-
+    private lateinit var viewModel: MovementViewModel
     private var _binding: FragmentMovementBinding? = null
     private val binding get() = _binding!!
 
@@ -48,12 +48,19 @@ class MovementFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
-
+        viewModel = ViewModelProvider(this)[MovementViewModel::class.java]
         val locationName = arguments?.getString("locationName")
+
         if (!locationName.isNullOrEmpty()) {
             (requireActivity() as? androidx.appcompat.app.AppCompatActivity)
                 ?.supportActionBar?.title = locationName
         }
+
+        viewModel.isBusy.observe(viewLifecycleOwner) { busy ->
+            binding.syncLoaderOverlay.visibility =
+                if (busy) View.VISIBLE else View.GONE
+            }
+
 
         val mainActivity = requireActivity() as? MainActivity
         rfidHandler = mainActivity?.getRfidHandler()
@@ -106,7 +113,7 @@ class MovementFragment : Fragment() {
         }
     }
 
-    private fun onSubmitClicked() {
+    fun onSubmitClicked() {
         val assets = movementViewModel.scannedAssets.value
         if (assets.isNullOrEmpty()) {
             Toast.makeText(requireContext(), "No items to submit", Toast.LENGTH_SHORT).show()

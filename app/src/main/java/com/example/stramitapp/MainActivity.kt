@@ -17,6 +17,7 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.example.stramitapp.databinding.ActivityMainBinding
 import com.example.stramitapp.ui.login.LoginViewModel
+import com.example.stramitapp.ui.movement.MovementFragment
 import com.example.stramitapp.zebraconnection.BarcodeHandler
 import com.example.stramitapp.zebraconnection.Inventory.TagDataViewModel
 import com.example.stramitapp.zebraconnection.RFIDHandler
@@ -102,8 +103,26 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        return NavigationUI.onNavDestinationSelected(item, navController) || super.onOptionsItemSelected(item)
+//    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return NavigationUI.onNavDestinationSelected(item, navController) || super.onOptionsItemSelected(item)
+        return when (item.itemId) {
+
+            R.id.action_submit -> {
+                val navHost = supportFragmentManager
+                    .findFragmentById(R.id.nav_host_fragment_content_main)
+                val currentFragment = navHost?.childFragmentManager
+                    ?.primaryNavigationFragment
+                if (currentFragment is MovementFragment) {
+                    currentFragment.onSubmitClicked()
+                }
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {

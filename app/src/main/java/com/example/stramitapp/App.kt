@@ -9,6 +9,7 @@ import com.example.stramitapp.utilities.SecurePrefs
 import com.example.stramitapp.Repositories.AssetDataStore
 import com.example.stramitapp.Repositories.AssetMaintenanceInfoDataStore
 import com.example.stramitapp.Repositories.AssetMemoInfoDataStore
+import com.example.stramitapp.Repositories.AssetMovementInfoDataStore
 import com.example.stramitapp.Repositories.CompanyLocationDataStore
 import com.example.stramitapp.Repositories.UserDataStore
 import com.example.stramitapp.Repositories.DataStore.WpCompanyDataStore
@@ -33,7 +34,6 @@ class App : Application() {
         AppDatabase.init(this)
 
         val db = AppDatabase.getInstance()
-        AppSettings.database = db
 
         buildRepository(db)
     }
@@ -57,7 +57,8 @@ class App : Application() {
                 companyLocationDataStore = CompanyLocationDataStore(),
                 companyDataStore = CompanyDataStore(),
                 userDataStore = UserDataStore(),
-                wpCompanyDataStore = WpCompanyDataStore()
+                wpCompanyDataStore = WpCompanyDataStore(),
+                assetMovementInfoDataStore = AssetMovementInfoDataStore()
             )
     }
 

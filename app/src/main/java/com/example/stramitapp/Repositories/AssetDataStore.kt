@@ -6,6 +6,7 @@ import com.example.stramitapp.Repositories.Base.BaseRepository
 import com.example.stramitapp.Repositories.Base.IDataStore
 import com.example.stramitapp.model.Asset
 import com.example.stramitapp.model.Shipment
+import com.example.stramitapp.utilities.AppSettings
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -13,7 +14,8 @@ class AssetDataStore :
     BaseRepository<Asset>(),
     IDataStore<Asset> {
 
-    private val dao: AssetDao by lazy { db.assetDao() }
+     val dao: AssetDao
+        get() = AppSettings.database.assetDao()
 
     private val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 

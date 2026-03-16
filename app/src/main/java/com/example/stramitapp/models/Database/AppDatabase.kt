@@ -58,7 +58,7 @@ import java.io.File
         User::class,
         Shipment::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -86,26 +86,28 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun init(context: Context) {
             synchronized(this) {
-                if (INSTANCE == null) {
+                if (INSTANCE == null || INSTANCE?.isOpen == false) {
                     INSTANCE = build(context)
                 }
             }
         }
 
-        /**
-         * Safely closes the DB connection and nulls the singleton.
-         * Uses the underlying SQLite helper directly to avoid
-         * triggering Room's internal coroutine scope cancellation,
-         * which would cascade and cancel the calling coroutine.
-         */
         fun resetInstance() {
             synchronized(this) {
                 try {
-                    // Close only the SQLite connection, not Room's coroutine scope
                     INSTANCE?.openHelper?.close()
                 } catch (_: Exception) {}
                 INSTANCE = null
             }
+        }
+
+        // ── Auto-reinit if closed or null ─────────────────────────────────
+        fun getInstance(): AppDatabase {
+            return INSTANCE?.takeIf { it.isOpen }
+                ?: synchronized(this) {
+                    INSTANCE?.takeIf { it.isOpen }
+                        ?: build(AppSettings.appContext).also { INSTANCE = it }
+                }
         }
 
         private fun build(context: Context): AppDatabase {
@@ -123,10 +125,5 @@ abstract class AppDatabase : RoomDatabase() {
                 .fallbackToDestructiveMigration()
                 .build()
         }
-
-        fun getInstance(): AppDatabase =
-            INSTANCE ?: throw IllegalStateException(
-                "AppDatabase not initialized. Call AppDatabase.init(context) in your Application.onCreate()."
-            )
     }
 }

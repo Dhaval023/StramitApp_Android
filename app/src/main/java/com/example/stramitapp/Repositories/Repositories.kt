@@ -7,5 +7,6 @@ class Repository(
     val assetDataStore: AssetDataStore,
     val assetMemoInfoDataStore : AssetMemoInfoDataStore,
     val assetMaintenanceInfoDataStore : AssetMaintenanceInfoDataStore,
+    val assetMovementInfoDataStore:AssetMovementInfoDataStore,
     val userDataStore: UserDataStore
 )

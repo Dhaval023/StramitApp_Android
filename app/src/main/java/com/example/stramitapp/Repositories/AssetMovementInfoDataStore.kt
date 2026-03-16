@@ -6,8 +6,8 @@ import com.example.stramitapp.utilities.AppSettings
 
 class AssetMovementInfoDataStore {
 
-    private val dao: AssetMovementInfoDao =
-        AppSettings.database.assetMovementInfoDao()
+     val dao: AssetMovementInfoDao
+        get() = AppSettings.database.assetMovementInfoDao()
 
 
     suspend fun getItemAsync(id: Int): AssetMovementInfo? {
@@ -23,6 +23,7 @@ class AssetMovementInfoDataStore {
             dao.insert(item)
             true
         } catch (ex: Exception) {
+            android.util.Log.e("AssetMovementInfoDS", "insert FAILED: ${ex.javaClass.simpleName} — ${ex.message}", ex)
             false
         }
     }
