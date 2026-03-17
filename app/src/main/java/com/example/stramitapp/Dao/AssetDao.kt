@@ -209,5 +209,33 @@ interface AssetDao {
         m3CO: String,
         m3DO: String
     ): List<Asset>
+    @Query("""
+    SELECT * FROM tbl_asset 
+    WHERE company_id = :companyId
+    AND barcode = :barcode 
+    AND custom_18 = :shipmentNumber
+    AND update_flag != 'D'
+    LIMIT 1
+""")
+    suspend fun getShipmentItemByBarcodeOnly(
+        companyId: Int,
+        barcode: String,
+        shipmentNumber: String
+    ): Asset?
+
+    @Query("""
+    SELECT * FROM tbl_asset 
+    WHERE company_id = :companyId
+    AND UPPER(tag) = UPPER(:tag)
+    AND custom_18 = :shipmentNumber
+    AND update_flag != 'D'
+    LIMIT 1
+""")
+    suspend fun getShipmentItemByTagOnly(
+        companyId: Int,
+        tag: String,
+        shipmentNumber: String
+    ): Asset?
+
 
 }

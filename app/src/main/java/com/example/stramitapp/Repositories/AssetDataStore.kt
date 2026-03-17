@@ -127,8 +127,71 @@ class AssetDataStore :
         )
         return dao.deleteAssetsBetween(fromDate, toDate)
     }
+    suspend fun getShipmentItemByBarcodeOnlyAsync(
+        barcode: String,
+        shipmentNumber: String,
+        companyId: Int?
+    ): AssetResult {
+        return try {
+            if (barcode.isBlank()) {
+                return AssetResult.Error(IllegalArgumentException("Barcode cannot be blank"))
+            }
+            if (shipmentNumber.isBlank()) {
+                return AssetResult.Error(IllegalArgumentException("ShipmentNumber cannot be blank"))
+            }
+            if (companyId == null) {
+                return AssetResult.Error(IllegalArgumentException("CompanyId cannot be null"))
+            }
 
+            val result = dao.getShipmentItemByBarcodeOnly(
+                companyId,            // ✅ Int first
+                barcode.trim(),       // ✅ String second
+                shipmentNumber.trim() // ✅ String third
+            )
+            AssetResult.Success(result)
+
+        } catch (e: Exception) {
+            Log.e("AssetDataStore",
+                "getShipmentItemByBarcodeOnlyAsync failed | barcode=$barcode | shipment=$shipmentNumber | companyId=$companyId", e)
+            AssetResult.Error(e)
+        }
+    }
+    suspend fun getShipmentItemByTagOnlyAsync(
+        tag: String,
+        shipmentNumber: String,
+        companyId: Int?
+    ): AssetResult {
+        return try {
+            if (tag.isBlank()) {
+                return AssetResult.Error(IllegalArgumentException("Tag cannot be blank"))
+            }
+            if (shipmentNumber.isBlank()) {
+                return AssetResult.Error(IllegalArgumentException("ShipmentNumber cannot be blank"))
+            }
+            if (companyId == null) {
+                return AssetResult.Error(IllegalArgumentException("CompanyId cannot be null"))
+            }
+
+            val result = dao.getShipmentItemByTagOnly(
+                companyId,            // ✅ Int first
+                tag.trim(),           // ✅ String second
+                shipmentNumber.trim() // ✅ String third
+            )
+            AssetResult.Success(result)
+
+        } catch (e: Exception) {
+            Log.e("AssetDataStore",
+                "getShipmentItemByTagOnlyAsync failed | tag=$tag | shipment=$shipmentNumber | companyId=$companyId", e)
+            AssetResult.Error(e)
+        }
+
+
+    }
     override suspend fun initializeAsync() {}
     override suspend fun pullLatestAsync(): Boolean = false
     override suspend fun syncAsync(): Boolean = false
+}
+sealed class AssetResult {
+    data class Success(val asset: Asset?) : AssetResult()
+    data class Error(val exception: Exception) : AssetResult()
 }
