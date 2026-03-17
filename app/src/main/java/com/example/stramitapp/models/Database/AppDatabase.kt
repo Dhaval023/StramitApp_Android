@@ -26,6 +26,7 @@ import com.example.stramitapp.Dao.AssetMemoInfoDao
 import com.example.stramitapp.Dao.AssetMaintenanceInfoDao
 import com.example.stramitapp.Dao.AssetStatusDao
 import com.example.stramitapp.Dao.CompanyLocationDao
+import com.example.stramitapp.Dao.ShipmentDao
 import com.example.stramitapp.Dao.UserDao
 import com.example.stramitapp.Dao.WpCompanyDao
 import com.example.stramitapp.model.AssetMaintenanceInfo
@@ -79,6 +80,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun wpCompanyDao(): WpCompanyDao
     abstract fun assetStatusDao(): AssetStatusDao
+    abstract fun shipmentDao(): ShipmentDao
+
 
     companion object {
         @Volatile

@@ -7,7 +7,7 @@ import java.io.Serializable
  * Your SearchViewModel must map every field from the API/DB Asset response.
  */
 data class SearchResultItem(
-    val assetId: Int = 0,
+    val assetId: Int? = 0,
 
     // ── Standard fields ──────────────────────────────────────────────────────
     val locationName: String? = null,       // location label on card + detail

@@ -195,4 +195,19 @@ interface AssetDao {
         LIMIT 1
     """)
     suspend fun getShipment(shipmentNumber: String): Shipment?
+
+    @Query("""
+    SELECT * FROM tbl_asset
+    WHERE update_flag != 'D'
+    AND (:shipmentNumber = '' OR custom_18 LIKE '%' || :shipmentNumber || '%')
+    AND (:m3CO = ''           OR custom_13 LIKE '%' || :m3CO           || '%')
+    AND (:m3DO = ''           OR custom_22 LIKE '%' || :m3DO           || '%')
+    ORDER BY asset_id DESC
+""")
+    suspend fun searchShipmentAssets(
+        shipmentNumber: String,
+        m3CO: String,
+        m3DO: String
+    ): List<Asset>
+
 }

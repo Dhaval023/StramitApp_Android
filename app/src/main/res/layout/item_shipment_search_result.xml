@@ -1,16 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp">
+    android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/shipment_id_textview"
-        android:layout_width="wrap_content"
+    <!-- 3-row, 2-column grid matching Xamarin layout exactly -->
+    <GridLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="6133213"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:padding="10dp"
+        android:rowCount="3"
+        android:columnCount="2">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- Row 0 Col 0: LocationName -->
+        <TextView
+            android:id="@+id/location_name_textview"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_row="0"
+            android:layout_column="0"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:ellipsize="end"
+            android:singleLine="true" />
+
+        <!-- Row 0 Col 1: custom13 — M3 CO -->
+        <TextView
+            android:id="@+id/custom13_textview"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_row="0"
+            android:layout_column="1"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:ellipsize="end"
+            android:singleLine="true" />
+
+        <!-- Row 1 Col 0: custom22 — M3 DO -->
+        <TextView
+            android:id="@+id/custom22_textview"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_row="1"
+            android:layout_column="0"
+            android:layout_marginTop="4dp"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:ellipsize="end"
+            android:singleLine="true" />
+
+        <!-- Row 1 Col 1: companyAssetId — Product SKU -->
+        <TextView
+            android:id="@+id/company_asset_id_textview"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_row="1"
+            android:layout_column="1"
+            android:layout_marginTop="4dp"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:ellipsize="end"
+            android:singleLine="true" />
+
+        <!-- Row 2 Col 0: custom17 — Drop Number -->
+        <TextView
+            android:id="@+id/custom17_textview"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_row="2"
+            android:layout_column="0"
+            android:layout_marginTop="4dp"
+            android:textSize="13sp"
+            android:textColor="@android:color/darker_gray"
+            android:ellipsize="end"
+            android:singleLine="true" />
+
+        <!-- Row 2 Col 1: barcode -->
+        <TextView
+            android:id="@+id/barcode_textview"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_row="2"
+            android:layout_column="1"
+            android:layout_marginTop="4dp"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:ellipsize="end"
+            android:singleLine="true" />
+
+    </GridLayout>
+
+    <!-- Divider between rows -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        android:alpha="0.2" />
+
+</LinearLayout>

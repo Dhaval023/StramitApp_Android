@@ -15,8 +15,7 @@ class ShipmentSearchResultFragment : DialogFragment() {
     private val binding get() = _binding!!
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentShipmentSearchResultBinding.inflate(inflater, container, false)
@@ -34,27 +33,48 @@ class ShipmentSearchResultFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val searchResultAdapter = ShipmentSearchResultAdapter()
-        binding.searchResultRecyclerview.apply {
-            layoutManager = LinearLayoutManager(context)
-            adapter = searchResultAdapter
-        }
+        @Suppress("DEPRECATION")
+        val results: List<ShipmentSearchResultItem> =
+            arguments?.getParcelableArrayList<ShipmentSearchResultItem>(ARG_RESULTS)
+                ?: emptyList()
 
-        val dummyData = listOf(
-            ShipmentSearchResultItem("6133213"),
-            ShipmentSearchResultItem("M3 CO"),
-            ShipmentSearchResultItem("M3 DO"),
-        )
-        searchResultAdapter.submitList(dummyData)
-        binding.itemCountTextview.text = "${dummyData.size} items"
-
-        binding.closeButton.setOnClickListener {
+        val adapter = ShipmentSearchResultAdapter { item ->
+            val searchResultItem = item.toSearchResultItem()
             dismiss()
+
+            requireActivity().supportFragmentManager.beginTransaction()
+                .replace(com.example.stramitapp.R.id.nav_host_fragment_content_main,
+                    com.example.stramitapp.ui.search_asset.AssetDetailFragment.newInstance(searchResultItem))
+                .addToBackStack(null)
+                .commit()
         }
+
+        binding.searchResultRecyclerview.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            this.adapter  = adapter
+        }
+        adapter.submitList(results)
+        binding.itemCountTextview.text = "${results.size} items"
+
+        binding.closeButton.setOnClickListener { dismiss() }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    companion object {
+        const val TAG = "ShipmentSearchResultFragment"
+        private const val ARG_RESULTS = "arg_results"
+
+        fun newInstance(results: ArrayList<ShipmentSearchResultItem>): ShipmentSearchResultFragment {
+            return ShipmentSearchResultFragment().apply {
+                arguments = Bundle().apply {
+                    @Suppress("UNCHECKED_CAST")
+                    putParcelableArrayList(ARG_RESULTS, results as ArrayList<out android.os.Parcelable>)
+                }
+            }
+        }
     }
 }
