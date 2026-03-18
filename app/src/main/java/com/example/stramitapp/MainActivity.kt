@@ -3,6 +3,7 @@ package com.example.stramitapp
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -59,6 +60,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             settingsMenuItem?.isVisible = destination.id == R.id.nav_login
+            binding.appBarMain.toolbar.visibility =
+                if (destination.id == R.id.nav_shipment_item_result) {
+                    View.GONE
+                } else {
+                    View.VISIBLE
+                }
             if (destination.id == R.id.nav_login) {
                 drawerLayout?.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
                 supportActionBar?.setDisplayHomeAsUpEnabled(false)

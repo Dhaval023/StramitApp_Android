@@ -45,7 +45,6 @@ interface AssetDao {
     """)
     suspend fun getByBarcode(companyId: Int?, barcode: String): Asset?
 
-
     @Query("""
     SELECT * FROM tbl_asset
     WHERE update_flag != 'D'
@@ -53,7 +52,7 @@ interface AssetDao {
     AND (:locationId = 0 OR location_id = :locationId)
     AND (:barcode = '' OR barcode = :barcode)
     ORDER BY asset_id DESC""")
-    suspend fun searchAssets(companyId: Int,locationId: Int,barcode: String): List<Asset>
+    suspend fun searchAssets(companyId: Int, locationId: Int, barcode: String): List<Asset>
 
     @Query("""
         SELECT * FROM tbl_asset 
@@ -209,6 +208,7 @@ interface AssetDao {
         m3CO: String,
         m3DO: String
     ): List<Asset>
+
     @Query("""
     SELECT * FROM tbl_asset 
     WHERE company_id = :companyId
@@ -237,5 +237,14 @@ interface AssetDao {
         shipmentNumber: String
     ): Asset?
 
+    // ---------------- SHIPMENT RESULT LIST ----------------
 
+    @Query("""
+        SELECT * FROM tbl_asset
+        WHERE update_flag != 'D'
+          AND update_flag != 'S'
+          AND (:shipmentNumber = '' OR custom_18 = :shipmentNumber)
+        ORDER BY asset_id DESC
+    """)
+    suspend fun getShipmentResultAssets(shipmentNumber: String): List<Asset>
 }

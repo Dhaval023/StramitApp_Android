@@ -102,9 +102,13 @@
     <fragment
         android:id="@+id/nav_load_shipment_list"
         android:name="com.example.stramitapp.ui.load_shipment.LoadShipmentListFragment"
-        android:label="6133213"
-        tools:layout="@layout/fragment_load_shipment_list" />
-
+        android:label="Load Shipment List"
+        tools:layout="@layout/fragment_load_shipment_list">
+    <argument
+        android:name="shipmentNumber"
+        app:argType="string"
+        android:defaultValue="" />
+    </fragment>
     <fragment
         android:id="@+id/nav_search_shipment"
         android:name="com.example.stramitapp.ui.search_shipment.SearchShipmentFragment"
@@ -122,5 +126,24 @@
         android:name="com.example.stramitapp.ui.sync.SyncFragment"
         android:label="@string/menu_sync"
         tools:layout="@layout/fragment_sync" />
+
+    <fragment
+        android:id="@+id/shipmentAddTruckFragment"
+        android:name="com.example.stramitapp.ui.load_shipment.ShipmentAddTruckFragment"
+        android:label="Add Truck" >
+        <argument
+            android:name="shipmentNumber"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
+    <action
+        android:id="@+id/action_currentFragment_to_shipmentAddTruckFragment"
+        app:destination="@id/shipmentAddTruckFragment" />
+
+    <fragment
+        android:id="@+id/nav_shipment_item_result"
+        android:name="com.example.stramitapp.ui.load_shipment.ShipmentItemResultFragment"
+        android:label="Shipment Item List"
+        tools:layout="@layout/fragment_shipment_item_result" />
 
 </navigation>

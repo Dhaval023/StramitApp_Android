@@ -40,7 +40,8 @@ class AssetDataStore :
 
     override suspend fun updateItemAsync(item: Asset): Boolean {
         return try {
-            dao.update(item) > 0
+            dao.insert(item)
+            true
         } catch (e: Exception) {
             Log.e("AssetDataStore", "Update failed", e)
             false

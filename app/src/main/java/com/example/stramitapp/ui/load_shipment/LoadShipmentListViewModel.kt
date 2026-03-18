@@ -33,11 +33,6 @@ class ShipmentListViewModel(application: Application) : AndroidViewModel(applica
             _uiEvent.postValue("Company ID not found. Please login again.")
             return
         }
-        Log.d("ShipmentListVM", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        Log.d("ShipmentListVM", "📦 Shipment No : $shipmentNumber")
-        Log.d("ShipmentListVM", "🔖 Barcode/Tag : $barcode")
-        Log.d("ShipmentListVM", "🏢 Company ID  : $companyId")
-        Log.d("ShipmentListVM", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
         viewModelScope.launch {
             val list = _items.value ?: mutableListOf()

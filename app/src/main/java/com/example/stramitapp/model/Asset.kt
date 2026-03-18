@@ -1,12 +1,16 @@
 package com.example.stramitapp.model
 
+import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.stramitapp.models.Interfaces.Base.IBaseLocalModel
+import kotlinx.parcelize.Parcelize
 
+
+@Parcelize
 @Entity(tableName = "tbl_asset")
-open class Asset : IBaseLocalModel {
+open class Asset : IBaseLocalModel, Parcelable {
 
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "asset_id")

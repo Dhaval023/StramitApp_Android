@@ -14,8 +14,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.example.stramitapp.Global
 import com.example.stramitapp.MainActivity
+import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentLoadShipmentListBinding
 import com.example.stramitapp.zebraconnection.Inventory.TagDataViewModel
 import com.example.stramitapp.zebraconnection.RFIDHandler
@@ -43,9 +45,16 @@ class LoadShipmentListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        shipmentNumber = arguments?.getString("shipmentNumber").orEmpty()
-        Log.d("LoadShipmentListFragment", "shipmentNumber from bundle: '$shipmentNumber'")
+        binding.btnNext.setOnClickListener {
+            handleNext()
+        }
 
+        shipmentNumber = arguments?.getString("shipmentNumber").orEmpty()
+        if (shipmentNumber.isNotEmpty())
+            (requireActivity() as? androidx.appcompat.app.AppCompatActivity)
+                ?.supportActionBar?.title = shipmentNumber
+
+        Log.d("LoadShipmentListFragment", "shipmentNumber from bundle: '$shipmentNumber'")
         viewModel = ViewModelProvider(requireActivity())[ShipmentListViewModel::class.java]
 
         val mainActivity = requireActivity() as? MainActivity
@@ -154,11 +163,10 @@ class LoadShipmentListFragment : Fragment() {
                             bentry.setText("")
                         }
                     }
-                }, 6700)
+                }, 1)
             }
         })
     }
-
     private fun setupRfid() {
         rfidHandler?.triggerPressedLiveData?.observe(viewLifecycleOwner) { pressed ->
             if (pressed) rfidHandler?.performInventory()
@@ -172,6 +180,29 @@ class LoadShipmentListFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun handleNext() {
+        val items = viewModel.items.value ?: emptyList()
+
+        if (items.isEmpty()) {
+            AlertDialog.Builder(requireContext())
+                .setTitle("ERROR!")
+                .setMessage("No scanned items. Please scan and try again.")
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+            return
+        }
+
+        val bundle = Bundle().apply {
+            putString("shipmentNumber", shipmentNumber)
+            putParcelableArrayList("scannedItems", ArrayList(items))
+        }
+
+        findNavController().navigate(
+            R.id.action_currentFragment_to_shipmentAddTruckFragment,
+            bundle
+        )
     }
 
     // ── Connection Status ─────────────────────────────────────────────────────
