@@ -19,6 +19,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import com.example.stramitapp.databinding.ActivityMainBinding
 import com.example.stramitapp.ui.login.LoginViewModel
 import com.example.stramitapp.ui.movement.MovementFragment
+import com.example.stramitapp.ui.floorsweep.FloorSweepFragment
 import com.example.stramitapp.zebraconnection.BarcodeHandler
 import com.example.stramitapp.zebraconnection.Inventory.TagDataViewModel
 import com.example.stramitapp.zebraconnection.RFIDHandler
@@ -124,8 +125,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     ?.primaryNavigationFragment
                 if (currentFragment is MovementFragment) {
                     currentFragment.onSubmitClicked()
+                    true
+                } else if (currentFragment is FloorSweepFragment) {
+                    // Let the fragment handle it via MenuProvider or call it here
+                    super.onOptionsItemSelected(item)
+                } else {
+                    super.onOptionsItemSelected(item)
                 }
-                true
             }
 
             else -> super.onOptionsItemSelected(item)
