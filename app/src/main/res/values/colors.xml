@@ -12,10 +12,11 @@
     <color name="app_blue_dark">#2f477a</color>
     <color name="dark_grey">#A9A9A9</color>
     <color name="blue">#0000FF</color>
-    <color name="light_blue">#ADD8E6</color>
+    <color name="light_blue">#8ebad9</color> <!-- Updated to match screenshot -->
     <color name="grey">#808080</color>
-    <color name="reader_list_item_blue">#0000FF</color>
+    <color name="reader_list_item_blue">#8ebad9</color>
     <color name="quiet_yellow">#FFFFE0</color>
     <color name="more_lighter_green">#98FB98</color>
     <color name="lighter_grey">#D3D3D3</color>
+    <color name="text_color_primary">#455a64</color>
 </resources>

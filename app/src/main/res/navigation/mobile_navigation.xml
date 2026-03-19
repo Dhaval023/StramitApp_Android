@@ -75,19 +75,22 @@
         android:label="@string/menu_search_asset"
         tools:layout="@layout/fragment_search_asset" />
 
-    <!-- ── Search Results (was a DialogFragment popup — now a full page) ── -->
     <fragment
         android:id="@+id/nav_search_result"
         android:name="com.example.stramitapp.ui.search_asset.SearchResultFragment"
         android:label="Search Results"
         tools:layout="@layout/fragment_search_result" />
 
-    <!-- ── Asset Detail (was a nested DialogFragment — now full page) ───── -->
     <fragment
         android:id="@+id/nav_asset_detail"
         android:name="com.example.stramitapp.ui.search_asset.AssetDetailFragment"
         android:label="Asset Details"
-        tools:layout="@layout/fragment_asset_detail" />
+        tools:layout="@layout/fragment_asset_detail">
+        <action
+            android:id="@+id/action_nav_asset_detail_to_nav_locate_tag_rfid"
+            app:destination="@id/nav_locate_tag_rfid" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/nav_load_shipment"
@@ -104,11 +107,12 @@
         android:name="com.example.stramitapp.ui.load_shipment.LoadShipmentListFragment"
         android:label="Load Shipment List"
         tools:layout="@layout/fragment_load_shipment_list">
-    <argument
-        android:name="shipmentNumber"
-        app:argType="string"
-        android:defaultValue="" />
+        <argument
+            android:name="shipmentNumber"
+            app:argType="string"
+            android:defaultValue="" />
     </fragment>
+
     <fragment
         android:id="@+id/nav_search_shipment"
         android:name="com.example.stramitapp.ui.search_shipment.SearchShipmentFragment"
@@ -130,12 +134,13 @@
     <fragment
         android:id="@+id/shipmentAddTruckFragment"
         android:name="com.example.stramitapp.ui.load_shipment.ShipmentAddTruckFragment"
-        android:label="Add Truck" >
+        android:label="Add Truck">
         <argument
             android:name="shipmentNumber"
             app:argType="string"
             android:defaultValue="" />
     </fragment>
+
     <action
         android:id="@+id/action_currentFragment_to_shipmentAddTruckFragment"
         app:destination="@id/shipmentAddTruckFragment" />
@@ -145,5 +150,21 @@
         android:name="com.example.stramitapp.ui.load_shipment.ShipmentItemResultFragment"
         android:label="Shipment Item List"
         tools:layout="@layout/fragment_shipment_item_result" />
+
+    <!-- Locate Tag RFID — navigated to from AssetDetailFragment antenna button -->
+    <fragment
+        android:id="@+id/nav_locate_tag_rfid"
+        android:name="com.example.stramitapp.ui.Locate_Rfid.LocateTagRfidFragment"
+        android:label="Find Tag"
+        tools:layout="@layout/fragment_locate_tag_rfid">
+        <argument
+            android:name="arg_tag"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="arg_barcode"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
 
 </navigation>

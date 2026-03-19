@@ -1,5 +1,6 @@
 package com.example.stramitapp.ui.reader_list
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,13 @@ import com.zebra.rfid.api3.ReaderDevice
 class ReaderDeviceAdapter(private val listener: OnItemClickListener) :
     ListAdapter<ReaderDevice, ReaderDeviceAdapter.ReaderDeviceViewHolder>(ReaderDeviceDiffCallback()) {
 
+    private var selectedReaderName: String? = null
+
+    fun setSelectedReader(readerName: String?) {
+        selectedReaderName = readerName
+        notifyDataSetChanged()
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int):
             ReaderDeviceViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -22,13 +30,16 @@ class ReaderDeviceAdapter(private val listener: OnItemClickListener) :
 
     override fun onBindViewHolder(holder: ReaderDeviceViewHolder, position: Int) {
         val readerDevice = getItem(position)
-        holder.bind(readerDevice)
+        holder.bind(readerDevice, readerDevice.name == selectedReaderName)
     }
 
     inner class ReaderDeviceViewHolder(itemView: View) :
         RecyclerView.ViewHolder(itemView) {
 
         private val readerNameTextView: TextView = itemView.findViewById(R.id.textViewReaderName)
+        private val readerSerialTextView: TextView = itemView.findViewById(R.id.textViewReaderSerial)
+        private val readerModelTextView: TextView = itemView.findViewById(R.id.textViewReaderModel)
+        private val rootLayout: View = itemView.findViewById(R.id.reader_box_layout)
 
         init {
             itemView.setOnClickListener {
@@ -40,8 +51,19 @@ class ReaderDeviceAdapter(private val listener: OnItemClickListener) :
             }
         }
 
-        fun bind(readerDevice: ReaderDevice) {
+        fun bind(readerDevice: ReaderDevice, isSelected: Boolean) {
             readerNameTextView.text = readerDevice.name
+            readerSerialTextView.text = readerDevice.serialNumber
+            readerModelTextView.text = readerDevice.name
+
+            if (isSelected) {
+                rootLayout.setBackgroundResource(R.color.app_blue) // Darker blue when selected
+                readerNameTextView.setTextColor(Color.WHITE)
+                // Update other text colors if needed
+            } else {
+                rootLayout.setBackgroundResource(R.color.reader_list_item_blue)
+                readerNameTextView.setTextColor(itemView.context.getColor(R.color.text_color_primary))
+            }
         }
     }
 
@@ -57,7 +79,7 @@ class ReaderDeviceAdapter(private val listener: OnItemClickListener) :
 
         override fun areContentsTheSame(oldItem: ReaderDevice, newItem: ReaderDevice):
                 Boolean {
-            return oldItem == newItem
+            return oldItem.name == newItem.name && oldItem.serialNumber == newItem.serialNumber
         }
     }
 }

@@ -77,6 +77,7 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
     private SDKHandler sdkHandler;
 
     public static boolean isInventoryRunning = false;
+    public static boolean isLocateMode = false;
 
     public static TagDataViewModel tagDataViewModel;
 
@@ -336,6 +337,10 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
         // Read Event Notification
         public void eventReadNotify(RfidReadEvents e) {
             // Recommended to use new method getReadTagsEx for better performance in case of large tag population
+            if (isLocateMode) {
+                Log.d(TAG, "eventReadNotify: in locate mode, skipping default handling");
+                return;
+            }
 
             TagData[] myTags = mConnectedRfidReader.Actions.getReadTags(100);
             if (myTags != null) {
@@ -365,14 +370,19 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
         public void eventStatusNotify(RfidStatusEvents rfidStatusEvents) {
             Log.d(TAG, "Status Notification: " + rfidStatusEvents.StatusEventData.getStatusEventType());
             if (rfidStatusEvents.StatusEventData.getStatusEventType() == STATUS_EVENT_TYPE.HANDHELD_TRIGGER_EVENT) {
-                if (rfidStatusEvents.StatusEventData.HandheldTriggerEventData.getHandheldEvent() == HANDHELD_TRIGGER_EVENT_TYPE.HANDHELD_TRIGGER_PRESSED) {
-                    Log.d(TAG, "Status trigger: trigger pressed");
-                    triggerPressedLiveData.postValue(true);
-                    performInventory();
+                boolean pressed = rfidStatusEvents.StatusEventData.HandheldTriggerEventData.getHandheldEvent() == HANDHELD_TRIGGER_EVENT_TYPE.HANDHELD_TRIGGER_PRESSED;
+                triggerPressedLiveData.postValue(pressed);
+
+                if (isLocateMode) {
+                    Log.d(TAG, "eventStatusNotify: in locate mode, skipping default trigger handling");
+                    return;
                 }
-                if (rfidStatusEvents.StatusEventData.HandheldTriggerEventData.getHandheldEvent() == HANDHELD_TRIGGER_EVENT_TYPE.HANDHELD_TRIGGER_RELEASED) {
+
+                if (pressed) {
+                    Log.d(TAG, "Status trigger: trigger pressed");
+                    performInventory();
+                } else {
                     Log.d(TAG, "Status trigger: trigger release");
-                    triggerPressedLiveData.postValue(false);
                     stopInventory();
                 }
             }

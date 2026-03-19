@@ -39,7 +39,7 @@ class ReaderListFragment : Fragment() {
             viewModel.getAvailableReaders((requireActivity() as MainActivity).getRfidHandler())
         }
 
-        observeReaderList()
+        observeViewModel()
     }
 
     private fun setupRecyclerView() {
@@ -52,9 +52,20 @@ class ReaderListFragment : Fragment() {
         binding.readerList.layoutManager = LinearLayoutManager(requireContext())
     }
 
-    private fun observeReaderList() {
+    private fun observeViewModel() {
         viewModel.readerList.observe(viewLifecycleOwner) {
             adapter.submitList(it)
+        }
+
+        viewModel.connectedReaderName.observe(viewLifecycleOwner) { name ->
+            adapter.setSelectedReader(name)
+        }
+
+        // Also observe connection status from RFIDHandler to update UI if it disconnects
+        (requireActivity() as MainActivity).getRfidHandler()?.connectionStatus?.observe(viewLifecycleOwner) { isConnected ->
+            if (!isConnected) {
+                viewModel.updateConnectedReader(null)
+            }
         }
     }
 

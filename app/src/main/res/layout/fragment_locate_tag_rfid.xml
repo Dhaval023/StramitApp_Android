@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F5F5F5">
+
+    <!-- ID Card -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:background="@drawable/card_background"
+        android:elevation="2dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ID"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:textColor="#757575"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tagPattern"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textSize="16sp"
+                android:textColor="#212121" />
+
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- Center section: bar takes flexible space, count+label below it fixed -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp">
+
+        <!-- Bar — grows to fill available space above the count -->
+        <FrameLayout
+            android:id="@+id/distanceBarContainer"
+            android:layout_width="70dp"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <!-- Gray background track -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#D3D3D3" />
+
+            <!-- Black fill — height driven from Fragment -->
+            <View
+                android:id="@+id/distanceBar"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_gravity="bottom"
+                android:background="#212121" />
+
+        </FrameLayout>
+
+        <!-- Count number — fixed below bar, always on screen -->
+        <TextView
+            android:id="@+id/relativeDistance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="0"
+            android:textSize="36sp"
+            android:textStyle="bold"
+            android:textColor="#212121" />
+
+        <!-- Signal Strength label -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Signal Strength"
+            android:textSize="12sp"
+            android:textColor="#757575" />
+
+    </LinearLayout>
+
+    <!-- Reader status — pinned to bottom -->
+    <LinearLayout
+        android:id="@+id/hintLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp"
+        android:background="@android:color/white"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Reader: "
+            android:textSize="14sp"
+            android:textColor="#757575" />
+
+        <TextView
+            android:id="@+id/readerConnectionLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorAccent" />
+
+    </LinearLayout>
+
+</LinearLayout>
