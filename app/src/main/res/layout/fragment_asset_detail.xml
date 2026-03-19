@@ -45,13 +45,6 @@
                     android:textColor="#424242"
                     android:background="@drawable/bg_field_value" />
 
-                <!--
-                    Antenna icon — clicking this navigates to LocateTagRFIDFragment.
-                    Equivalent to C# TagFinderCommand:
-                        var page = new LocateTagRFID(RFIDText, BarcodeText);
-                        Navigation.PushAsync(page);
-                    android:id added so AssetDetailFragment can attach setOnClickListener.
-                -->
                 <ImageView
                     android:id="@+id/antennaButton"
                     android:layout_width="44dp"

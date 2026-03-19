@@ -1,8 +1,11 @@
+
 package com.example.stramitapp.ui.floorsweep
 
 import android.app.DatePickerDialog
 import android.os.Bundle
+import android.util.Log
 import android.view.*
+import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.MenuHost
@@ -11,9 +14,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.stramitapp.Global
+import com.example.stramitapp.MainActivity
 import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentFloorSweepBinding
 import com.example.stramitapp.zebraconnection.Inventory.TagDataViewModel
+import com.example.stramitapp.zebraconnection.RFIDHandler
 import com.google.gson.Gson
 import com.zebra.rfid.api3.TagData
 import java.text.SimpleDateFormat
@@ -26,7 +33,9 @@ class FloorSweepFragment : Fragment() {
 
     private val viewModel: FloorSweepViewModel by viewModels()
     private val tagDataViewModel: TagDataViewModel by viewModels({ requireActivity() })
+    private var rfidHandler: RFIDHandler? = null
 
+    private lateinit var scanAdapter: FloorSweepScanAdapter
     private val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
 
     override fun onCreateView(
@@ -40,10 +49,35 @@ class FloorSweepFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val mainActivity = requireActivity() as? MainActivity
+        rfidHandler = mainActivity?.getRfidHandler()
+
+        setupRecyclerView()
         setupMenu()
         setupObservers()
         setupListeners()
+
+        if (!Global.isRfidSelected) setupBarcodeScanner()
+        else setupRfidScanner()
+
+        updateReaderStatusUI()
+        observeConnectionStatus()
     }
+
+    // ── RecyclerView ──────────────────────────────────────────────────────────
+
+    private fun setupRecyclerView() {
+        scanAdapter = FloorSweepScanAdapter { itemToDelete ->
+            viewModel.removeItem(itemToDelete)
+        }
+        binding.scannedItemsRecyclerview.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = scanAdapter
+        }
+    }
+
+    // ── Menu ──────────────────────────────────────────────────────────────────
 
     private fun setupMenu() {
         val menuHost: MenuHost = requireActivity()
@@ -51,18 +85,16 @@ class FloorSweepFragment : Fragment() {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.floor_sweep_menu, menu)
             }
-
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
-                    R.id.action_submit -> {
-                        viewModel.submitEvent()
-                        true
-                    }
+                    R.id.action_submit -> { viewModel.submitEvent(); true }
                     else -> false
                 }
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
+
+    // ── Observers ─────────────────────────────────────────────────────────────
 
     private fun setupObservers() {
         viewModel.floorSweepDateEntry.observe(viewLifecycleOwner) { date ->
@@ -75,9 +107,23 @@ class FloorSweepFragment : Fragment() {
         }
 
         viewModel.scannedItemsList.observe(viewLifecycleOwner) { list ->
-            val countText = "${list.size} item${if (list.size != 1) "s" else ""}"
-            binding.itemCountTextview.text = countText
-            // Update your list adapter here if you have one
+            val size = list.size
+            binding.itemCountTextview.text = "$size item${if (size != 1) "s" else ""}"
+            scanAdapter.submitList(list)
+
+            if (list.isEmpty()) {
+                binding.emptyStateTextview.visibility = View.VISIBLE
+                binding.scannedItemsRecyclerview.visibility = View.GONE
+            } else {
+                binding.emptyStateTextview.visibility = View.GONE
+                binding.scannedItemsRecyclerview.visibility = View.VISIBLE
+                binding.scannedItemsRecyclerview.scrollToPosition(size - 1)
+            }
+        }
+
+        // ✅ Show/hide loading overlay during API call (matches C# IsBusy)
+        viewModel.isBusy.observe(viewLifecycleOwner) { busy ->
+            binding.syncLoaderOverlay.visibility = if (busy) View.VISIBLE else View.GONE
         }
 
         viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
@@ -87,49 +133,168 @@ class FloorSweepFragment : Fragment() {
             }
         }
 
+        // ✅ Navigation observer — only fires when value is non-null (set on Main thread in VM)
         viewModel.navigationToResult.observe(viewLifecycleOwner) { resultList ->
-            resultList?.let {
-                val bundle = Bundle().apply {
-                    putString("results_json", Gson().toJson(it))
-                }
-                findNavController().navigate(R.id.action_nav_floor_sweep_to_nav_floor_sweep_result, bundle)
-                viewModel.onNavigationDone()
-            }
-        }
+            resultList ?: return@observe  // ignore null (reset after navigation)
 
-        tagDataViewModel.inventoryItem.observe(viewLifecycleOwner) { tags: Array<TagData>? ->
-            tags?.let {
-                viewModel.onTagRead(it)
+            // Guard: only navigate if we are still on this fragment's destination
+            val currentDest = findNavController().currentDestination?.id
+            if (currentDest != R.id.nav_floor_sweep) {
+                Log.w("FloorSweepFragment", "Navigation skipped — not on floor sweep dest")
+                return@observe
             }
+
+            val bundle = Bundle().apply {
+                putString("results_json", Gson().toJson(resultList))
+            }
+
+            try {
+                findNavController().navigate(
+                    R.id.action_nav_floor_sweep_to_nav_floor_sweep_result,
+                    bundle
+                )
+            } catch (e: Exception) {
+                Log.e("FloorSweepFragment", "Navigation failed: ${e.message}")
+                Toast.makeText(context, "Navigation error: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+
+            viewModel.onNavigationDone()
         }
     }
+
+    // ── Listeners ─────────────────────────────────────────────────────────────
 
     private fun setupListeners() {
         binding.dateEdittext.setOnClickListener {
-            if (viewModel.isDatePickerEnable.value == true) {
-                showDatePicker()
+            if (viewModel.isDatePickerEnable.value == true) showDatePicker()
+        }
+        binding.saveButton.setOnClickListener { showSaveConfirmation() }
+        binding.deleteIcon.setOnClickListener { showClearAllConfirmation() }
+    }
+
+    // ── Barcode scanner ───────────────────────────────────────────────────────
+
+    private fun setupBarcodeScanner() {
+        Log.d("FloorSweepFragment", "Barcode Mode Setup")
+        val bentry = binding.bentry
+        bentry.isFocusable = true
+        bentry.isFocusableInTouchMode = true
+        bentry.requestFocus()
+        bentry.setShowSoftInputOnFocus(false)
+        binding.root.setOnClickListener { bentry.requestFocus() }
+
+        bentry.setOnEditorActionListener { _, actionId, event ->
+            val isEnterKey = event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN
+            val isImeAction = actionId == EditorInfo.IME_ACTION_DONE
+                    || actionId == EditorInfo.IME_ACTION_NEXT
+                    || actionId == EditorInfo.IME_NULL
+            if (isEnterKey || isImeAction) {
+                val scanned = bentry.text.toString().trim()
+                if (scanned.isNotEmpty()) { viewModel.onBarcodeScanned(scanned); bentry.setText("") }
+                true
+            } else false
+        }
+
+        bentry.setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN &&
+                (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_TAB)) {
+                val scanned = bentry.text.toString().trim()
+                if (scanned.isNotEmpty()) { viewModel.onBarcodeScanned(scanned); bentry.setText("") }
+                true
+            } else false
+        }
+
+        bentry.addTextChangedListener(object : android.text.TextWatcher {
+            private var lastChangeTime = 0L
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                lastChangeTime = System.currentTimeMillis()
             }
-        }
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val text = s?.toString()?.trim() ?: return
+                if (text.isEmpty()) return
+                val capturedTime = lastChangeTime
+                binding.root.postDelayed({
+                    if (_binding == null) return@postDelayed
+                    if (lastChangeTime == capturedTime) {
+                        val current = bentry.text.toString().trim()
+                        if (current.isNotEmpty()) { viewModel.onBarcodeScanned(current); bentry.setText("") }
+                    }
+                }, 300)
+            }
+        })
+    }
 
-        binding.saveButton.setOnClickListener {
-            showSaveConfirmation()
-        }
+    // ── RFID scanner ──────────────────────────────────────────────────────────
 
-        binding.deleteIcon.setOnClickListener {
-            showClearAllConfirmation()
+    private fun setupRfidScanner() {
+        rfidHandler?.triggerPressedLiveData?.observe(viewLifecycleOwner) { isPressed ->
+            if (isPressed) rfidHandler?.performInventory() else rfidHandler?.stopInventory()
+        }
+        tagDataViewModel.inventoryItem.observe(viewLifecycleOwner) { tags: Array<TagData>? ->
+            tags?.let { viewModel.onTagRead(it) }
         }
     }
+
+    // ── Reader status ─────────────────────────────────────────────────────────
+
+    private fun updateReaderStatusUI() {
+        if (Global.isRfidSelected) {
+            val isConnected = rfidHandler?.connectionStatus?.value ?: false
+            setReaderStatusUI(isConnected)
+        } else {
+            binding.readerStatus.text = "Barcode Mode Active"
+            binding.readerStatus.setTextColor(resources.getColor(android.R.color.holo_green_dark, null))
+        }
+    }
+
+    private fun observeConnectionStatus() {
+        if (!Global.isRfidSelected) return
+        val handler = rfidHandler ?: run {
+            binding.readerStatus.text = "Reader Not Initialized"
+            binding.readerStatus.setTextColor(resources.getColor(android.R.color.holo_red_dark, null))
+            return
+        }
+        handler.connectionStatus.observe(viewLifecycleOwner) { isConnected ->
+            setReaderStatusUI(isConnected)
+        }
+    }
+
+    private fun setReaderStatusUI(isConnected: Boolean) {
+        binding.readerStatus.text = if (isConnected) "Connected" else "Not Connected"
+    }
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────────
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.resetAll()
+        updateReaderStatusUI()
+        if (!Global.isRfidSelected) {
+            binding.bentry.post { binding.bentry.requestFocus() }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        rfidHandler?.stopInventory()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    // ── Dialogs ───────────────────────────────────────────────────────────────
 
     private fun showDatePicker() {
         val calendar = Calendar.getInstance()
         viewModel.floorSweepDateEntry.value?.let { calendar.time = it }
-
-        DatePickerDialog(
-            requireContext(),
+        DatePickerDialog(requireContext(),
             { _, year, month, dayOfMonth ->
-                val selectedCalendar = Calendar.getInstance()
-                selectedCalendar.set(year, month, dayOfMonth)
-                viewModel.setFloorSweepDate(selectedCalendar.time)
+                val c = Calendar.getInstance()
+                c.set(year, month, dayOfMonth)
+                viewModel.setFloorSweepDate(c.time)
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
@@ -142,26 +307,17 @@ class FloorSweepFragment : Fragment() {
         AlertDialog.Builder(requireContext())
             .setTitle("SAVE DATE")
             .setMessage("Are you sure you want to Select Date >>> \"$dateStr\" <<< ?")
-            .setPositiveButton("Yes") { _, _ ->
-                viewModel.saveDate()
-            }
-            .setNegativeButton("No", null)
-            .show()
+            .setPositiveButton("Yes") { _, _ -> viewModel.saveDate() }
+            .setNegativeButton("No", null).show()
     }
 
     private fun showClearAllConfirmation() {
+        val count = viewModel.scannedItemsList.value?.size ?: 0
+        if (count == 0) return
         AlertDialog.Builder(requireContext())
             .setTitle("CLEAR ALL")
             .setMessage("Are you sure you want to clear all Scanned Items?")
-            .setPositiveButton("Yes") { _, _ ->
-                viewModel.clearAll()
-            }
-            .setNegativeButton("No", null)
-            .show()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+            .setPositiveButton("Yes") { _, _ -> viewModel.clearAll() }
+            .setNegativeButton("No", null).show()
     }
 }

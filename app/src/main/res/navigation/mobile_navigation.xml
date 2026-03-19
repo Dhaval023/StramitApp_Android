@@ -134,6 +134,9 @@
         android:name="com.example.stramitapp.ui.floorsweep.FloorSweepResultFragment"
         android:label="Floor Sweep Result"
         tools:layout="@layout/fragment_floor_sweep_result">
+        <action
+            android:id="@+id/action_nav_floor_sweep_result_to_nav_locate_tag_rfid"
+            app:destination="@id/nav_locate_tag_rfid" />
         <argument
             android:name="results_json"
             app:argType="string" />

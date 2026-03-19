@@ -265,7 +265,7 @@ class SyncClientService : ApiClient() {
         controller = "floorSweep.do"
 
         try {
-            val tempBaseUrl = baseUrl.replace("/ws", "")
+            val tempBaseUrl = baseUrl.replace("/ws", "").removeSuffix("/")
             val resource = "$tempBaseUrl/sws/$controller"
 
             val parameters = gson.toJson(request)
