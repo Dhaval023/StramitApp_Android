@@ -6,8 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentShipmentSearchResultBinding
+import com.example.stramitapp.ui.search_asset.AssetDetailFragment
 
 class ShipmentSearchResultFragment : DialogFragment() {
 
@@ -42,11 +45,11 @@ class ShipmentSearchResultFragment : DialogFragment() {
             val searchResultItem = item.toSearchResultItem()
             dismiss()
 
-            requireActivity().supportFragmentManager.beginTransaction()
-                .replace(com.example.stramitapp.R.id.nav_host_fragment_content_main,
-                    com.example.stramitapp.ui.search_asset.AssetDetailFragment.newInstance(searchResultItem))
-                .addToBackStack(null)
-                .commit()
+            // Navigate to the common AssetDetailFragment
+            val bundle = Bundle().apply {
+                putSerializable("asset_item", searchResultItem)
+            }
+            findNavController().navigate(R.id.nav_asset_detail, bundle)
         }
 
         binding.searchResultRecyclerview.apply {

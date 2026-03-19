@@ -65,6 +65,7 @@ class SearchShipmentViewModel : ViewModel() {
                             companyAssetId = asset.companyAssetId ?: "",
                             custom17       = asset.custom17 ?: "",
                             barcode        = asset.barcode  ?: "",
+                            tag            = asset.tag      ?: "",
                             // detail fields
                             title          = asset.title    ?: "",
                             custom1        = asset.custom1  ?: "",

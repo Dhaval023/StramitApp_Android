@@ -12,6 +12,7 @@ data class ShipmentSearchResultItem(
     val custom17: String = "",
     val barcode: String = "",
     val title: String = "",
+    val tag: String = "",
     val custom1: String = "",
     val custom2: String = "",
     val custom3: String = "",
@@ -99,7 +100,7 @@ fun ShipmentSearchResultItem.toSearchResultItem(): com.example.stramitapp.ui.sea
         assetValue = this.assetValue,
         purchaseDate = this.purchaseDate,
         createDate = this.createDate,
-        tag = "",
+        tag = this.tag,
         serialNumber = "",
         longDesc = ""
     )
