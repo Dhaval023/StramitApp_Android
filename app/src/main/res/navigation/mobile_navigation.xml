@@ -122,8 +122,22 @@
     <fragment
         android:id="@+id/nav_floor_sweep"
         android:name="com.example.stramitapp.ui.floorsweep.FloorSweepFragment"
-        android:label="@string/menu_floor_sweep"
-        tools:layout="@layout/fragment_floor_sweep/fragment_floor_sweep" />
+        android:label="Floor Sweep"
+        tools:layout="@layout/fragment_floor_sweep">
+        <action
+            android:id="@+id/action_nav_floor_sweep_to_nav_floor_sweep_result"
+            app:destination="@id/nav_floor_sweep_result" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_floor_sweep_result"
+        android:name="com.example.stramitapp.ui.floorsweep.FloorSweepResultFragment"
+        android:label="Floor Sweep Result"
+        tools:layout="@layout/fragment_floor_sweep_result">
+        <argument
+            android:name="results_json"
+            app:argType="string" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_sync"
