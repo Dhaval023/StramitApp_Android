@@ -9,7 +9,6 @@ import kotlinx.coroutines.launch
 
 class LoadShipmentViewModel(application: Application) : AndroidViewModel(application) {
 
-    // ✅ Proper DataStore initialization
     private val assetDataStore = AssetDataStore()
     private val _scannedItems = MutableLiveData<MutableList<String>>(mutableListOf())
     val scannedItems: LiveData<MutableList<String>> = _scannedItems

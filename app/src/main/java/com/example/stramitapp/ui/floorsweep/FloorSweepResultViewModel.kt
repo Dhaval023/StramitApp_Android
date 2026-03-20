@@ -35,13 +35,10 @@ class FloorSweepResultViewModel : ViewModel() {
     }
 
     fun selectResultEvent(selectedItem: FloorSweepResultListModel) {
-        // C# logic: var page = new LocateTagRFID(rfidNumber, barcodeNumber);
         _navigateToLocate.value = Pair(selectedItem.rfid, selectedItem.id)
     }
 
     fun closePageEvent() {
-        // C# logic: Application.Current.MainPage = new RootPage();
-        // In Android, we navigate to the Home screen or clear backstack
         _navigateToHome.value = true
     }
 

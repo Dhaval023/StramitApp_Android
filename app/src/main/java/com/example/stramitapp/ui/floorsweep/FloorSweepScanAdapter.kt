@@ -25,9 +25,8 @@ class FloorSweepScanAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
         holder.binding.rfidText.text = item.rfid
-        holder.binding.root.setOnLongClickListener {
+        holder.binding.deleteIcon.setOnClickListener {
             onDeleteItem(item)
-            true
         }
     }
 

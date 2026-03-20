@@ -1,16 +1,27 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Theme.StramitApp" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-        <!-- Primary brand color. -->
         <item name="colorPrimary">@color/app_blue</item>
         <item name="colorPrimaryVariant">@color/app_blue_dark</item>
         <item name="colorOnPrimary">@color/white</item>
-        <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/teal_200</item>
         <item name="colorSecondaryVariant">@color/teal_200</item>
         <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
-        <!-- Customize your theme here. -->
+
+        <item name="navigationViewStyle">@style/NavDrawerStyle</item>
     </style>
+
+    <style name="NavDrawerStyle" parent="Widget.MaterialComponents.NavigationView">
+        <item name="itemHorizontalPadding">16dp</item>
+        <item name="itemVerticalPadding">12dp</item>
+        <item name="itemIconSize">28dp</item>
+        <item name="itemTextAppearance">@style/NavDrawerTextAppearance</item>
+    </style>
+
+    <style name="NavDrawerTextAppearance" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textSize">17sp</item>
+        <item name="android:textColor">#222222</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
 </resources>

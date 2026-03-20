@@ -5,7 +5,6 @@
     android:orientation="vertical"
     android:background="#F5F5F5">
 
-    <!-- ID Card -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -40,7 +39,6 @@
         </LinearLayout>
     </FrameLayout>
 
-    <!-- Center section: bar takes flexible space, count+label below it fixed -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -50,20 +48,17 @@
         android:paddingTop="16dp"
         android:paddingBottom="8dp">
 
-        <!-- Bar — grows to fill available space above the count -->
         <FrameLayout
             android:id="@+id/distanceBarContainer"
             android:layout_width="70dp"
             android:layout_height="0dp"
             android:layout_weight="1">
 
-            <!-- Gray background track -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="#D3D3D3" />
 
-            <!-- Black fill — height driven from Fragment -->
             <View
                 android:id="@+id/distanceBar"
                 android:layout_width="match_parent"
@@ -73,7 +68,6 @@
 
         </FrameLayout>
 
-        <!-- Count number — fixed below bar, always on screen -->
         <TextView
             android:id="@+id/relativeDistance"
             android:layout_width="wrap_content"
@@ -84,7 +78,6 @@
             android:textStyle="bold"
             android:textColor="#212121" />
 
-        <!-- Signal Strength label -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -95,7 +88,6 @@
 
     </LinearLayout>
 
-    <!-- Reader status — pinned to bottom -->
     <LinearLayout
         android:id="@+id/hintLayout"
         android:layout_width="match_parent"

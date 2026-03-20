@@ -4,11 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.stramitapp.MainActivity
 import com.example.stramitapp.databinding.FragmentReaderListBinding
+import com.example.stramitapp.zebraconnection.RFIDHandler
 import com.zebra.rfid.api3.ReaderDevice
 
 class ReaderListFragment : Fragment() {
@@ -35,36 +37,56 @@ class ReaderListFragment : Fragment() {
 
         setupRecyclerView()
 
+        val rfidHandler = (requireActivity() as MainActivity).getRfidHandler()
+
+        viewModel.checkCurrentConnection(rfidHandler)
+
+        viewModel.getAvailableReaders(rfidHandler)
+
         binding.scanButton.setOnClickListener {
-            viewModel.getAvailableReaders((requireActivity() as MainActivity).getRfidHandler())
+            viewModel.getAvailableReaders(rfidHandler)
         }
 
         observeViewModel()
     }
-
     private fun setupRecyclerView() {
         adapter = ReaderDeviceAdapter(object : ReaderDeviceAdapter.OnItemClickListener {
             override fun onItemClick(readerDevice: ReaderDevice) {
-                viewModel.connectToReader((requireActivity() as MainActivity).getRfidHandler(), readerDevice)
+                val rfidHandler = (requireActivity() as MainActivity).getRfidHandler()
+                if (viewModel.connectedReaderName.value == readerDevice.name && 
+                    RFIDHandler.mConnectedRfidReader?.isConnected == true) {
+                    Toast.makeText(requireContext(), "Already connected to ${readerDevice.name}", Toast.LENGTH_SHORT).show()
+                } else {
+                    viewModel.connectToReader(rfidHandler, readerDevice)
+                    Toast.makeText(requireContext(), "Connecting to ${readerDevice.name}...", Toast.LENGTH_SHORT).show()
+                }
             }
         })
         binding.readerList.adapter = adapter
         binding.readerList.layoutManager = LinearLayoutManager(requireContext())
     }
-
     private fun observeViewModel() {
         viewModel.readerList.observe(viewLifecycleOwner) {
             adapter.submitList(it)
+            if (it.isEmpty()) {
+                Toast.makeText(requireContext(), "No readers found. Please check Bluetooth.", Toast.LENGTH_SHORT).show()
+            }
         }
 
         viewModel.connectedReaderName.observe(viewLifecycleOwner) { name ->
             adapter.setSelectedReader(name)
         }
 
-        // Also observe connection status from RFIDHandler to update UI if it disconnects
+        viewModel.isScanning.observe(viewLifecycleOwner) { isScanning ->
+            binding.scanButton.isEnabled = !isScanning
+            binding.scanButton.text = if (isScanning) "Scanning..." else "Scan for Readers"
+        }
+
         (requireActivity() as MainActivity).getRfidHandler()?.connectionStatus?.observe(viewLifecycleOwner) { isConnected ->
             if (!isConnected) {
                 viewModel.updateConnectedReader(null)
+            } else {
+                viewModel.checkCurrentConnection((requireActivity() as MainActivity).getRfidHandler())
             }
         }
     }

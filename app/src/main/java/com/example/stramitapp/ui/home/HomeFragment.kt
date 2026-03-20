@@ -39,7 +39,6 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
 
-        // Logged in user
         viewLifecycleOwner.lifecycleScope.launch {
             loginViewModel.authenticatedUser.collect { user ->
                 Log.d("HomeFragment", "user received: $user")
@@ -63,7 +62,6 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // Load companies and set up autocomplete
         homeViewModel.loadCompanies()
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -93,6 +91,14 @@ class HomeFragment : Fragment() {
                             )
                         }
                     }
+                    else if (companies.isNotEmpty()) {
+                        val firstCompany = companies.first()
+
+                        binding.companyAutocompleteTextview?.setText(
+                            firstCompany.companyName ?: "", false
+                        )
+                        AppSettings.tempSelectedSystem = firstCompany
+                    }
                 }
             }
         }
@@ -100,12 +106,9 @@ class HomeFragment : Fragment() {
         binding.companyAutocompleteTextview?.setOnItemClickListener { _, _, position, _ ->
             val company: Company = homeViewModel.companies.value[position]
             AppSettings.tempSelectedSystem = company
-
-            // Clear saved location since company changed
             AppSettings.tempSelectedLocation = null
         }
 
-        // Click listeners
         binding.searchAssetButton.setOnClickListener {
             findNavController().navigate(R.id.nav_search_asset)
         }
@@ -125,10 +128,9 @@ class HomeFragment : Fragment() {
             findNavController().navigate(R.id.nav_floor_sweep)
         }
 
-        // Only sync when coming from Login
         val fromLogin = arguments?.getBoolean("fromLogin", false) ?: false
         if (fromLogin) {
-            startAutoSync()
+        //    startAutoSync()
         }
 
         return binding.root

@@ -98,9 +98,6 @@ class ShipmentAddTruckFragment : Fragment() {
                         .setTitle("SUCCESS!")
                         .setMessage(msg)
                         .setPositiveButton("OK") { _, _ ->
-                            // Navigate via NavController so ShipmentItemResultFragment
-                            // is on the NavController back stack — this makes
-                            // popBackStack(R.id.nav_home) work from that screen
                             findNavController().navigate(
                                 R.id.nav_shipment_item_result,
                                 Bundle().apply {

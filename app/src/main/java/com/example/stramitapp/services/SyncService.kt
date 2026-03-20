@@ -140,6 +140,7 @@ class SyncService {
             false
         }
     }
+    //30-09-2025 code Updated
     private suspend fun syncServerToDevice(): Boolean {
         getSettings()
 

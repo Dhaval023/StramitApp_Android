@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.example.stramitapp.MainActivity
 import com.example.stramitapp.R
 
 class LocateTagRfidFragment : Fragment() {
@@ -94,6 +95,8 @@ class LocateTagRfidFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume: calling viewModel.updateIn()")
+        val rfidHandler = (requireActivity() as? MainActivity)?.getRfidHandler()
+        rfidHandler?.enableRfidMode()
         viewModel.updateIn()
     }
 

@@ -22,9 +22,7 @@ class SearchAssetFragment : Fragment() {
 
     private var _binding: FragmentSearchAssetBinding? = null
     private val binding get() = _binding!!
-
     private lateinit var viewModel: SearchAssetViewModel
-
     private var selectedCompany: Company? = null
     private var selectedLocation: CompanyLocation? = null
 
@@ -35,13 +33,11 @@ class SearchAssetFragment : Fragment() {
     ): View {
         viewModel = ViewModelProvider(this)[SearchAssetViewModel::class.java]
         _binding = FragmentSearchAssetBinding.inflate(inflater, container, false)
-
         viewModel.loadCompanies()
         setupCompanyDropdown()
         setupLocationDropdown()
         setupSearchResults()
         setupButtons()
-
         return binding.root
     }
 
@@ -154,7 +150,6 @@ class SearchAssetFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.searchResults.collect { results ->
                     if (results.isNotEmpty()) {
-                        // Show as popup dialog (not full page navigation)
                         SearchResultFragment.newInstance(ArrayList(results))
                             .show(childFragmentManager, SearchResultFragment.TAG)
                     }

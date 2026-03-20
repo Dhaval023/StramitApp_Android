@@ -22,10 +22,8 @@ class ShipmentAddTruckViewModel(application: Application) : AndroidViewModel(app
 
     private val assetDataStore = AssetDataStore()
     private val movementInfoDataStore = AssetMovementInfoDataStore()
-
     var scannedItems: List<Asset> = emptyList()
     var shipmentNumber: String = ""
-
     private val _truckNumberText = MutableLiveData<String>()
     val truckNumberText: LiveData<String> = _truckNumberText
     private val _isLoading = MutableLiveData(false)
@@ -153,7 +151,6 @@ class ShipmentAddTruckViewModel(application: Application) : AndroidViewModel(app
                         try {
                             movementInfoDataStore.deleteItemAsync(movementInfo)
                         } catch (deleteEx: Exception) {
-                            // Log deletion error but continue rollback
                             Log.d("ShipmentTruckVM", "Error during rollback - deleting movement info: ${deleteEx.message}")
                         }
                     }
@@ -178,7 +175,6 @@ class ShipmentAddTruckViewModel(application: Application) : AndroidViewModel(app
                 }
 
             } catch (ex: Exception) {
-                // Silently catch outer exception — matches C# behavior: catch (Exception ex) { }
             }
         }
     }

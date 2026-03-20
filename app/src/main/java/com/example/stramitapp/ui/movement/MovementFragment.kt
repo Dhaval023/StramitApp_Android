@@ -12,23 +12,17 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
-import com.example.stramitapp.Global
-import com.example.stramitapp.MainActivity
 import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentMovementBinding
-import com.example.stramitapp.zebraconnection.Inventory.TagDataViewModel
-import com.example.stramitapp.zebraconnection.RFIDHandler
+import com.example.stramitapp.ui.base.BaseRfidFragment
 
-class MovementFragment : Fragment() {
+class MovementFragment : BaseRfidFragment() {
+
     private lateinit var viewModel: MovementViewModel
     private var _binding: FragmentMovementBinding? = null
     private val binding get() = _binding!!
-
-    private var rfidHandler: RFIDHandler? = null
-    private lateinit var tagDataViewModel: TagDataViewModel
 
     private val movementViewModel: MovementViewModel by viewModels {
         MovementViewModelFactory()
@@ -48,6 +42,8 @@ class MovementFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
+        initRfid()
+
         viewModel = ViewModelProvider(this)[MovementViewModel::class.java]
         val locationName = arguments?.getString("locationName")
 
@@ -59,12 +55,7 @@ class MovementFragment : Fragment() {
         viewModel.isBusy.observe(viewLifecycleOwner) { busy ->
             binding.syncLoaderOverlay.visibility =
                 if (busy) View.VISIBLE else View.GONE
-            }
-
-
-        val mainActivity = requireActivity() as? MainActivity
-        rfidHandler = mainActivity?.getRfidHandler()
-        tagDataViewModel = ViewModelProvider(requireActivity()).get(TagDataViewModel::class.java)
+        }
 
         scannedListAdapter = ScannedListAdapter(mutableListOf()) { position ->
             showDeleteSingleConfirmation(position)
@@ -86,14 +77,33 @@ class MovementFragment : Fragment() {
             }
         }
 
-        if (Global.isRfidSelected) {
-            setupRfidMode()
-        } else {
+        if (!com.example.stramitapp.Global.isRfidSelected) {
             setupBarcodeMode()
         }
 
         updateReaderStatusUI()
         observeConnectionStatus()
+    }
+
+    override fun onRfidTagScanned(tagId: String) {
+        movementViewModel.onTagScanned(tagId)
+    }
+
+    override fun onBarcodeReady() {
+        binding.bentry.post {
+            binding.bentry.requestFocus()
+            Log.d("MovementFragment", "onResume — bentry focus requested")
+        }
+    }
+
+    override fun onResume() {
+        super.onResume() // base handles enableRfidMode/enableBarcodeMode
+        updateReaderStatusUI()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     @Deprecated("Deprecated in Java")
@@ -103,7 +113,7 @@ class MovementFragment : Fragment() {
     }
 
     @Deprecated("Deprecated in Java")
-   override  fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_submit -> {
                 onSubmitClicked()
@@ -119,28 +129,21 @@ class MovementFragment : Fragment() {
             Toast.makeText(requireContext(), "No items to submit", Toast.LENGTH_SHORT).show()
             return
         }
-
         AlertDialog.Builder(requireContext())
             .setTitle("Submit Movement")
             .setMessage("Submit ${assets.size} item(s)?")
-            .setPositiveButton("Submit") { _, _ ->
-                movementViewModel.submitMovement()
-            }
+            .setPositiveButton("Submit") { _, _ -> movementViewModel.submitMovement() }
             .setNegativeButton("Cancel", null)
             .show()
     }
 
     private fun setupBarcodeMode() {
         Log.d("MovementFragment", "Barcode Mode Setup — using hidden bentry EditText")
-
         val bentry = binding.bentry
-
         bentry.isFocusable = true
         bentry.isFocusableInTouchMode = true
         bentry.requestFocus()
-
         bentry.setShowSoftInputOnFocus(false)
-
         binding.root.setOnClickListener { bentry.requestFocus() }
         binding.scannedList.setOnTouchListener { _, _ ->
             bentry.requestFocus()
@@ -153,7 +156,6 @@ class MovementFragment : Fragment() {
             val isImeAction = actionId == EditorInfo.IME_ACTION_DONE
                     || actionId == EditorInfo.IME_ACTION_NEXT
                     || actionId == EditorInfo.IME_NULL
-
             if (isEnterKey || isImeAction) {
                 val scanned = bentry.text.toString().trim()
                 Log.d("MovementFragment", "bentry EditorAction — scanned: '$scanned'")
@@ -181,16 +183,13 @@ class MovementFragment : Fragment() {
 
         bentry.addTextChangedListener(object : android.text.TextWatcher {
             private var lastChangeTime = 0L
-
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 lastChangeTime = System.currentTimeMillis()
             }
-
             override fun afterTextChanged(s: android.text.Editable?) {
                 val text = s?.toString()?.trim() ?: return
                 if (text.isEmpty()) return
-
                 val capturedTime = lastChangeTime
                 binding.root.postDelayed({
                     if (_binding == null) return@postDelayed
@@ -205,59 +204,11 @@ class MovementFragment : Fragment() {
                 }, 300)
             }
         })
-
         Log.d("MovementFragment", "bentry setup complete, focus requested")
     }
 
-    // ── RFID mode ─────────────────────────────────────────────────────────────
-
-    private fun setupRfidMode() {
-        Log.d("MovementFragment", "RFID Mode Active")
-
-        rfidHandler?.triggerPressedLiveData?.observe(viewLifecycleOwner) { isPressed ->
-            if (isPressed) rfidHandler?.performInventory()
-            else rfidHandler?.stopInventory()
-        }
-
-        tagDataViewModel.getInventoryItem().observe(viewLifecycleOwner) { tags ->
-            tags?.forEach { tagData ->
-                val tagId = tagData.tagID
-                if (!tagId.isNullOrBlank()) {
-                    movementViewModel.onTagScanned(tagId)
-                }
-            }
-        }
-    }
-
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
-
-    override fun onResume() {
-        super.onResume()
-        updateReaderStatusUI()
-
-        if (!Global.isRfidSelected) {
-            // Always re-focus bentry when fragment resumes
-            binding.bentry.post {
-                binding.bentry.requestFocus()
-                Log.d("MovementFragment", "onResume — bentry focus requested")
-            }
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        rfidHandler?.stopInventory()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
-    // ── UI helpers ────────────────────────────────────────────────────────────
-
     private fun updateReaderStatusUI() {
-        if (Global.isRfidSelected) {
+        if (com.example.stramitapp.Global.isRfidSelected) {
             val isConnected = rfidHandler?.connectionStatus?.value ?: false
             setReaderStatusUI(isConnected)
         } else {
@@ -269,7 +220,7 @@ class MovementFragment : Fragment() {
     }
 
     private fun observeConnectionStatus() {
-        if (!Global.isRfidSelected) return
+        if (!com.example.stramitapp.Global.isRfidSelected) return
         val handler = rfidHandler ?: run {
             binding.readerStatus.text = "Reader Not Initialized"
             binding.readerStatus.setTextColor(

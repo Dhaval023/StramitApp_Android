@@ -29,12 +29,10 @@ class LoadShipmentFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // ✅ UI → ViewModel
         binding.shipmentIdEdittext.doAfterTextChanged { editable ->
             viewModel.onShipmentNumberChanged(editable?.toString().orEmpty())
         }
 
-        // ✅ ViewModel → UI (IMPORTANT FIX)
         viewModel.shipmentNumber.observe(viewLifecycleOwner) { value ->
             if (binding.shipmentIdEdittext.text.toString() != value) {
                 binding.shipmentIdEdittext.setText(value)
@@ -42,12 +40,10 @@ class LoadShipmentFragment : Fragment() {
             }
         }
 
-        // Button click
         binding.nextButton.setOnClickListener {
             viewModel.onNextClicked()
         }
 
-        // ✅ UI Events
         viewModel.uiEvent.observe(viewLifecycleOwner) { event ->
             event ?: return@observe
 
@@ -81,10 +77,5 @@ class LoadShipmentFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    // Barcode from Activity
-    fun onBarcodeScanned(barcode: String) {
-        viewModel.onBarcodeScanned(barcode)
     }
 }

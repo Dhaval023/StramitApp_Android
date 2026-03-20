@@ -58,7 +58,6 @@ class SearchAssetViewModel : ViewModel() {
     fun search(companyId: Int, locationId: Int, barcode: String) {
         viewModelScope.launch {
             _isLoading.value = true
-//            _errorMessage.value = null
             try {
                 val results = withContext(Dispatchers.IO) {
                     val assets = AppDatabase.getInstance().assetDao()

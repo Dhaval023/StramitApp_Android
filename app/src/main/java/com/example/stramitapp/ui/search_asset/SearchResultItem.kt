@@ -2,14 +2,10 @@ package com.example.stramitapp.ui.search_asset
 
 import java.io.Serializable
 
-/**
- * Holds every field that Xamarin's AssetInfoPage shows in Info-mode.
- * Your SearchViewModel must map every field from the API/DB Asset response.
- */
+
 data class SearchResultItem(
     val assetId: Int? = 0,
 
-    // ── Standard fields ──────────────────────────────────────────────────────
     val locationName: String? = null,       // location label on card + detail
     val barcode: String? = null,            // ID field
     val companyAssetId: String? = null,     // Product SKU
@@ -31,7 +27,6 @@ data class SearchResultItem(
     val statusName: String? = null,
     val conditionName: String? = null,
 
-    // ── Custom fields 1-36  (Asset.custom1 … Asset.custom36) ─────────────────
     val custom1: String? = null,    // Length
     val custom2: String? = null,    // Width
     val custom3: String? = null,    // Girth

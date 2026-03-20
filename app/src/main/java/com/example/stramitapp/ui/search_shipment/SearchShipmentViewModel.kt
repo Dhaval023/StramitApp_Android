@@ -16,10 +16,8 @@ class SearchShipmentViewModel : ViewModel() {
 
     private val _searchResults = MutableSharedFlow<List<ShipmentSearchResultItem>>(replay = 0)
     val searchResults: SharedFlow<List<ShipmentSearchResultItem>> = _searchResults
-
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
-
     private val _errorMessage = MutableSharedFlow<String>(replay = 0)
     val errorMessage: SharedFlow<String> = _errorMessage
 

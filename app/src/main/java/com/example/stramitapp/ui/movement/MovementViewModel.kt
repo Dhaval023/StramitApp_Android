@@ -44,7 +44,6 @@ class MovementViewModel : ViewModel() {
                 val alreadyInList = internalList.any { it.barcode == barcode }
                 if (alreadyInList) {
                     _toastMessage.value = "Barcode already scanned"
-                    Log.d("MovementVM", "Barcode already in list: $barcode")
                     return@launch
                 }
 
@@ -91,7 +90,6 @@ class MovementViewModel : ViewModel() {
                     it.tag?.uppercase() == tagId.uppercase()
                 }
                 if (alreadyInList) {
-                    Log.d("MovementVM", "Tag already in list: $tagId")
                     return@launch
                 }
 
@@ -234,11 +232,6 @@ class MovementViewModel : ViewModel() {
         val sdf = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
         sdf.timeZone = java.util.TimeZone.getTimeZone("UTC")
         return sdf.format(java.util.Date())
-    }
-    fun deleteItem(asset: Asset) {
-        internalList.remove(asset)
-        _scannedAssets.value = internalList.toList()
-        _toastMessage.value = "Item deleted"
     }
 
     fun deleteItemAt(position: Int) {

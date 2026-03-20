@@ -86,6 +86,4 @@ class ShipmentListViewModel(application: Application) : AndroidViewModel(applica
     fun clearAll() {
         _items.value = mutableListOf()
     }
-
-    fun getCount(): Int = _items.value?.size ?: 0
 }

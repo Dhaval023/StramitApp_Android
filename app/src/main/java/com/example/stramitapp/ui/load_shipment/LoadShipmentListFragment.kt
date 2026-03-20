@@ -29,7 +29,7 @@ class LoadShipmentListFragment : Fragment() {
     private lateinit var viewModel: ShipmentListViewModel
     private var rfidHandler: RFIDHandler? = null
     private lateinit var tagDataViewModel: TagDataViewModel
-    private var listAdapter: ArrayAdapter<String>? = null
+    private var listAdapter: ScannedAssetAdapter? = null
     private var listView: ListView? = null
     private var shipmentNumber: String = ""
 
@@ -63,11 +63,13 @@ class LoadShipmentListFragment : Fragment() {
 
         listView = view.findViewById(com.example.stramitapp.R.id.recyclerItems)
 
-        listAdapter = ArrayAdapter(
+        listAdapter = ScannedAssetAdapter(
             requireContext(),
-            android.R.layout.simple_list_item_1,
+            R.layout.item_scanned,
             mutableListOf()
-        )
+        ) { assetToDelete ->
+            viewModel.deleteItem(assetToDelete)
+        }
         listView?.adapter = listAdapter
 
         viewModel.items.observe(viewLifecycleOwner) { items ->
@@ -76,7 +78,7 @@ class LoadShipmentListFragment : Fragment() {
                 asset.title ?: asset.barcode ?: "Unknown"
             }.toMutableList()
             listAdapter?.clear()
-            listAdapter?.addAll(displayList)
+            listAdapter?.addAll(items)
             listAdapter?.notifyDataSetChanged()
             binding.txtCount.text = "Total: ${items.size}"
         }
@@ -124,7 +126,7 @@ class LoadShipmentListFragment : Fragment() {
             if (isEnterKey || isImeAction) {
                 val scanned = bentry.text.toString().trim()
                 if (scanned.isNotEmpty()) {
-                    viewModel.onItemScanned(scanned, shipmentNumber) // ✅
+                    viewModel.onItemScanned(scanned, shipmentNumber)
                     bentry.setText("")
                 }
                 true
@@ -137,7 +139,7 @@ class LoadShipmentListFragment : Fragment() {
             ) {
                 val scanned = bentry.text.toString().trim()
                 if (scanned.isNotEmpty()) {
-                    viewModel.onItemScanned(scanned, shipmentNumber) // ✅
+                    viewModel.onItemScanned(scanned, shipmentNumber)
                     bentry.setText("")
                 }
                 true
@@ -176,7 +178,7 @@ class LoadShipmentListFragment : Fragment() {
             tags?.forEach { tag ->
                 val tagId = tag.tagID
                 if (!tagId.isNullOrBlank()) {
-                    viewModel.onItemScanned(tagId, shipmentNumber) // ✅
+                    viewModel.onItemScanned(tagId, shipmentNumber)
                 }
             }
         }
@@ -227,7 +229,7 @@ class LoadShipmentListFragment : Fragment() {
     }
 
     private fun setupPowerControl() {
-        val defaultPower = 15
+        val defaultPower = 270
         binding.seekPower.progress = defaultPower
         binding.txtPowerValue.text = "Power: $defaultPower dBm"
         binding.seekPower.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {

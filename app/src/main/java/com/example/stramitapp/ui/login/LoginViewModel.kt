@@ -22,7 +22,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow<LoginUiState>(LoginUiState.Idle)
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    // ✅ NEW: expose authenticatedUser as StateFlow so HomeFragment can observe it
     private val _authenticatedUser = MutableStateFlow<AuthenticatedUser?>(null)
     val authenticatedUser: StateFlow<AuthenticatedUser?> = _authenticatedUser.asStateFlow()
 
@@ -98,7 +97,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
                 when (statusCode) {
                     1 -> {
-                        // ✅ Push the authenticated user into the StateFlow
                         _authenticatedUser.value = authService.authenticatedUser
 
                         StorageKeys.saveRememberCredentials(
@@ -160,7 +158,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     fun logout() {
         viewModelScope.launch {
             authService.logout()
-            _authenticatedUser.value = null  // ✅ Clear on logout
+            _authenticatedUser.value = null
         }
     }
 

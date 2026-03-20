@@ -73,10 +73,8 @@ class SearchResultFragment : DialogFragment() {
     }
 
     private fun openDetailPage(item: SearchResultItem) {
-        // 1. Dismiss the popup
         dismiss()
 
-        // 2. Navigate to full page using parent fragment's NavController
         val bundle = Bundle()
         bundle.putSerializable("asset_item", item)
         requireParentFragment()

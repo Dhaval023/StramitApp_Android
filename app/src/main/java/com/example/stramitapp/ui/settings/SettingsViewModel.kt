@@ -20,10 +20,13 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     init {
         val context = getApplication<Application>()
-        // ✅ Load saved values on open
         _licenseKey.value = StorageKeys.getLicenseKey(context)
         _rememberLicenseKey.value = StorageKeys.getRememberCredentials(context)
-        _versionText.value = "Stramit AsTrack Version ${BuildConfig.VERSION_NAME}"
+        val packageManager = context.packageManager
+        val applicationInfo = packageManager.getApplicationInfo(context.packageName, 0)
+        val appName = packageManager.getApplicationLabel(applicationInfo).toString()
+        val versionName = packageManager.getPackageInfo(context.packageName, 0).versionName
+        _versionText.value = "$appName Version $versionName"
     }
 
     fun onLicenseKeyChanged(value: String) {
@@ -45,7 +48,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         StorageKeys.saveLicenseKey(context, key)
         StorageKeys.saveRememberCredentials(context, remember)
 
-        // If remember is false — clear key so next launch prompts again
         if (!remember) {
             StorageKeys.clearLicenseKey(context)
         }

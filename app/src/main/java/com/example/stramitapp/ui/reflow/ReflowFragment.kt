@@ -12,9 +12,6 @@ import com.example.stramitapp.databinding.FragmentReflowBinding
 class ReflowFragment : Fragment() {
 
     private var _binding: FragmentReflowBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
 
     override fun onCreateView(

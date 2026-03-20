@@ -83,7 +83,7 @@
 
     <fragment
         android:id="@+id/nav_asset_detail"
-        android:name="com.example.stramitapp.ui.search_asset.AssetDetailFragment"
+        android:name="com.example.stramitapp.assetinfo.AssetDetailFragment"
         android:label="Asset Details"
         tools:layout="@layout/fragment_asset_detail">
         <action

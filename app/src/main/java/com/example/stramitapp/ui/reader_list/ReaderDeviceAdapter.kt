@@ -39,6 +39,8 @@ class ReaderDeviceAdapter(private val listener: OnItemClickListener) :
         private val readerNameTextView: TextView = itemView.findViewById(R.id.textViewReaderName)
         private val readerSerialTextView: TextView = itemView.findViewById(R.id.textViewReaderSerial)
         private val readerModelTextView: TextView = itemView.findViewById(R.id.textViewReaderModel)
+        private val serialLabelTextView: TextView = itemView.findViewById(R.id.textViewSerialLabel)
+        private val modelLabelTextView: TextView = itemView.findViewById(R.id.textViewModelLabel)
         private val rootLayout: View = itemView.findViewById(R.id.reader_box_layout)
 
         init {
@@ -57,12 +59,21 @@ class ReaderDeviceAdapter(private val listener: OnItemClickListener) :
             readerModelTextView.text = readerDevice.name
 
             if (isSelected) {
-                rootLayout.setBackgroundResource(R.color.app_blue) // Darker blue when selected
+                rootLayout.setBackgroundResource(R.color.app_blue)
                 readerNameTextView.setTextColor(Color.WHITE)
-                // Update other text colors if needed
+                serialLabelTextView.setTextColor(Color.WHITE)
+                modelLabelTextView.setTextColor(Color.WHITE)
+                readerSerialTextView.setTextColor(Color.WHITE)
+                readerModelTextView.setTextColor(Color.WHITE)
+                readerNameTextView.setTextColor(Color.WHITE)
             } else {
                 rootLayout.setBackgroundResource(R.color.reader_list_item_blue)
                 readerNameTextView.setTextColor(itemView.context.getColor(R.color.text_color_primary))
+                readerSerialTextView.setTextColor(itemView.context.getColor(R.color.text_color_primary))
+                readerModelTextView.setTextColor(itemView.context.getColor(R.color.text_color_primary))
+                readerNameTextView.setTextColor(itemView.context.getColor(R.color.text_color_primary))
+                serialLabelTextView.setTextColor(itemView.context.getColor(R.color.text_color_primary))
+                modelLabelTextView.setTextColor(itemView.context.getColor(R.color.text_color_primary))
             }
         }
     }

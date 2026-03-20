@@ -39,7 +39,6 @@ object AppSettings {
 
     lateinit var appContext: Context
 
-    // ── Always returns the current live DB instance, auto-reinits if closed ──
     val database: AppDatabase
         get() = AppDatabase.getInstance()
 
@@ -56,8 +55,6 @@ object AppSettings {
             Thread.sleep(2_000)
         }
     }
-
-    // ── Error messages ────────────────────────────────────────────────────────
 
     const val READER_ERROR_MSG =
         "RFID Reader is not connected. Please go to Reader connection and re-connect the reader."

@@ -7,7 +7,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- ── Main scrollable content ── -->
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -20,7 +19,6 @@
                 android:padding="16dp"
                 tools:context=".ui.floorsweep.FloorSweepFragment">
 
-                <!-- Reader status (same as MovementFragment) -->
                 <TextView
                     android:id="@+id/reader_status_label"
                     android:layout_width="wrap_content"
@@ -40,7 +38,6 @@
                     app:layout_constraintBaseline_toBaselineOf="@id/reader_status_label"
                     app:layout_constraintStart_toEndOf="@id/reader_status_label" />
 
-                <!-- Date picker row -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/date_text_input_layout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -55,7 +52,7 @@
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/date_edittext"
-                        android:layout_width="200dp"
+                        android:layout_width="220dp"
                         android:layout_height="wrap_content" />
 
                 </com.google.android.material.textfield.TextInputLayout>
@@ -71,7 +68,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="@+id/date_text_input_layout" />
 
-                <!-- Hidden barcode EditText -->
                 <EditText
                     android:id="@+id/bentry"
                     android:layout_width="0dp"
@@ -86,7 +82,6 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/date_text_input_layout" />
 
-                <!-- Scanned items card -->
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/scanned_items_container"
                     android:layout_width="0dp"
@@ -131,8 +126,6 @@
                         android:layout_width="0dp"
                         android:layout_height="1dp"
                         android:layout_marginTop="8dp"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginEnd="16dp"
                         android:background="@color/light_gray"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -172,8 +165,6 @@
                         android:id="@+id/bottom_divider"
                         android:layout_width="0dp"
                         android:layout_height="1dp"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginEnd="16dp"
                         android:background="@color/light_gray"
                         app:layout_constraintBottom_toTopOf="@+id/item_count_textview"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -195,7 +186,6 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.core.widget.NestedScrollView>
 
-        <!-- ── Loading overlay (same as MovementFragment — matches C# IsBusy) ── -->
         <FrameLayout
             android:id="@+id/syncLoaderOverlay"
             android:layout_width="match_parent"

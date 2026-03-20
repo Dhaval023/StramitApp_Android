@@ -1,4 +1,4 @@
-package com.example.stramitapp.ui.search_asset
+package com.example.stramitapp.assetinfo
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,9 +7,10 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import com.example.stramitapp.R
 import androidx.navigation.fragment.findNavController
+import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentAssetDetailBinding
+import com.example.stramitapp.ui.search_asset.SearchResultItem
 
 class AssetDetailFragment : Fragment() {
 
@@ -43,23 +44,18 @@ class AssetDetailFragment : Fragment() {
 
         populateFields(item)
         setupAntennaButton(item)
-
-//        binding.closeButton.setOnClickListener {
-//            findNavController().popBackStack()
-//        }
     }
 
     private fun setupAntennaButton(item: SearchResultItem) {
         binding.root.findViewById<ImageView>(R.id.antennaButton).setOnClickListener {
             val tag = item.tag?.trim()
 
-            // Equivalent to C#: if (entryRFIDTag.Text == "") return;
             if (tag.isNullOrEmpty()) return@setOnClickListener
 
             findNavController().navigate(
                 R.id.action_nav_asset_detail_to_nav_locate_tag_rfid,
                 bundleOf(
-                    "arg_tag"     to tag,
+                    "arg_tag" to tag,
                     "arg_barcode" to (item.barcode ?: "")
                 )
             )

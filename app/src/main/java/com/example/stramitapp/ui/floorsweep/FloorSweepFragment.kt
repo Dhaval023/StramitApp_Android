@@ -1,4 +1,3 @@
-
 package com.example.stramitapp.ui.floorsweep
 
 import android.app.DatePickerDialog
@@ -10,31 +9,25 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.stramitapp.Global
-import com.example.stramitapp.MainActivity
 import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentFloorSweepBinding
-import com.example.stramitapp.zebraconnection.Inventory.TagDataViewModel
-import com.example.stramitapp.zebraconnection.RFIDHandler
+import com.example.stramitapp.ui.base.BaseRfidFragment
 import com.google.gson.Gson
 import com.zebra.rfid.api3.TagData
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.fragment.app.viewModels
 
-class FloorSweepFragment : Fragment() {
+class FloorSweepFragment : BaseRfidFragment() {
 
     private var _binding: FragmentFloorSweepBinding? = null
     private val binding get() = _binding!!
 
     private val viewModel: FloorSweepViewModel by viewModels()
-    private val tagDataViewModel: TagDataViewModel by viewModels({ requireActivity() })
-    private var rfidHandler: RFIDHandler? = null
-
     private lateinit var scanAdapter: FloorSweepScanAdapter
     private val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
 
@@ -50,19 +43,41 @@ class FloorSweepFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val mainActivity = requireActivity() as? MainActivity
-        rfidHandler = mainActivity?.getRfidHandler()
+        // Initialize RFID/Barcode via base class
+        initRfid()
 
         setupRecyclerView()
         setupMenu()
         setupObservers()
         setupListeners()
 
+        // Only set up EditText listeners for barcode mode here
         if (!Global.isRfidSelected) setupBarcodeScanner()
-        else setupRfidScanner()
 
         updateReaderStatusUI()
         observeConnectionStatus()
+    }
+
+    // ── BaseRfidFragment hooks ────────────────────────────────────────────────
+
+    override fun onRfidTagsReceived(tags: Array<TagData>) {
+        Log.d("FloorSweepFragment", "RFID Tags received: ${tags.size}")
+        viewModel.onTagRead(tags)
+    }
+
+    override fun onBarcodeReady() {
+        binding.bentry.post { binding.bentry.requestFocus() }
+    }
+
+    override fun onResume() {
+        super.onResume() // base handles enableRfidMode/enableBarcodeMode
+        viewModel.resetAll()
+        updateReaderStatusUI()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     // ── RecyclerView ──────────────────────────────────────────────────────────
@@ -110,7 +125,6 @@ class FloorSweepFragment : Fragment() {
             val size = list.size
             binding.itemCountTextview.text = "$size item${if (size != 1) "s" else ""}"
             scanAdapter.submitList(list)
-
             if (list.isEmpty()) {
                 binding.emptyStateTextview.visibility = View.VISIBLE
                 binding.scannedItemsRecyclerview.visibility = View.GONE
@@ -121,7 +135,6 @@ class FloorSweepFragment : Fragment() {
             }
         }
 
-        // ✅ Show/hide loading overlay during API call (matches C# IsBusy)
         viewModel.isBusy.observe(viewLifecycleOwner) { busy ->
             binding.syncLoaderOverlay.visibility = if (busy) View.VISIBLE else View.GONE
         }
@@ -133,21 +146,16 @@ class FloorSweepFragment : Fragment() {
             }
         }
 
-        // ✅ Navigation observer — only fires when value is non-null (set on Main thread in VM)
         viewModel.navigationToResult.observe(viewLifecycleOwner) { resultList ->
-            resultList ?: return@observe  // ignore null (reset after navigation)
-
-            // Guard: only navigate if we are still on this fragment's destination
+            resultList ?: return@observe
             val currentDest = findNavController().currentDestination?.id
             if (currentDest != R.id.nav_floor_sweep) {
                 Log.w("FloorSweepFragment", "Navigation skipped — not on floor sweep dest")
                 return@observe
             }
-
             val bundle = Bundle().apply {
                 putString("results_json", Gson().toJson(resultList))
             }
-
             try {
                 findNavController().navigate(
                     R.id.action_nav_floor_sweep_to_nav_floor_sweep_result,
@@ -157,7 +165,6 @@ class FloorSweepFragment : Fragment() {
                 Log.e("FloorSweepFragment", "Navigation failed: ${e.message}")
                 Toast.makeText(context, "Navigation error: ${e.message}", Toast.LENGTH_LONG).show()
             }
-
             viewModel.onNavigationDone()
         }
     }
@@ -172,7 +179,7 @@ class FloorSweepFragment : Fragment() {
         binding.deleteIcon.setOnClickListener { showClearAllConfirmation() }
     }
 
-    // ── Barcode scanner ───────────────────────────────────────────────────────
+    // ── Barcode scanner EditText setup ────────────────────────────────────────
 
     private fun setupBarcodeScanner() {
         Log.d("FloorSweepFragment", "Barcode Mode Setup")
@@ -225,17 +232,6 @@ class FloorSweepFragment : Fragment() {
         })
     }
 
-    // ── RFID scanner ──────────────────────────────────────────────────────────
-
-    private fun setupRfidScanner() {
-        rfidHandler?.triggerPressedLiveData?.observe(viewLifecycleOwner) { isPressed ->
-            if (isPressed) rfidHandler?.performInventory() else rfidHandler?.stopInventory()
-        }
-        tagDataViewModel.inventoryItem.observe(viewLifecycleOwner) { tags: Array<TagData>? ->
-            tags?.let { viewModel.onTagRead(it) }
-        }
-    }
-
     // ── Reader status ─────────────────────────────────────────────────────────
 
     private fun updateReaderStatusUI() {
@@ -262,27 +258,6 @@ class FloorSweepFragment : Fragment() {
 
     private fun setReaderStatusUI(isConnected: Boolean) {
         binding.readerStatus.text = if (isConnected) "Connected" else "Not Connected"
-    }
-
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.resetAll()
-        updateReaderStatusUI()
-        if (!Global.isRfidSelected) {
-            binding.bentry.post { binding.bentry.requestFocus() }
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        rfidHandler?.stopInventory()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     // ── Dialogs ───────────────────────────────────────────────────────────────

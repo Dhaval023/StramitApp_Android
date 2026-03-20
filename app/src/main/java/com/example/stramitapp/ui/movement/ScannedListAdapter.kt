@@ -29,7 +29,6 @@ class ScannedListAdapter(
         val tagIdTextView = view.findViewById<TextView>(R.id.tag_id_text_view)
         val deleteButton = view.findViewById<ImageView>(R.id.delete_item)
 
-        // Show title if available, otherwise fall back to barcode or tag
         tagIdTextView.text = when {
             !asset.title.isNullOrBlank() -> asset.title
             !asset.barcode.isNullOrBlank() -> asset.barcode

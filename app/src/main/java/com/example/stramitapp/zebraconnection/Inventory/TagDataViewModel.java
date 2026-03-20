@@ -15,7 +15,9 @@ public class TagDataViewModel extends ViewModel {
         return inventoryItem;
     }
 
+
     public void setTagItems(TagData[] item) {
-        inventoryItem.setValue(item);
+        inventoryItem.postValue(null);  // force re-trigger even if same tags scanned
+        inventoryItem.postValue(item);  // thread-safe — works from background thread
     }
 }

@@ -16,18 +16,10 @@ import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentTransformBinding
 import com.example.stramitapp.databinding.ItemTransformBinding
 
-/**
- * Fragment that demonstrates a responsive layout pattern where the format of the content
- * transforms depending on the size of the screen. Specifically this Fragment shows items in
- * the [RecyclerView] using LinearLayoutManager in a small screen
- * and shows items using GridLayoutManager in a large screen.
- */
 class TransformFragment : Fragment() {
 
     private var _binding: FragmentTransformBinding? = null
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
 
     override fun onCreateView(

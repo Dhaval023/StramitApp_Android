@@ -25,6 +25,9 @@
             android:layout_height="match_parent"
             android:layout_gravity="start"
             android:fitsSystemWindows="true"
+            app:itemIconSize="28dp"
+            app:itemHorizontalPadding="16dp"
+            app:itemVerticalPadding="8dp"
             android:theme="@style/NavigationViewTheme"
             app:itemBackground="@drawable/nav_item_background"
             app:menu="@menu/navigation_drawer" />

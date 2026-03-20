@@ -32,7 +32,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:background="@color/light_gray"
+        android:background="@drawable/card_background"
         android:elevation="2dp"
         android:padding="12dp"
         android:orientation="horizontal"
@@ -65,12 +65,11 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:max="60"
-            android:progress="60"
+            android:max="270"
+            android:progress="270"
             android:layout_marginStart="12dp"/>
     </LinearLayout>
 
-    <!-- Scanned Items Header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -99,7 +98,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:layout_marginTop="8dp"
-        android:background="@color/light_gray"
+        android:background="@drawable/card_background"
         android:elevation="2dp"
         android:orientation="vertical">
 
@@ -108,10 +107,9 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:divider="#E0E0E0"
+            android:divider="@color/grey"
             android:dividerHeight="1dp"/>
 
-        <!-- Footer Count -->
         <TextView
             android:id="@+id/txtCount"
             android:layout_width="match_parent"
@@ -123,7 +121,6 @@
             android:padding="10dp"/>
     </LinearLayout>
 
-    <!-- NEXT Button -->
     <Button
         android:id="@+id/btnNext"
         android:layout_width="match_parent"
@@ -134,7 +131,6 @@
         android:backgroundTint="#3F5B8B"
         android:layout_marginTop="12dp"/>
 
-    <!-- Hidden Barcode Input -->
     <EditText
         android:id="@+id/bentry"
         android:layout_width="1dp"

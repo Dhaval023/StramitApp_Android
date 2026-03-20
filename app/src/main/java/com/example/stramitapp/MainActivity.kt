@@ -133,6 +133,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     super.onOptionsItemSelected(item)
                 }
             }
+            R.id.nav_settings -> {
+                if (navController.currentDestination?.id == R.id.nav_login) {
+                    navController.navigate(R.id.action_nav_login_to_nav_settings)
+                    true
+                } else {
+                    super.onOptionsItemSelected(item)
+                }
+            }
 
             else -> super.onOptionsItemSelected(item)
         }

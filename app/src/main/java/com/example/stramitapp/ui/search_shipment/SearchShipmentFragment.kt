@@ -28,15 +28,12 @@ class SearchShipmentFragment : Fragment() {
         android.util.Log.d("SHIPMENT_DEBUG", "onCreateView called")
         viewModel = ViewModelProvider(this)[SearchShipmentViewModel::class.java]
         _binding = FragmentSearchShipmentBinding.inflate(inflater, container, false)
-
         setupSearchResults()
         setupButtons()
-
         return binding.root
     }
 
     private fun setupSearchResults() {
-        // Loading spinner
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.isLoading.collect { isLoading ->
@@ -47,7 +44,6 @@ class SearchShipmentFragment : Fragment() {
             }
         }
 
-        // Error toast
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.errorMessage.collect { message ->
@@ -58,7 +54,6 @@ class SearchShipmentFragment : Fragment() {
             }
         }
 
-        // Results — open dialog
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.searchResults.collect { results ->

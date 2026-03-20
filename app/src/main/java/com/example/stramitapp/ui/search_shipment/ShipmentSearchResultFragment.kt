@@ -10,7 +10,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentShipmentSearchResultBinding
-import com.example.stramitapp.ui.search_asset.AssetDetailFragment
+import com.example.stramitapp.assetinfo.AssetDetailFragment
 
 class ShipmentSearchResultFragment : DialogFragment() {
 
@@ -45,7 +45,6 @@ class ShipmentSearchResultFragment : DialogFragment() {
             val searchResultItem = item.toSearchResultItem()
             dismiss()
 
-            // Navigate to the common AssetDetailFragment
             val bundle = Bundle().apply {
                 putSerializable("asset_item", searchResultItem)
             }
