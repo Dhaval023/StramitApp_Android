@@ -7,8 +7,7 @@
         android:layout_height="match_parent">
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:layout_height="match_parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -69,7 +68,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="5dp"
                     android:text="Scanned Items"
                     android:textColor="@android:color/black"
                     android:textSize="20sp"
@@ -81,13 +80,24 @@
                     android:id="@+id/delete_all"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="5dp"
                     android:layout_marginEnd="16dp"
                     android:contentDescription="Delete all items"
                     android:src="@android:drawable/ic_menu_delete"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:tint="@android:color/holo_red_light" />
+
+                <View
+                    android:id="@+id/divider_top"
+                    android:layout_width="0dp"
+                    android:layout_marginBottom="-10dp"
+                    android:layout_height="1dp"
+                    android:background="@color/light_gray"
+                    app:layout_constraintBottom_toBottomOf="@+id/scanned_items_label"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
+
 
                 <ListView
                     android:id="@+id/scanned_list"
@@ -108,8 +118,6 @@
                     android:id="@+id/divider"
                     android:layout_width="0dp"
                     android:layout_height="1dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
                     android:background="@color/light_gray"
                     app:layout_constraintBottom_toTopOf="@+id/item_count"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -119,9 +127,8 @@
                     android:id="@+id/item_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
                     android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="16dp"
+                    android:layout_marginBottom="5dp"
                     android:text="0 item"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />

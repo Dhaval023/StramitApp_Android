@@ -10,8 +10,8 @@ import com.example.stramitapp.model.Asset
 import com.example.stramitapp.model.AssetMovementInfo
 import com.example.stramitapp.model.CompanyLocation
 import com.example.stramitapp.utilities.AppSettings
-import com.example.stramitapp.Repositories.AssetDataStore
-import com.example.stramitapp.Repositories.AssetMovementInfoDataStore
+import com.example.stramitapp.repositories.AssetDataStore
+import com.example.stramitapp.repositories.AssetMovementInfoDataStore
 import com.example.stramitapp.services.APIHelper
 import com.example.stramitapp.services.SyncService
 import kotlinx.coroutines.launch

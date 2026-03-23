@@ -6,8 +6,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.stramitapp.Repositories.AssetDataStore
-import com.example.stramitapp.Repositories.AssetResult
+import com.example.stramitapp.repositories.AssetDataStore
+import com.example.stramitapp.repositories.AssetResult
 import com.example.stramitapp.model.Asset
 import com.example.stramitapp.utilities.AppSettings
 import kotlinx.coroutines.launch

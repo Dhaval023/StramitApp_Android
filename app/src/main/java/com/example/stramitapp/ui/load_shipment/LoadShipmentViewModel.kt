@@ -3,8 +3,7 @@ package com.example.stramitapp.ui.load_shipment
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.*
-import com.example.stramitapp.Repositories.AssetDataStore
-import com.example.stramitapp.models.Database.AppDatabase
+import com.example.stramitapp.repositories.AssetDataStore
 import kotlinx.coroutines.launch
 
 class LoadShipmentViewModel(application: Application) : AndroidViewModel(application) {

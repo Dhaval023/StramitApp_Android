@@ -130,7 +130,7 @@ class HomeFragment : Fragment() {
 
         val fromLogin = arguments?.getBoolean("fromLogin", false) ?: false
         if (fromLogin) {
-        //    startAutoSync()
+            startAutoSync()
         }
 
         return binding.root

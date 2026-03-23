@@ -9,7 +9,7 @@ import com.example.stramitapp.models.Local.ReaderTypeModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.example.stramitapp.model.*
-import com.example.stramitapp.Repositories.Repository
+import com.example.stramitapp.repositories.Repository
 import com.example.stramitapp.models.Database.AppDatabase
 import com.example.stramitapp.models.Constants.StorageKeys
 

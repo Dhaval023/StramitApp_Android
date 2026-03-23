@@ -2,18 +2,18 @@ package com.example.stramitapp
 
 import android.app.Application
 import android.os.Environment
-import com.example.stramitapp.Repositories.Repository
+import com.example.stramitapp.repositories.Repository
 import com.example.stramitapp.models.Database.AppDatabase
 import com.example.stramitapp.utilities.AppSettings
 import com.example.stramitapp.utilities.SecurePrefs
-import com.example.stramitapp.Repositories.AssetDataStore
-import com.example.stramitapp.Repositories.AssetMaintenanceInfoDataStore
-import com.example.stramitapp.Repositories.AssetMemoInfoDataStore
-import com.example.stramitapp.Repositories.AssetMovementInfoDataStore
-import com.example.stramitapp.Repositories.CompanyLocationDataStore
-import com.example.stramitapp.Repositories.UserDataStore
-import com.example.stramitapp.Repositories.DataStore.WpCompanyDataStore
-import com.example.stramitapp.Repositories.CompanyDataStore
+import com.example.stramitapp.repositories.AssetDataStore
+import com.example.stramitapp.repositories.AssetMaintenanceInfoDataStore
+import com.example.stramitapp.repositories.AssetMemoInfoDataStore
+import com.example.stramitapp.repositories.AssetMovementInfoDataStore
+import com.example.stramitapp.repositories.CompanyLocationDataStore
+import com.example.stramitapp.repositories.UserDataStore
+import com.example.stramitapp.repositories.DataStore.WpCompanyDataStore
+import com.example.stramitapp.repositories.CompanyDataStore
 import com.google.firebase.BuildConfig
 import java.io.File
 

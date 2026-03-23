@@ -4,17 +4,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.stramitapp.models.Database.AppDatabase
 import com.example.stramitapp.services.SyncService
+import com.example.stramitapp.utilities.SecurePrefs
+import com.example.stramitapp.models.Constants.StorageKeys
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
 class SyncViewModel : ViewModel() {
-
-    private val db = AppDatabase.getInstance()
-
-    private val syncService = SyncService()
 
     private val _date = MutableLiveData<String>()
     val date: LiveData<String> = _date
@@ -33,7 +30,7 @@ class SyncViewModel : ViewModel() {
 
         viewModelScope.launch {
 
-            _isSyncing.postValue(true)
+            _isSyncing.value = true
 
             try {
 
@@ -45,24 +42,50 @@ class SyncViewModel : ViewModel() {
                     syncService.sync()
                 }
 
+                if (result) {
+                    setDateTime()
+                }
+
                 onResult(result)
 
             } catch (e: Exception) {
                 onResult(false)
             }
 
-            _isSyncing.postValue(false)
+            _isSyncing.value = false
         }
     }
-
     private fun setDateTime() {
+        val lastSyncStr = SecurePrefs.get(StorageKeys.LastSyncDataStorageKey)
 
-        val now = Date()
+        if (!lastSyncStr.isNullOrEmpty()) {
+            var date: Date? = null
 
-        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+            val timestamp = lastSyncStr.toLongOrNull()
+            if (timestamp != null) {
+                date = Date(timestamp)
+            } else {
+                try {
+                    val sqliteFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US)
+                    sqliteFormat.timeZone = TimeZone.getTimeZone("UTC")
+                    date = sqliteFormat.parse(lastSyncStr)
+                } catch (e: Exception) {
+                }
+            }
 
-        _date.value = dateFormat.format(now)
-        _time.value = timeFormat.format(now)
+            if (date != null) {
+                val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+                
+                dateFormat.timeZone = TimeZone.getDefault()
+                timeFormat.timeZone = TimeZone.getDefault()
+
+                _date.value = dateFormat.format(date)
+                _time.value = timeFormat.format(date)
+                return
+            }
+        }
+        _date.value = "N/A"
+        _time.value = "N/A"
     }
 }

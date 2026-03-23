@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentFloorSweepResultBinding
 import com.example.stramitapp.model.FloorSweepResultListModel
-import com.example.stramitapp.ui.Locate_Rfid.LocateTagRfidFragment
+import com.example.stramitapp.ui.locate_rfid.LocateTagRfidFragment
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 

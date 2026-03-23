@@ -6,11 +6,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stramitapp.model.Asset
-import com.example.stramitapp.Repositories.AssetDataStore
-import com.example.stramitapp.Repositories.AssetMovementInfoDataStore
+import com.example.stramitapp.repositories.AssetDataStore
+import com.example.stramitapp.repositories.AssetMovementInfoDataStore
 import com.example.stramitapp.model.AssetMovementInfo
-import com.example.stramitapp.models.Database.AppDatabase
-import com.example.stramitapp.services.App
 import com.example.stramitapp.services.SyncService
 import com.example.stramitapp.utilities.AppSettings
 import kotlinx.coroutines.Dispatchers
@@ -170,7 +168,7 @@ class MovementViewModel : ViewModel() {
                         flagSync = item.flagSync ?: 0
                         attributeDeviceId = item.deviceId
                         movementType = "in"
-                        workOrderNumber = ""
+                        workOrderNumber = "" //workOrderNumber=WOText;
                     }
 
                     val isItemAdded = withContext(Dispatchers.IO) {

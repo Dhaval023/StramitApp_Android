@@ -1,6 +1,6 @@
 package com.example.stramitapp.services
 
-import com.example.stramitapp.Repositories.Repository
+import com.example.stramitapp.repositories.Repository
 object App {
     lateinit var repository: Repository
 }

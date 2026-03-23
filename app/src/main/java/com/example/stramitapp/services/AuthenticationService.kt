@@ -9,6 +9,7 @@ import com.example.stramitapp.models.Database.AppDatabase
 import com.example.stramitapp.services.API.request.GetDeviceIdRequest
 import com.example.stramitapp.services.API.request.GetLoginDetailsNewRequest
 import com.example.stramitapp.restclient.LoginClientService
+import com.example.stramitapp.services.API.request.ForgotPasswordNewRequest
 import com.example.stramitapp.utilities.AppSettings
 
 class AuthenticationService(private val context: Context) {
@@ -127,7 +128,6 @@ class AuthenticationService(private val context: Context) {
                 password  = password
             )
 
-            // Also restore AppSettings from Room on offline login
             try {
                 val db = AppDatabase.getInstance()
                 val userFromDb = db.userDao().getFirstUser()
@@ -159,6 +159,23 @@ class AuthenticationService(private val context: Context) {
         AppSettings.authenticatedUser = null   // clear from AppSettings too
         authenticatedUser = null
         loginErrorMessage = ""
+    }
+
+    suspend fun forgotPassword(username: String): Boolean {
+        val licenseKey = fetchLicenseKey()
+        if (licenseKey.isBlank()) return false
+
+        return try {
+            val request = ForgotPasswordNewRequest(
+                loginName = username,
+                licenseeKey = licenseKey
+            )
+            val result = clientService.forgotPassword(request)
+            result.statusCode == 1
+        } catch (e: Exception) {
+            Log.e("AuthService", "forgotPassword exception: ${e.message}", e)
+            false
+        }
     }
 
     private fun fetchLicenseKey(): String = StorageKeys.getLicenseKey(context)

@@ -171,7 +171,7 @@
     <!-- Locate Tag RFID — navigated to from AssetDetailFragment antenna button -->
     <fragment
         android:id="@+id/nav_locate_tag_rfid"
-        android:name="com.example.stramitapp.ui.Locate_Rfid.LocateTagRfidFragment"
+        android:name="com.example.stramitapp.ui.locate_rfid.LocateTagRfidFragment"
         android:label="Find Tag"
         tools:layout="@layout/fragment_locate_tag_rfid">
         <argument
