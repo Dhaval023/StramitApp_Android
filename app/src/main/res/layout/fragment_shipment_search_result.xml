@@ -20,15 +20,19 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Close button -->
-    <ImageView
+    <com.mikepenz.iconics.view.IconicsImageView
         android:id="@+id/close_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="12dp"
         android:layout_marginEnd="16dp"
-        android:src="@drawable/ic_close_red_24dp"
+        app:iiv_icon="faw_times_circle"
+        app:iiv_color="#D32F2F"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+
+
 
     <!-- Top divider -->
     <View

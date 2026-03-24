@@ -5,13 +5,10 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:background="@android:color/white"
             android:padding="16dp"
             tools:context=".ui.movement.MovementFragment">
@@ -49,19 +46,24 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/reader_status_label" />
 
+            <!--
+                KEY FIX:
+                - layout_height="0dp" + layout_constraintBottom_toBottomOf="parent"
+                  makes the container fill remaining vertical space on ALL screen sizes.
+                - Removed the fixed 450dp height that caused small/large appearance.
+            -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/scanned_items_container"
                 android:layout_width="0dp"
-                android:layout_height="450dp"
+                android:layout_height="0dp"
                 android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
                 android:background="@drawable/bordered_background"
                 android:elevation="4dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/bentry"
-                app:layout_constraintVertical_bias="0.62">
+                app:layout_constraintTop_toBottomOf="@id/bentry">
 
                 <TextView
                     android:id="@+id/scanned_items_label"
@@ -76,28 +78,27 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <ImageView
+                <com.mikepenz.iconics.view.IconicsImageView
                     android:id="@+id/delete_all"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginTop="8dp"
                     android:layout_marginEnd="16dp"
                     android:contentDescription="Delete all items"
-                    android:src="@android:drawable/ic_menu_delete"
+                    app:iiv_icon="faw_trash"
+                    app:iiv_color="@android:color/holo_red_dark"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:tint="@android:color/holo_red_light" />
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <View
                     android:id="@+id/divider_top"
                     android:layout_width="0dp"
-                    android:layout_marginBottom="-10dp"
                     android:layout_height="1dp"
+                    android:layout_marginBottom="-10dp"
                     android:background="@color/light_gray"
                     app:layout_constraintBottom_toBottomOf="@+id/scanned_items_label"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent" />
-
 
                 <ListView
                     android:id="@+id/scanned_list"
@@ -132,9 +133,10 @@
                     android:text="0 item"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
+
             </androidx.constraintlayout.widget.ConstraintLayout>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.core.widget.NestedScrollView>
 
         <FrameLayout
             android:id="@+id/syncLoaderOverlay"
@@ -167,5 +169,6 @@
                     android:textSize="14sp" />
             </LinearLayout>
         </FrameLayout>
+
     </FrameLayout>
 </layout>

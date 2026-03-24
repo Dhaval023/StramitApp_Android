@@ -85,12 +85,12 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"/>
 
-        <ImageView
+        <com.mikepenz.iconics.view.IconicsImageView
             android:id="@+id/btnClear"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_delete"
-            app:tint="#D32F2F" />
+            app:iiv_icon="faw_trash"
+            app:iiv_color="#D32F2F" />
     </LinearLayout>
 
     <LinearLayout

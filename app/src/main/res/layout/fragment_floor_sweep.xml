@@ -107,19 +107,18 @@
                         android:textStyle="bold"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
-
-                    <ImageView
+                    <com.mikepenz.iconics.view.IconicsImageView
                         android:id="@+id/delete_icon"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="16dp"
                         android:clickable="true"
                         android:focusable="true"
-                        android:src="@android:drawable/ic_menu_delete"
+                        app:iiv_icon="faw_trash"
+                        app:iiv_color="#D32F2F"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:tint="@android:color/holo_red_light" />
+                        app:layout_constraintTop_toTopOf="parent" />
 
                     <View
                         android:id="@+id/divider"
