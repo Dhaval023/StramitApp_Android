@@ -19,17 +19,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Close button -->
-    <com.mikepenz.iconics.view.IconicsImageView
+    <ImageView
         android:id="@+id/close_button"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:layout_marginTop="12dp"
         android:layout_marginEnd="16dp"
-        app:iiv_icon="faw_times_circle"
-        app:iiv_color="#D32F2F"
+        android:src="@drawable/ic_close_red_24dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="#D32F2F" />
 
 
 

@@ -13,7 +13,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentShipmentItemResultBinding
-import com.example.stramitapp.assetinfo.AssetDetailFragment
+import com.example.stramitapp.ui.assetinfo.AssetDetailFragment
 import com.example.stramitapp.ui.search_shipment.ShipmentSearchResultAdapter
 import com.example.stramitapp.ui.search_shipment.ShipmentSearchResultItem
 import com.example.stramitapp.ui.search_shipment.toSearchResultItem

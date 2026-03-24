@@ -21,14 +21,14 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:id="@+id/close_icon"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_marginTop="12dp"
             android:layout_marginEnd="16dp"
-            app:iiv_icon="faw_times_circle"
-            app:iiv_color="#D32F2F"
+            android:src="@drawable/ic_close_red_24dp"
+            app:tint="#D32F2F"
             app:layout_constraintBottom_toBottomOf="@+id/title_textview"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/title_textview" />

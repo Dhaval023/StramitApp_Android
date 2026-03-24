@@ -10,7 +10,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentShipmentSearchResultBinding
-import com.example.stramitapp.assetinfo.AssetDetailFragment
 
 class ShipmentSearchResultFragment : DialogFragment() {
 

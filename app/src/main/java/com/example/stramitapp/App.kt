@@ -15,8 +15,6 @@ import com.example.stramitapp.repositories.UserDataStore
 import com.example.stramitapp.repositories.DataStore.WpCompanyDataStore
 import com.example.stramitapp.repositories.CompanyDataStore
 import com.google.firebase.BuildConfig
-import com.mikepenz.iconics.Iconics
-import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import java.io.File
 
 class App : Application() {
@@ -24,8 +22,6 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         SecurePrefs.init(this)
-        Iconics.init(this)
-        Iconics.registerFont(FontAwesome)
     }
 
     fun initializeDatabase() {

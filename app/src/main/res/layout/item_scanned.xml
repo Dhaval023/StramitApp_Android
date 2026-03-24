@@ -16,11 +16,10 @@
         android:paddingEnd="8dp"
         android:paddingStart="4dp" />
 
-    <com.mikepenz.iconics.view.IconicsImageView
+    <ImageView
         android:id="@+id/delete_item"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        app:iiv_icon="faw_trash"
-        app:iiv_color="#D32F2F" />
+        android:src="@drawable/ic_delete" />
 
 </LinearLayout>

@@ -1,4 +1,4 @@
-package com.example.stramitapp.assetinfo
+package com.example.stramitapp.ui.assetinfo
 
 import android.os.Bundle
 import android.view.LayoutInflater
