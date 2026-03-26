@@ -211,7 +211,7 @@ class LoadShipmentListFragment : Fragment() {
 
     private fun observeReaderConnection() {
         if (!Global.isRfidSelected) {
-            binding.readerStatus.text = "Barcode Mode Active"
+            binding.readerStatus.text = "Barcode" //Barcode Mode Active
             binding.readerStatus.setTextColor(
                 resources.getColor(android.R.color.holo_green_dark, null)
             )
