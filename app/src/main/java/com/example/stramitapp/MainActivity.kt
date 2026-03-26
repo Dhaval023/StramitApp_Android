@@ -53,7 +53,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.nav_home, R.id.nav_movement, R.id.nav_sync, R.id.nav_search_shipment
+                R.id.nav_home, R.id.nav_movement, R.id.nav_sync, R.id.nav_search_shipment,
+                R.id.nav_search_asset, R.id.nav_reader_list, R.id.nav_load_shipment, R.id.nav_floor_sweep
             ), drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
