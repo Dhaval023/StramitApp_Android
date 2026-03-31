@@ -175,6 +175,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
                         android:layout_marginEnd="16dp"
+                        android:textSize="15dp"
                         android:text="0 item"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent" />

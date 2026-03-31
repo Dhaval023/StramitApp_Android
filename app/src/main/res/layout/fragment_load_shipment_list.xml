@@ -114,7 +114,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="0 item"
-            android:textSize="12sp"
+            android:textSize="18dp"
             android:textColor="#666"
             android:gravity="end"
             android:padding="10dp"/>
