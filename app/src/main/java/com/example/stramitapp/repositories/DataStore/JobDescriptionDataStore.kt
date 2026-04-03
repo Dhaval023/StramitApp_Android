@@ -1,85 +1,69 @@
-package com.example.stramitapp.repositories.DataStore
+package com.example.stramitapp.repositories
 
-//import com.example.stramitapp.Repositories.Base.BaseRepository
-//
-//class JobDescriptionDataStore : BaseRepository<JobDescription>(), IDataStore<JobDescription> {
-//
-//    suspend fun getItemAsync(id: Int): JobDescription? {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<JobDescription>().firstOrNull { item -> item.jobDescId == id } }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    suspend fun getItemAsyncByDesc(desc: String): JobDescription? {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<JobDescription>().firstOrNull { item -> item.jobDesc == desc } }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    suspend fun getItemsAsync(forceRefresh: Boolean = false): List<JobDescription> {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<JobDescription>() }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    suspend fun addItemAsync(item: JobDescription): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.insert(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun updateItemAsync(item: JobDescription): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.update(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun deleteItemAsync(item: JobDescription): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.delete(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun clearAsync(): Boolean {
-//        throw NotImplementedError("clearAsync is not implemented")
-//    }
-//
-//    suspend fun initializeAsync() {
-//        throw NotImplementedError("initializeAsync is not implemented")
-//    }
-//
-//    suspend fun pullLatestAsync(): Boolean {
-//        throw NotImplementedError("pullLatestAsync is not implemented")
-//    }
-//
-//    suspend fun syncAsync(): Boolean {
-//        throw NotImplementedError("syncAsync is not implemented")
-//    }
-//}
+import android.util.Log
+import com.example.stramitapp.dao.JobDescriptionDao
+import com.example.stramitapp.models.JobDescription
+import com.example.stramitapp.repositories.Base.BaseRepository
+import com.example.stramitapp.repositories.Base.IDataStore
+import com.example.stramitapp.utilities.AppSettings
+
+class JobDescriptionDataStore :
+    BaseRepository<JobDescription>(),
+    IDataStore<JobDescription> {
+
+    private val dao: JobDescriptionDao
+        get() = AppSettings.database.jobDescriptionDao()
+
+    override suspend fun getItemAsync(id: Int): JobDescription? {
+        return dao.getById(id)
+    }
+
+    suspend fun getItemAsyncByDesc(desc: String): JobDescription? {
+        return dao.getByDesc(desc)
+    }
+
+    override suspend fun getItemsAsync(forceRefresh: Boolean): List<JobDescription> {
+        return dao.getAll()
+    }
+
+    override suspend fun addItemAsync(item: JobDescription): Boolean {
+        return try {
+            dao.insert(item)
+            true
+        } catch (e: Exception) {
+            Log.e("JobDescDS", "Insert failed", e)
+            false
+        }
+    }
+
+    override suspend fun updateItemAsync(item: JobDescription): Boolean {
+        return try {
+            dao.insert(item) // replace
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun deleteItemAsync(item: JobDescription): Boolean {
+        return try {
+            dao.delete(item)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun clearAsync(): Boolean {
+        return try {
+            dao.clearAll()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun initializeAsync() {}
+    override suspend fun pullLatestAsync(): Boolean = false
+    override suspend fun syncAsync(): Boolean = false
+}

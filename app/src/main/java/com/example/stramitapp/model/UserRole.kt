@@ -5,14 +5,6 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.stramitapp.model.DataObject.BaseDataObject
 
-/**
- * tbl_user_role
- *
- * "user_id" INT NOT NULL,
- * "role_id" INT NOT NULL,
- * "company_id" INT NOT NULL,
- * "application_id" INT NULL DEFAULT NULL
- */
 @Entity(tableName = "tbl_user_role")
 data class UserRole(
     @PrimaryKey

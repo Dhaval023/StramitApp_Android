@@ -5,38 +5,9 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.example.stramitapp.dao.AssetConditionDao
-import com.example.stramitapp.dao.AssetDao
-import com.example.stramitapp.dao.CompanyDao
-import com.example.stramitapp.dao.AssetFinancialInfoDao
-import com.example.stramitapp.dao.AssetInspectionInfoDao
-import com.example.stramitapp.dao.AssetInsuranceInfoDao
-import com.example.stramitapp.dao.AssetIssueImagesDao
-import com.example.stramitapp.dao.AssetLeaseInfoDao
-import com.example.stramitapp.dao.AssetMovementInfoDao
-import com.example.stramitapp.model.Asset
-import com.example.stramitapp.model.User
-import com.example.stramitapp.model.AssetCondition
-import com.example.stramitapp.model.AssetFinancialInfo
-import com.example.stramitapp.model.AssetInspectionInfo
-import com.example.stramitapp.model.AssetInsuranceInfo
-import com.example.stramitapp.model.AssetIssueImages
-import com.example.stramitapp.model.AssetMovementInfo
-import com.example.stramitapp.dao.AssetMemoInfoDao
-import com.example.stramitapp.dao.AssetMaintenanceInfoDao
-import com.example.stramitapp.dao.AssetStatusDao
-import com.example.stramitapp.dao.CompanyLocationDao
-import com.example.stramitapp.dao.ShipmentDao
-import com.example.stramitapp.dao.UserDao
-import com.example.stramitapp.dao.WpCompanyDao
-import com.example.stramitapp.model.AssetMaintenanceInfo
-import com.example.stramitapp.model.AssetMemoInfo
-import com.example.stramitapp.model.AssetLeaseInfo
-import com.example.stramitapp.model.AssetStatus
-import com.example.stramitapp.model.Company
-import com.example.stramitapp.models.WpCompany
-import com.example.stramitapp.model.CompanyLocation
-import com.example.stramitapp.model.Shipment
+import com.example.stramitapp.dao.*
+import com.example.stramitapp.model.*
+import com.example.stramitapp.models.*
 import com.example.stramitapp.utilities.AppSettings
 import java.io.File
 
@@ -57,7 +28,20 @@ import java.io.File
         CompanyLocation::class,
         AssetStatus::class,
         User::class,
-        Shipment::class
+        Shipment::class,
+        Application::class,
+        CompanyAssetSubParts::class,
+        JobDescription::class,
+        JobType::class,
+        DeviceType::class,
+        LicenseePeer::class,
+        Licensee::class,
+        LicenseeConfig::class,
+        MobileJob::class,
+        RoleToRightsMapping::class,
+        UserRole::class,
+        Rights::class,
+        Role::class
     ],
     version = 2,
     exportSchema = false
@@ -81,6 +65,19 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun wpCompanyDao(): WpCompanyDao
     abstract fun assetStatusDao(): AssetStatusDao
     abstract fun shipmentDao(): ShipmentDao
+    abstract fun applicationDao(): ApplicationDataDao
+    abstract fun deviceTypeDao(): DeviceTypeDao
+    abstract fun companyAssetSubPartsDao(): CompanyAssetSubPartsDao
+    abstract fun jobDescriptionDao(): JobDescriptionDao
+    abstract fun jobTypeDao(): JobTypeDao
+    abstract fun licenseeConfigDao(): LicenseeConfigDao
+    abstract fun licenseeDao(): LicenseeDao
+    abstract fun licenseePeerDao(): LicenseePeerDao
+    abstract fun mobileJobDao(): MobileJobDao
+    abstract fun rightsDao(): RightsDao
+    abstract fun roleDao(): RoleDao
+    abstract fun roleToRightsMappingDao(): RoleToRightsMappingDao
+    abstract fun userRoleDao(): UserRoleDao
 
 
     companion object {
@@ -104,7 +101,6 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        // ── Auto-reinit if closed or null ─────────────────────────────────
         fun getInstance(): AppDatabase {
             return INSTANCE?.takeIf { it.isOpen }
                 ?: synchronized(this) {

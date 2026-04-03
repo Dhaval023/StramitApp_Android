@@ -1,73 +1,65 @@
 package com.example.stramitapp.repositories.DataStore
 
-//class MobileJobDataStore : BaseRepository<MobileJob>(), IDataStore<MobileJob> {
-//
-//    suspend fun getItemAsync(id: Int): MobileJob? {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<MobileJob>().firstOrNull { item -> item.jobId == id } }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    suspend fun getItemsAsync(forceRefresh: Boolean = false): List<MobileJob> {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<MobileJob>() }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    suspend fun addItemAsync(item: MobileJob): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.insert(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun updateItemAsync(item: MobileJob): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.update(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun deleteItemAsync(item: MobileJob): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.delete(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun clearAsync(): Boolean {
-//        throw NotImplementedError("clearAsync is not implemented")
-//    }
-//
-//    suspend fun initializeAsync() {
-//        throw NotImplementedError("initializeAsync is not implemented")
-//    }
-//
-//    suspend fun pullLatestAsync(): Boolean {
-//        throw NotImplementedError("pullLatestAsync is not implemented")
-//    }
-//
-//    suspend fun syncAsync(): Boolean {
-//        throw NotImplementedError("syncAsync is not implemented")
-//    }
-//}
+import android.util.Log
+import com.example.stramitapp.dao.MobileJobDao
+import com.example.stramitapp.models.MobileJob
+import com.example.stramitapp.repositories.Base.BaseRepository
+import com.example.stramitapp.repositories.Base.IDataStore
+import com.example.stramitapp.utilities.AppSettings
+
+class MobileJobDataStore :
+    BaseRepository<MobileJob>(),
+    IDataStore<MobileJob> {
+
+    private val dao: MobileJobDao
+        get() = AppSettings.database.mobileJobDao()
+
+    override suspend fun getItemAsync(id: Int): MobileJob? {
+        return dao.getById(id)
+    }
+
+    override suspend fun getItemsAsync(forceRefresh: Boolean): List<MobileJob> {
+        return dao.getAll()
+    }
+
+    override suspend fun addItemAsync(item: MobileJob): Boolean {
+        return try {
+            dao.insert(item)
+            true
+        } catch (e: Exception) {
+            Log.e("MobileJobDS", "Insert failed", e)
+            false
+        }
+    }
+
+    override suspend fun updateItemAsync(item: MobileJob): Boolean {
+        return try {
+            dao.update(item)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun deleteItemAsync(item: MobileJob): Boolean {
+        return try {
+            dao.delete(item)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun clearAsync(): Boolean {
+        return try {
+            dao.clearAll()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun initializeAsync() {}
+    override suspend fun pullLatestAsync(): Boolean = false
+    override suspend fun syncAsync(): Boolean = false
+}

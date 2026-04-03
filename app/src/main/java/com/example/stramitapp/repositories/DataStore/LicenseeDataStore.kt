@@ -1,73 +1,65 @@
-package com.example.stramitapp.repositories.DataStore
+package com.example.stramitapp.repositories
 
-//class LicenseeDataStore : BaseRepository<Licensee>(), IDataStore<Licensee> {
-//
-//    suspend fun getItemAsync(id: Int): Licensee? {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<Licensee>().firstOrNull { item -> item.licenseeId == id } }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    suspend fun getItemsAsync(forceRefresh: Boolean = false): List<Licensee> {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<Licensee>() }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    suspend fun addItemAsync(item: Licensee): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.insert(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun updateItemAsync(item: Licensee): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.update(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun deleteItemAsync(item: Licensee): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.delete(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun clearAsync(): Boolean {
-//        throw NotImplementedError("clearAsync is not implemented")
-//    }
-//
-//    suspend fun initializeAsync() {
-//        throw NotImplementedError("initializeAsync is not implemented")
-//    }
-//
-//    suspend fun pullLatestAsync(): Boolean {
-//        throw NotImplementedError("pullLatestAsync is not implemented")
-//    }
-//
-//    suspend fun syncAsync(): Boolean {
-//        throw NotImplementedError("syncAsync is not implemented")
-//    }
-//}
+import android.util.Log
+import com.example.stramitapp.dao.LicenseeDao
+import com.example.stramitapp.model.Licensee
+import com.example.stramitapp.repositories.Base.BaseRepository
+import com.example.stramitapp.repositories.Base.IDataStore
+import com.example.stramitapp.utilities.AppSettings
+
+class LicenseeDataStore :
+    BaseRepository<Licensee>(),
+    IDataStore<Licensee> {
+
+    private val dao: LicenseeDao
+        get() = AppSettings.database.licenseeDao()
+
+    override suspend fun getItemAsync(id: Int): Licensee? {
+        return dao.getById(id)
+    }
+
+    override suspend fun getItemsAsync(forceRefresh: Boolean): List<Licensee> {
+        return dao.getAll()
+    }
+
+    override suspend fun addItemAsync(item: Licensee): Boolean {
+        return try {
+            dao.insert(item)
+            true
+        } catch (e: Exception) {
+            Log.e("LicenseeDS", "Insert failed", e)
+            false
+        }
+    }
+
+    override suspend fun updateItemAsync(item: Licensee): Boolean {
+        return try {
+            dao.update(item)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun deleteItemAsync(item: Licensee): Boolean {
+        return try {
+            dao.delete(item)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun clearAsync(): Boolean {
+        return try {
+            dao.clearAll()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun initializeAsync() {}
+    override suspend fun pullLatestAsync(): Boolean = false
+    override suspend fun syncAsync(): Boolean = false
+}

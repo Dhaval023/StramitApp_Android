@@ -1,5 +1,6 @@
 package com.example.stramitapp.ui.search_asset
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stramitapp.model.Company
@@ -17,16 +18,12 @@ class SearchAssetViewModel : ViewModel() {
 
     private val _companies = MutableStateFlow<List<Company>>(emptyList())
     val companies: StateFlow<List<Company>> = _companies
-
     private val _locations = MutableStateFlow<List<CompanyLocation>>(emptyList())
     val locations: StateFlow<List<CompanyLocation>> = _locations
-
     private val _searchResults = MutableSharedFlow<List<SearchResultItem>>(replay = 0)
     val searchResults: SharedFlow<List<SearchResultItem>> = _searchResults
-
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
-
     private val _errorMessage = MutableSharedFlow<String>(replay = 0)
     val errorMessage: SharedFlow<String> = _errorMessage
     fun loadCompanies() {
@@ -37,7 +34,7 @@ class SearchAssetViewModel : ViewModel() {
                 }
                 _companies.value = result
             } catch (e: Exception) {
-                android.util.Log.e("DB_DEBUG", "loadCompanies error: ${e.message}")
+                Log.e("DB_DEBUG", "loadCompanies error: ${e.message}")
             }
         }
     }
@@ -50,7 +47,7 @@ class SearchAssetViewModel : ViewModel() {
                 }
                 _locations.value = result
             } catch (e: Exception) {
-                android.util.Log.e("DB_DEBUG", "loadLocations error: ${e.message}")
+                Log.e("DB_DEBUG", "loadLocations error: ${e.message}")
             }
         }
     }
@@ -128,7 +125,7 @@ class SearchAssetViewModel : ViewModel() {
                     _searchResults.emit(results)
                 }
             } catch (e: Exception) {
-                android.util.Log.e("DB_DEBUG", "search error: ${e.message}")
+                Log.e("DB_DEBUG", "search error: ${e.message}")
                 _errorMessage.emit( "Search failed: ${e.message}")
             } finally {
                 _isLoading.value = false

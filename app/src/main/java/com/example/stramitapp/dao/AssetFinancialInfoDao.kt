@@ -11,8 +11,6 @@ import com.example.stramitapp.model.AssetFinancialInfo
 @Dao
 interface AssetFinancialInfoDao {
 
-    // ---------------- BASIC CRUD ----------------
-
     @Query("SELECT * FROM tbl_asset_financial_info WHERE id = :id LIMIT 1")
     suspend fun getById(id: Int): AssetFinancialInfo?
 
@@ -30,8 +28,6 @@ interface AssetFinancialInfoDao {
 
     @Query("DELETE FROM tbl_asset_financial_info")
     suspend fun clearAll()
-
-    // ---------------- EXPORT ----------------
 
     @Query("""
         SELECT * FROM tbl_asset_financial_info 

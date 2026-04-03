@@ -17,7 +17,6 @@ class ReaderListFragment : Fragment() {
 
     private var _binding: FragmentReaderListBinding? = null
     private val binding get() = _binding!!
-
     private lateinit var viewModel: ReaderListViewModel
     private lateinit var adapter: ReaderDeviceAdapter
 

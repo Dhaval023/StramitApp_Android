@@ -4,9 +4,9 @@ import android.util.Log
 import com.example.stramitapp.model.New.SimpleDeviceToServerRequest
 import com.example.stramitapp.model.Asset
 import com.example.stramitapp.models.Database.AppDatabase
-import com.example.stramitapp.services.API.Sync.request.DeviceToServerRequest
-import com.example.stramitapp.services.API.Sync.response.DeviceToServerResponse
-import com.example.stramitapp.services.API.Sync.response.GetAssignCompanyListToUserResponse
+import com.example.stramitapp.common.API.Sync.request.DeviceToServerRequest
+import com.example.stramitapp.common.API.Sync.response.DeviceToServerResponse
+import com.example.stramitapp.common.API.Sync.response.GetAssignCompanyListToUserResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.*
@@ -22,12 +22,12 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream
 import java.io.*
 import com.example.stramitapp.utilities.AppSettings
 import com.example.stramitapp.models.Constants.ApiClient
-import com.example.stramitapp.services.API.Sync.request.DownloadCompanyAssignToUserWithDBGzipRequest
-import com.example.stramitapp.services.API.Sync.request.GetAssignCompanyListToUserRequest
-import com.example.stramitapp.services.API.Sync.response.DownloadCompanyAssignToUserWithDBGzipResponse
-import com.example.stramitapp.services.APIHelper
-import com.example.stramitapp.services.API.request.FloorSweepRequest
-import com.example.stramitapp.services.API.response.FloorSweepResponse
+import com.example.stramitapp.common.API.Sync.request.DownloadCompanyAssignToUserWithDBGzipRequest
+import com.example.stramitapp.common.API.Sync.request.GetAssignCompanyListToUserRequest
+import com.example.stramitapp.common.API.Sync.response.DownloadCompanyAssignToUserWithDBGzipResponse
+import com.example.stramitapp.common.APIHelper
+import com.example.stramitapp.common.API.FloorSweep.request.FloorSweepRequest
+import com.example.stramitapp.common.API.FloorSweep.response.FloorSweepResponse
 import com.example.stramitapp.model.DataObject.BaseDataObject
 
 class SyncClientService : ApiClient() {

@@ -1,4 +1,4 @@
-package com.example.stramitapp.services.API.Sync.response
+package com.example.stramitapp.common.API.Sync.response
 
 data class DownloadCompanyAssignToUserWithDBGzipResponse(
 

@@ -75,17 +75,13 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
     private MainActivity context;
     String readername = "RFD40+_212735201D0086";
     private SDKHandler sdkHandler;
-
     public static boolean isInventoryRunning = false;
     public static boolean isLocateMode = false;
-
     public static TagDataViewModel tagDataViewModel;
     public static ImpinjExtensions impinjExtensions;
     public static ArrayList<String> tagIDs = new ArrayList<>();
-
     public final MutableLiveData<Boolean> connectionStatus = new MutableLiveData<>();
     public final MutableLiveData<Boolean> isInitialized = new MutableLiveData<>(false);
-    // LiveData to notify trigger press/release events
     public final MutableLiveData<Boolean> triggerPressedLiveData = new MutableLiveData<>();
 
     public void onCreate(MainActivity activity) {
@@ -94,11 +90,9 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
     }
 
     public void onResume() {
-        // Add any onResume specific logic here
     }
 
     public void onPause() {
-        // Add any onPause specific logic here
     }
 
     public void onDestroy() {
@@ -130,21 +124,14 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
             }
         }
     }
-
-    // ── CHANGE 1: New methods for RFID/Barcode mode switching ─────────────────
-    // These run on background thread because setTriggerMode is a blocking USB call
-
     public void enableRfidMode() {
         if (mConnectedRfidReader == null || !mConnectedRfidReader.isConnected()) {
-            Log.w(TAG, "enableRfidMode — reader not connected");
             return;
         }
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
             try {
-                Log.d(TAG, "enableRfidMode — laser OFF, RFID ON");
                 mConnectedRfidReader.Config.setTriggerMode(ENUM_TRIGGER_MODE.RFID_MODE, true);
-                Log.d(TAG, "enableRfidMode — done");
             } catch (InvalidUsageException | OperationFailureException e) {
                 Log.e(TAG, "enableRfidMode error: " + e.getMessage());
             }
@@ -153,26 +140,20 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
 
     public void enableBarcodeMode() {
         if (mConnectedRfidReader == null || !mConnectedRfidReader.isConnected()) {
-            Log.w(TAG, "enableBarcodeMode — reader not connected");
             return;
         }
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
             try {
-                Log.d(TAG, "enableBarcodeMode — RFID OFF, laser ON");
                 stopInventory();
                 mConnectedRfidReader.Config.setTriggerMode(ENUM_TRIGGER_MODE.BARCODE_MODE, true);
-                Log.d(TAG, "enableBarcodeMode — done");
             } catch (InvalidUsageException | OperationFailureException e) {
                 Log.e(TAG, "enableBarcodeMode error: " + e.getMessage());
             }
         });
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-
     private void InitSDK() {
-        Log.d(TAG, "InitSDK");
         IRFIDLogger.getLogger("RFIDHandler").EnableDebugLogs(true);
         if (readers == null) {
             setTransportType();
@@ -201,7 +182,6 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
             mConnectedRfidReader = readerDevice.getRFIDReader();
         } else {
             for (ReaderDevice device : readerList) {
-                Log.d(TAG, "device: " + device.getName());
                 if (device.getName().startsWith(readername)) {
                     readerDevice = device;
                     mConnectedRfidReader = readerDevice.getRFIDReader();
@@ -232,11 +212,8 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
             triggerInfo.StartTrigger.setTriggerType(START_TRIGGER_TYPE.START_TRIGGER_TYPE_IMMEDIATE);
             triggerInfo.StopTrigger.setTriggerType(STOP_TRIGGER_TYPE.STOP_TRIGGER_TYPE_IMMEDIATE);
             try {
-                // receive events from reader
                 mConnectedRfidReader.Events.addEventsListener(eventHandler);
-                // HH event
                 mConnectedRfidReader.Events.setHandheldEvent(true);
-                // tag event with tag data
                 mConnectedRfidReader.Events.setTagReadEvent(true);
                 mConnectedRfidReader.Events.setAttachTagDataWithReadEvent(false);
                 mConnectedRfidReader.Events.setReaderDisconnectEvent(true);
@@ -244,22 +221,14 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
                 mConnectedRfidReader.Events.setFirmwareUpdateEvent(true);
 
                 Antennas.SingulationControl s1_singulationControl = new Antennas.SingulationControl();
-                // CHANGE 2: SESSION_S0 → SESSION_S1 (more reliable for single handheld reader)
                 s1_singulationControl.setSession(SESSION.SESSION_S1);
                 s1_singulationControl.setTagPopulation((short) 200);
                 s1_singulationControl.Action.setInventoryState(INVENTORY_STATE.INVENTORY_STATE_AB_FLIP);
                 s1_singulationControl.Action.setSLFlag(SL_FLAG.SL_ALL);
                 mConnectedRfidReader.Config.Antennas.setSingulationControl(1, s1_singulationControl);
-
-                // set trigger mode as rfid for RFD40/90 so scanner beam will not come
                 mConnectedRfidReader.Config.setTriggerMode(ENUM_TRIGGER_MODE.RFID_MODE, false);
-
-                // set start and stop triggers for rfd40/90
                 mConnectedRfidReader.Config.setStartTrigger(triggerInfo.StartTrigger);
                 mConnectedRfidReader.Config.setStopTrigger(triggerInfo.StopTrigger);
-
-                // CHANGE 3: PreFilters.deleteAll() removed — throws OperationFailureException on RFD4030
-                // mConnectedRfidReader.Actions.PreFilters.deleteAll();
 
             } catch (InvalidUsageException | OperationFailureException e) {
                 e.printStackTrace();
@@ -347,9 +316,6 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
                         Log.d(TAG, "Tag relative distance " + dist + " # " + num);
                     }
                 }
-                Log.d(TAG, " Total Tags Read: " + myTags.length);
-                // CHANGE 4: postValue() instead of runOnUiThread+setValue()
-                // postValue is thread-safe and works from background RFID callback thread
                 tagDataViewModel.setTagItems(myTags);
             }
         }
@@ -366,9 +332,6 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
                 }
 
                 if (pressed) {
-                    Log.d(TAG, "Status trigger: trigger pressed");
-                    // CHANGE 5: performInventory called directly here — immediate response
-                    // Fragment observer is too slow (background → main thread delay causes missed reads)
                     performInventory();
                 } else {
                     Log.d(TAG, "Status trigger: trigger release");

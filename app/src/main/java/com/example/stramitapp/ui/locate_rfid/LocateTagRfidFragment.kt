@@ -16,7 +16,6 @@ class LocateTagRfidFragment : Fragment() {
 
     private val TAG = "LocateTagRfidFrag"
     private val viewModel: LocateTagRFIDViewModel by viewModels()
-
     private lateinit var tagPatternLabel: TextView
     private lateinit var relativeDistanceLabel: TextView
     private lateinit var readerConnectionLabel: TextView
@@ -60,25 +59,19 @@ class LocateTagRfidFragment : Fragment() {
         observeViewModel()
     }
     private fun observeViewModel() {
-        Log.d(TAG, "observeViewModel: starting observers")
-
         viewModel.titleText.observe(viewLifecycleOwner) {
-            Log.d(TAG, "UI Update: titleText=$it")
             tagPatternLabel.text = it
         }
 
         viewModel.relativeDistance.observe(viewLifecycleOwner) {
-            Log.d(TAG, "UI Update: relativeDistance=$it")
             relativeDistanceLabel.text = it
         }
 
         viewModel.readerConnection.observe(viewLifecycleOwner) {
-            Log.d(TAG, "UI Update: readerConnection=$it")
             readerConnectionLabel.text = it
         }
 
         viewModel.distanceBox.observe(viewLifecycleOwner) { rect ->
-            Log.d(TAG, "UI Update: distanceBox rect.bottom=${rect.bottom}")
             if (distanceBarContainer.height > 0) {
                 updateDistanceBar(rect)
             } else {
@@ -87,14 +80,12 @@ class LocateTagRfidFragment : Fragment() {
         }
 
         viewModel.hintAvailable.observe(viewLifecycleOwner) { visible ->
-            Log.d(TAG, "UI Update: hintAvailable=$visible")
             hintLayout.visibility = if (visible) View.VISIBLE else View.GONE
         }
     }
 
     override fun onResume() {
         super.onResume()
-        Log.d(TAG, "onResume: calling viewModel.updateIn()")
         val rfidHandler = (requireActivity() as? MainActivity)?.getRfidHandler()
         rfidHandler?.enableRfidMode()
         viewModel.updateIn()
@@ -102,27 +93,22 @@ class LocateTagRfidFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        Log.d(TAG, "onPause: calling viewModel.updateOut()")
         viewModel.updateOut()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d(TAG, "onDestroy: calling viewModel.dispose()")
         viewModel.dispose()
     }
 
     private fun updateDistanceBar(rect: RectF) {
         val totalPx = distanceBarContainer.height
         if (totalPx == 0) {
-            Log.w(TAG, "updateDistanceBar: container height is 0")
             return
         }
 
         val fillRatio = rect.bottom.coerceIn(0f, 1f)
         val fillPx    = (fillRatio * totalPx).toInt()
-
-        Log.d(TAG, "updateDistanceBar: totalPx=$totalPx, fillRatio=$fillRatio, fillPx=$fillPx")
 
         val params    = distanceBar.layoutParams
         params.height = fillPx

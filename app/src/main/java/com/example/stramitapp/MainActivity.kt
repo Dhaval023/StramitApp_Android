@@ -82,7 +82,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         rfidHandler?.onCreate(this)
         RFIDHandler.tagDataViewModel = tagDataViewModel
 
-        // Initialize Barcode Handler
         barcodeHandler = BarcodeHandler(this)
     }
 

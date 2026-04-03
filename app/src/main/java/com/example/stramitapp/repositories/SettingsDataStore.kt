@@ -24,7 +24,7 @@ abstract class SettingsDataStore(
 
    override suspend fun updateItemAsync(item: Settings): Boolean {
         return try {
-            dao.insert(item) // same as InsertOrReplace in Xamarin
+            dao.insert(item)
             true
         } catch (ex: Exception) {
             false
@@ -44,7 +44,6 @@ abstract class SettingsDataStore(
     }
 
     override suspend fun initializeAsync() {
-        // Not required in Room
     }
 
     override suspend fun pullLatestAsync(): Boolean {

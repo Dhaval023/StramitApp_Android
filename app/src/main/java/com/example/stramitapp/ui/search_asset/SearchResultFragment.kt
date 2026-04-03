@@ -16,7 +16,6 @@ class SearchResultFragment : DialogFragment() {
 
     private var _binding: FragmentSearchResultBinding? = null
     private val binding get() = _binding!!
-
     companion object {
         private const val ARG_RESULTS = "search_results"
         const val TAG = "SearchResultFragment"

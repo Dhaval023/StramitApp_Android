@@ -1,4 +1,4 @@
-package com.example.stramitapp.services.API.Sync.request
+package com.example.stramitapp.common.API.Sync.request
 
 data class GetAssignCompanyListToUserRequest(
 

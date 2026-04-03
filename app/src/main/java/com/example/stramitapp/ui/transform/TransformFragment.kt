@@ -19,7 +19,6 @@ import com.example.stramitapp.databinding.ItemTransformBinding
 class TransformFragment : Fragment() {
 
     private var _binding: FragmentTransformBinding? = null
-
     private val binding get() = _binding!!
 
     override fun onCreateView(

@@ -72,21 +72,18 @@ class AddLocationMovementFragment : Fragment() {
             }
         }
 
-        // Company selection
         binding.companyAutocompleteTextview.setOnItemClickListener { _, _, position, _ ->
             val companiesList: List<Company> = viewModel.companies.value
             val company: Company = companiesList[position]
             selectedCompany = company
             AppSettings.tempSelectedSystem = company
 
-            // Reset location
             selectedLocation = null
             binding.destinationLocationAutocompleteTextview.setText("", false)
 
             viewModel.loadLocationsByCompany(company.companyId)
         }
 
-        // Observe locations
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.locations.collect { locations: List<CompanyLocation> ->
@@ -101,7 +98,6 @@ class AddLocationMovementFragment : Fragment() {
             }
         }
 
-        // Location selection
         binding.destinationLocationAutocompleteTextview.setOnItemClickListener { _, _, position, _ ->
             val locationsList: List<CompanyLocation> = viewModel.locations.value
             val location: CompanyLocation = locationsList[position]
@@ -109,7 +105,6 @@ class AddLocationMovementFragment : Fragment() {
             AppSettings.tempSelectedLocation = location
         }
 
-        // Next button
         binding.nextButton.setOnClickListener {
             if (selectedCompany == null || selectedLocation == null) {
                 AlertDialog.Builder(requireContext())

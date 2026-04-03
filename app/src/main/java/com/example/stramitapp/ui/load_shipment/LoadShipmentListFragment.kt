@@ -61,7 +61,7 @@ class LoadShipmentListFragment : Fragment() {
         rfidHandler = mainActivity?.getRfidHandler()
         tagDataViewModel = ViewModelProvider(requireActivity())[TagDataViewModel::class.java]
 
-        listView = view.findViewById(com.example.stramitapp.R.id.recyclerItems)
+        listView = view.findViewById(R.id.recyclerItems)
 
         listAdapter = ScannedAssetAdapter(
             requireContext(),
@@ -207,13 +207,11 @@ class LoadShipmentListFragment : Fragment() {
         )
     }
 
-    // ── Connection Status ─────────────────────────────────────────────────────
-
     private fun observeReaderConnection() {
         if (!Global.isRfidSelected) {
             binding.readerStatus.text = "Barcode" //Barcode Mode Active
             binding.readerStatus.setTextColor(
-                resources.getColor(android.R.color.holo_green_dark, null)
+                resources.getColor(android.R.color.black, null)
             )
             return
         }
@@ -221,8 +219,8 @@ class LoadShipmentListFragment : Fragment() {
             binding.readerStatus.text = if (connected) "Connected" else "Not Connected"
             binding.readerStatus.setTextColor(
                 resources.getColor(
-                    if (connected) android.R.color.holo_green_dark
-                    else android.R.color.holo_red_dark, null
+                    if (connected) android.R.color.black
+                    else android.R.color.black, null
                 )
             )
         }

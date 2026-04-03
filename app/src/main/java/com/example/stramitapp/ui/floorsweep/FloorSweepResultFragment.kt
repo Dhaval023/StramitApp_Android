@@ -20,7 +20,6 @@ class FloorSweepResultFragment : Fragment() {
 
     private var _binding: FragmentFloorSweepResultBinding? = null
     private val binding get() = _binding!!
-
     private val viewModel: FloorSweepResultViewModel by viewModels()
     private lateinit var adapter: FloorSweepResultAdapter
 

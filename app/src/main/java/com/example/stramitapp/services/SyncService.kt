@@ -2,13 +2,13 @@ package com.example.stramitapp.services
 
 import android.util.Log
 import com.example.stramitapp.App
+import com.example.stramitapp.common.API.Sync.request.DeviceToServerRequest
+import com.example.stramitapp.common.API.Sync.request.DownloadCompanyAssignToUserWithDBGzipRequest
+import com.example.stramitapp.common.API.Sync.request.GetAssignCompanyListToUserRequest
+import com.example.stramitapp.common.API.Sync.response.GetAssignCompanyListToUserResponse
 import com.example.stramitapp.models.Database.AppDatabase
 import com.example.stramitapp.model.*
 import com.example.stramitapp.restclient.SyncClientService
-import com.example.stramitapp.services.API.Sync.request.DeviceToServerRequest
-import com.example.stramitapp.services.API.Sync.request.DownloadCompanyAssignToUserWithDBGzipRequest
-import com.example.stramitapp.services.API.Sync.request.GetAssignCompanyListToUserRequest
-import com.example.stramitapp.services.API.Sync.response.GetAssignCompanyListToUserResponse
 import com.example.stramitapp.utilities.AppSettings
 import com.example.stramitapp.utilities.SecurePrefs
 import com.example.stramitapp.models.Constants.StorageKeys
@@ -186,10 +186,10 @@ class SyncService {
                 else AppSettings.lastSyncData!!.toString()
 
                 val downloadRequest = DownloadCompanyAssignToUserWithDBGzipRequest(
-                    userId                  = user.userId,
-                    currentDeviceType       = AppSettings.deviceType,
-                    currentDeviceUdid       = user.currentDeviceUdid ?: AppSettings.deviceUdid,
-                    companyId               = company.companyId,
+                    userId = user.userId,
+                    currentDeviceType = AppSettings.deviceType,
+                    currentDeviceUdid = user.currentDeviceUdid ?: AppSettings.deviceUdid,
+                    companyId = company.companyId,
                     userLastUpdateTimeStamp = dateTimeStamp
                 )
 
@@ -238,25 +238,13 @@ class SyncService {
                 Log.e("SyncService", "Temp DB not found for full sync.")
                 return false
             }
-
-            // Step 1 — Close SQLite connection only (does NOT cancel coroutine scope)
             AppDatabase.resetInstance()
-            Log.d("SyncService", "Room instance closed and reset.")
 
-            // Step 2 — Delete old DB files so Room starts completely fresh
             if (mainDb.exists()) mainDb.delete()
             File("${mainDb.path}-wal").takeIf { it.exists() }?.delete()
             File("${mainDb.path}-shm").takeIf { it.exists() }?.delete()
-            Log.d("SyncService", "Old DB files deleted.")
-
-            // Step 3 — Re-init Room with a fresh schema
             AppDatabase.init(AppSettings.appContext)
-            Log.d("SyncService", "Room re-initialized with fresh schema.")
-
             (AppSettings.appContext as? App)?.reinitializeRepository()
-            Log.d("SyncService", "Repository re-initialized with fresh DAOs.")
-
-            // Step 5 — Merge temp DB data into the new Room DB
             insertUpdateAllTables(companyId = companyId)
 
         } catch (ex: Exception) {
@@ -295,14 +283,18 @@ class SyncService {
                     if (table == "tbl_user" || table == "tbl_asset_movement_info") continue
                     if (!secondTables.contains(table)) continue
 
-                    val cols = getColumnNames(rawDb, table)
-                    if (cols.isEmpty()) continue
+                    val mainCols = getColumnNames(rawDb, table)
+                    val secondCols = getColumnNames(rawDb, table, "secondDB")
+                    
+                    val commonCols = mainCols.intersect(secondCols).toList()
+                    
+                    if (commonCols.isEmpty()) continue
 
                     rawDb.execSQL(
-                        "INSERT OR REPLACE INTO $table " +
-                                "SELECT ${cols.joinToString(",")} FROM secondDB.$table"
+                        "INSERT OR REPLACE INTO $table (${commonCols.joinToString(",")}) " +
+                                "SELECT ${commonCols.joinToString(",")} FROM secondDB.$table"
                     )
-                    Log.d("SyncService", "Merged $table (${cols.size} cols)")
+                    Log.d("SyncService", "Merged $table (${commonCols.size} common cols)")
                 }
 
             } catch (ex: Exception) {
@@ -343,7 +335,7 @@ class SyncService {
         return try {
             syncClientService.getAssignCompanyListToUser(
                 GetAssignCompanyListToUserRequest(
-                    userId            = user.userId,
+                    userId = user.userId,
                     currentDeviceType = AppSettings.deviceType,
                     currentDeviceUdid = user.currentDeviceUdid ?: AppSettings.deviceUdid
                 )
@@ -374,7 +366,6 @@ class SyncService {
                 offset += FLAG_BATCH_SIZE
             }
 
-            Log.d("SyncService", "updateAssetsFlag done — updated $total assets.")
         } catch (ex: Exception) {
             Log.e("SyncService", "updateAssetsFlag error: ${ex.message}", ex)
         }
@@ -403,10 +394,12 @@ class SyncService {
 
     private fun getColumnNames(
         rawDb: androidx.sqlite.db.SupportSQLiteDatabase,
-        table: String
+        table: String,
+        schema: String? = null
     ): List<String> {
         val cols = mutableListOf<String>()
-        rawDb.query("PRAGMA table_info($table)").use { c ->
+        val query = if (schema != null) "PRAGMA $schema.table_info($table)" else "PRAGMA table_info($table)"
+        rawDb.query(query).use { c ->
             val idx = c.getColumnIndex("name")
             while (c.moveToNext()) if (idx >= 0) cols.add(c.getString(idx))
         }

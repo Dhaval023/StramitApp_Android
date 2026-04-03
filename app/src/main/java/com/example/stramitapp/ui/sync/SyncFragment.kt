@@ -14,7 +14,6 @@ class SyncFragment : Fragment() {
 
     private var _binding: FragmentSyncBinding? = null
     private val binding get() = _binding!!
-
     private lateinit var viewModel: SyncViewModel
 
     override fun onCreateView(

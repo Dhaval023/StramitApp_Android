@@ -1,5 +1,6 @@
 package com.example.stramitapp.ui.search_shipment
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stramitapp.model.Asset
@@ -22,7 +23,6 @@ class SearchShipmentViewModel : ViewModel() {
     val errorMessage: SharedFlow<String> = _errorMessage
 
     fun search(shipmentNumber: String, m3CO: String, m3DO: String) {
-        android.util.Log.d("SHIPMENT_DEBUG", "search() called: shipmentNumber=$shipmentNumber")
         viewModelScope.launch {
             _isLoading.value = true
             try {
@@ -32,12 +32,10 @@ class SearchShipmentViewModel : ViewModel() {
                 }
 
                 val results = withContext(Dispatchers.IO) {
-
                     if (shipmentNumber.isNotBlank()) {
                         val exists = AppDatabase.getInstance()
                             .assetDao()
                             .getShipment(shipmentNumber)
-                        android.util.Log.d("SHIPMENT_DEBUG", "Shipment exists: $exists")
                         if (exists == null) {
                             return@withContext null
                         }
@@ -46,7 +44,6 @@ class SearchShipmentViewModel : ViewModel() {
                     val assets = AppDatabase.getInstance()
                         .assetDao()
                         .searchShipmentAssets(shipmentNumber, m3CO, m3DO)
-                    android.util.Log.d("SHIPMENT_DEBUG", "Assets found: ${assets.size}")
 
                     assets.map { asset: Asset ->
                         val locName = if (asset.locationId != null && asset.locationId != 0) {
@@ -115,7 +112,7 @@ class SearchShipmentViewModel : ViewModel() {
                 }
 
             } catch (e: Exception) {
-                android.util.Log.e("SHIPMENT_DEBUG", "Exception: ${e.message}", e)
+                Log.e("SHIPMENT_DEBUG", "Exception: ${e.message}", e)
                 _errorMessage.emit("Search failed: ${e.message}")
             } finally {
                 _isLoading.value = false

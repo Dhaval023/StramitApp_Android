@@ -1,7 +1,7 @@
 package com.example.stramitapp.repositories
 
 
-import JobDefinitionDao
+import com.example.stramitapp.dao.JobDefinitionDao
 import com.example.stramitapp.model.JobDefinition
 import com.example.stramitapp.model.MixJobDefinitionAssigment
 import com.example.stramitapp.repositories.Base.BaseRepository

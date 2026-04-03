@@ -16,7 +16,6 @@ class LoadShipmentFragment : Fragment() {
 
     private var _binding: FragmentLoadShipmentBinding? = null
     private val binding get() = _binding!!
-
     private val viewModel: LoadShipmentViewModel by viewModels()
 
     override fun onCreateView(

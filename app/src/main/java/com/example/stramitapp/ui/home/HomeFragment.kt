@@ -27,7 +27,6 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-
     private val loginViewModel: LoginViewModel by activityViewModels()
     private lateinit var homeViewModel: HomeViewModel
 
@@ -49,7 +48,6 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // Radio group
         if (Global.isRfidSelected) {
             binding.readerModeRadioGroup?.check(R.id.rfid_radiobutton)
         } else {
@@ -75,7 +73,7 @@ class HomeFragment : Fragment() {
                     )
                     binding.companyAutocompleteTextview?.setAdapter(adapter)
 
-                    val itemHeight = 48 // dp per item
+                    val itemHeight = 48
                     val maxVisibleItems = 5
                     val visibleItems = minOf(companies.size, maxVisibleItems)
                     val density = resources.displayMetrics.density
@@ -102,7 +100,6 @@ class HomeFragment : Fragment() {
                 }
             }
         }
-        // Company selection from dropdown
         binding.companyAutocompleteTextview?.setOnItemClickListener { _, _, position, _ ->
             val company: Company = homeViewModel.companies.value[position]
             AppSettings.tempSelectedSystem = company

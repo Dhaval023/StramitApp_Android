@@ -26,7 +26,6 @@ class FloorSweepFragment : BaseRfidFragment() {
 
     private var _binding: FragmentFloorSweepBinding? = null
     private val binding get() = _binding!!
-
     private val viewModel: FloorSweepViewModel by viewModels()
     private lateinit var scanAdapter: FloorSweepScanAdapter
     private val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
@@ -43,22 +42,17 @@ class FloorSweepFragment : BaseRfidFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize RFID/Barcode via base class
         initRfid()
-
         setupRecyclerView()
         setupMenu()
         setupObservers()
         setupListeners()
 
-        // Only set up EditText listeners for barcode mode here
         if (!Global.isRfidSelected) setupBarcodeScanner()
 
         updateReaderStatusUI()
         observeConnectionStatus()
     }
-
-    // ── BaseRfidFragment hooks ────────────────────────────────────────────────
 
     override fun onRfidTagsReceived(tags: Array<TagData>) {
         Log.d("FloorSweepFragment", "RFID Tags received: ${tags.size}")
@@ -80,8 +74,6 @@ class FloorSweepFragment : BaseRfidFragment() {
         _binding = null
     }
 
-    // ── RecyclerView ──────────────────────────────────────────────────────────
-
     private fun setupRecyclerView() {
         scanAdapter = FloorSweepScanAdapter { itemToDelete ->
             viewModel.removeItem(itemToDelete)
@@ -91,8 +83,6 @@ class FloorSweepFragment : BaseRfidFragment() {
             adapter = scanAdapter
         }
     }
-
-    // ── Menu ──────────────────────────────────────────────────────────────────
 
     private fun setupMenu() {
         val menuHost: MenuHost = requireActivity()
@@ -108,8 +98,6 @@ class FloorSweepFragment : BaseRfidFragment() {
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
-
-    // ── Observers ─────────────────────────────────────────────────────────────
 
     private fun setupObservers() {
         viewModel.floorSweepDateEntry.observe(viewLifecycleOwner) { date ->
@@ -169,8 +157,6 @@ class FloorSweepFragment : BaseRfidFragment() {
         }
     }
 
-    // ── Listeners ─────────────────────────────────────────────────────────────
-
     private fun setupListeners() {
         binding.dateEdittext.setOnClickListener {
             if (viewModel.isDatePickerEnable.value == true) showDatePicker()
@@ -178,8 +164,6 @@ class FloorSweepFragment : BaseRfidFragment() {
         binding.saveButton.setOnClickListener { showSaveConfirmation() }
         binding.deleteIcon.setOnClickListener { showClearAllConfirmation() }
     }
-
-    // ── Barcode scanner EditText setup ────────────────────────────────────────
 
     private fun setupBarcodeScanner() {
         Log.d("FloorSweepFragment", "Barcode Mode Setup")
@@ -232,15 +216,13 @@ class FloorSweepFragment : BaseRfidFragment() {
         })
     }
 
-    // ── Reader status ─────────────────────────────────────────────────────────
-
     private fun updateReaderStatusUI() {
         if (Global.isRfidSelected) {
             val isConnected = rfidHandler?.connectionStatus?.value ?: false
             setReaderStatusUI(isConnected)
         } else {
             binding.readerStatus.text = "Barcode" //Barcode Mode Active
-            binding.readerStatus.setTextColor(resources.getColor(android.R.color.holo_green_dark, null))
+            binding.readerStatus.setTextColor(resources.getColor(android.R.color.black, null))
         }
     }
 
@@ -259,8 +241,6 @@ class FloorSweepFragment : BaseRfidFragment() {
     private fun setReaderStatusUI(isConnected: Boolean) {
         binding.readerStatus.text = if (isConnected) "Connected" else "Not Connected"
     }
-
-    // ── Dialogs ───────────────────────────────────────────────────────────────
 
     private fun showDatePicker() {
         val calendar = Calendar.getInstance()

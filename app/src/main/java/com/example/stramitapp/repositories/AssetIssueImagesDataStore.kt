@@ -11,13 +11,9 @@ class AssetIssueImagesDataStore :
 
     private val dao: AssetIssueImagesDao by lazy { db.assetIssueImagesDao() }
 
-    // ---------------- EXTRA FUNCTION ----------------
-
     suspend fun getNewIdAsync(): Int {
         return dao.getNextId() ?: 1
     }
-
-    // ---------------- BASIC ----------------
 
     override suspend fun getItemAsync(id: Int): AssetIssueImages? {
         return dao.getById(id)
@@ -62,13 +58,9 @@ class AssetIssueImagesDataStore :
         return dao.getAll()
     }
 
-    // ---------------- EXPORT ----------------
-
     suspend fun getItemsToExportAsync(lastSyncUpData: String): List<AssetIssueImages> {
         return dao.getItemsToExport(lastSyncUpData)
     }
-
-    // ---------------- PLACEHOLDERS ----------------
 
     override suspend fun initializeAsync() {}
 

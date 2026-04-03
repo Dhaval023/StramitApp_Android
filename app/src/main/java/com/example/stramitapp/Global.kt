@@ -10,7 +10,6 @@ object Global {
     const val databaseName = ""
     const val deviceId = ""
 
-    // Use these functions to update the values
     fun setRfidMode() {
         isRfidSelected = true
         isBarcodeSelected = false
@@ -21,7 +20,6 @@ object Global {
         isBarcodeSelected = true
     }
 
-    // Helper method to get current scan type as string
     fun getCurrentScanType(): String {
         return if (isRfidSelected) "RFID" else "BARCODE"
     }

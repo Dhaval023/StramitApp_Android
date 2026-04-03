@@ -1,4 +1,4 @@
-package com.example.stramitapp.services.API.Login.response
+package com.example.stramitapp.common.API.Login.response
 
 import com.google.gson.annotations.SerializedName
 

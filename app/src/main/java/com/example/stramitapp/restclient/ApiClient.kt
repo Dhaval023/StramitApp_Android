@@ -7,10 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.security.cert.CertificateException
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
-import com.google.gson.GsonBuilder
 import javax.net.ssl.X509TrustManager
-import java.time.OffsetDateTime
-//import com.example.stramitapp.utilities.OffsetDateTimeAdapter
 
 open class ApiClient {
 
@@ -20,17 +17,13 @@ open class ApiClient {
 
     init {
 
-        baseUrl = "${ApiSettings.BASE_URL}/${ApiSettings.ROOT}/"
+        baseUrl = "${ApiSettings.SCHEME}://${ApiSettings.HOST}/${ApiSettings.ROOT}/"
 
         val logging = HttpLoggingInterceptor()
         logging.level = HttpLoggingInterceptor.Level.BODY
 
         val httpClient = unsafeOkHttpClientBuilder()
         httpClient.addInterceptor(logging)
-
-//        val gson = GsonBuilder()
-//            .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeAdapter())
-//            .create()
 
         retrofit = Retrofit.Builder()
             .baseUrl(baseUrl)

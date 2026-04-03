@@ -5,10 +5,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.stramitapp.common.API.FloorSweep.request.FloorSweepRequest
 import com.example.stramitapp.model.FloorSweepModel
 import com.example.stramitapp.model.FloorSweepResultListModel
 import com.example.stramitapp.restclient.SyncClientService
-import com.example.stramitapp.services.API.request.FloorSweepRequest
 import com.example.stramitapp.utilities.AppSettings
 import com.zebra.rfid.api3.TagData
 import kotlinx.coroutines.Dispatchers
@@ -33,8 +33,6 @@ class FloorSweepViewModel : ViewModel() {
 
     private val _isDatePickerEnable = MutableLiveData(true)
     val isDatePickerEnable: LiveData<Boolean> = _isDatePickerEnable
-
-    // ✅ FIX: Use separate loading + error LiveData so UI can react independently
     private val _isBusy = MutableLiveData(false)
     val isBusy: LiveData<Boolean> = _isBusy
 
@@ -43,8 +41,6 @@ class FloorSweepViewModel : ViewModel() {
 
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
-
-    // ✅ FIX: navigationToResult must only be set on Main thread — use postValue safely
     private val _navigationToResult = MutableLiveData<List<FloorSweepResultListModel>?>()
     val navigationToResult: LiveData<List<FloorSweepResultListModel>?> = _navigationToResult
 
@@ -96,7 +92,6 @@ class FloorSweepViewModel : ViewModel() {
     }
 
     fun submitEvent() {
-        // ── Validations (run on Main thread, .value is safe here) ──────────────
         if (_isDatePickerEnable.value == true) {
             _errorMessage.value = "ALERT: Please Save the Date."
             return
@@ -108,7 +103,6 @@ class FloorSweepViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
-                // ✅ Switch to Main for LiveData .value writes
                 withContext(Dispatchers.Main) {
                     _isBusy.value = true
                     _isPageEnabled.value = false

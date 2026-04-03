@@ -1,9 +1,9 @@
-package com.example.stramitapp.services.API.Login.response
+package com.example.stramitapp.common.API.Login.response
 
 data class GetDeviceIdResponse(
     var statusCode: Int = 0,
     var error: String? = null,
-    var list: List<DeviceIdItem>? = null
+    var list: List<com.example.stramitapp.common.API.Login.response.DeviceIdItem>? = null
 )
 
 data class DeviceIdItem(

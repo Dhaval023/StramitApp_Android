@@ -13,21 +13,14 @@ public class BarcodeHandler {
 
     private static final String TAG = "BarcodeHandler";
 
-    // Zebra DataWedge intent actions
     private static final String ACTION_BARCODE_SCANNED = "com.symbol.datawedge.api.RESULT_ACTION";
     private static final String EXTRA_DATA = "com.symbol.datawedge.data_string";
     private static final String EXTRA_LABEL_TYPE = "com.symbol.datawedge.label_type";
-
-    // TC58 specific actions (if different)
     private static final String TC58_BARCODE_ACTION = "TC58BarcodeScanned";
-
     private final Context context;
-
     private final MutableLiveData<String> _barcodeDataLiveData = new MutableLiveData<>();
     private final MutableLiveData<String> _barcodeLabelTypeLiveData = new MutableLiveData<>();
-
     private boolean isRegistered = false;
-
     public BarcodeHandler(Context context) {
         this.context = context;
     }
@@ -59,8 +52,6 @@ public class BarcodeHandler {
                     labelType = "";
                 }
 
-                Log.d(TAG, "Barcode scanned: " + barcodeData + ", Type: " + labelType);
-
                 if (!barcodeData.isEmpty()) {
                     _barcodeDataLiveData.postValue(barcodeData);
                     _barcodeLabelTypeLiveData.postValue(labelType);
@@ -75,7 +66,6 @@ public class BarcodeHandler {
             IntentFilter filter = new IntentFilter();
             filter.addAction(ACTION_BARCODE_SCANNED);
             filter.addAction(TC58_BARCODE_ACTION);
-            // Add more general actions to catch any barcode broadcasts
             filter.addAction("com.zebra.android.barcodedata");
             filter.addAction("android.intent.ACTION_DECODE_DATA");
 
@@ -86,7 +76,6 @@ public class BarcodeHandler {
                     context.registerReceiver(barcodeReceiver, filter);
                 }
                 isRegistered = true;
-                Log.d(TAG, "Barcode receiver registered successfully");
             } catch (Exception e) {
                 Log.e(TAG, "Error registering receiver: " + e.getMessage());
             }
@@ -99,7 +88,6 @@ public class BarcodeHandler {
             try {
                 context.unregisterReceiver(barcodeReceiver);
                 isRegistered = false;
-                Log.d(TAG, "Barcode receiver unregistered");
             } catch (Exception e) {
                 Log.e(TAG, "Error unregistering receiver: " + e.getMessage());
             }

@@ -59,8 +59,6 @@ object AppSettings {
     const val READER_ERROR_MSG =
         "RFID Reader is not connected. Please go to Reader connection and re-connect the reader."
 
-    // ── System paths / names ──────────────────────────────────────────────────
-
     var pathDatabase: String = ""
     var pathDownloads: String = ""
     var pathImages: String = ""
@@ -69,15 +67,11 @@ object AppSettings {
     var pathAssetReturnImages: String = ""
     var databaseName: String = ""
 
-    // ── Device info ───────────────────────────────────────────────────────────
-
     var deviceId: Int = 0
     var deviceUdid: String = ""
     var deviceType: String = ""
     var syncVersion: String = ""
     var configName: String = ""
-
-    // ── App state flags ───────────────────────────────────────────────────────
 
     var isLoginOnline: Boolean = false
     var isAutoSync: Boolean = false
@@ -85,8 +79,6 @@ object AppSettings {
     var syncInterval: Double = 0.0
     var isFreshInstall: String = ""
     var loginErrorMessage: String = ""
-
-    // ── Reader type ───────────────────────────────────────────────────────────
 
     var isTSLReader: Boolean = false
     var isZebraReader: Boolean = false
@@ -116,8 +108,6 @@ object AppSettings {
             currentReaderType = if (value) ReaderTypeModel.BARCODE else ReaderTypeModel.RFID
         }
 
-    // ── Internal / auth ───────────────────────────────────────────────────────
-
     var isDoneSyncing: Boolean = false
     var licenseeKey: String = ""
     var authenticatedUser: User? = null
@@ -132,8 +122,6 @@ object AppSettings {
         get() = SecurePrefs.get(StorageKeys.KEY_FORCE_SYNC)
             ?.lowercase() == "true"
         set(value) = SecurePrefs.set(StorageKeys.KEY_FORCE_SYNC, value.toString())
-
-    // ── Temp / selected items ─────────────────────────────────────────────────
 
     var tempSelectedSystem: Company? = null
     var tempSelectedCompany: WpCompany? = null
@@ -150,8 +138,6 @@ object AppSettings {
     var tempSelectedAssetCondition: AssetCondition? = null
     var tempMixAttribute: MixAttributePreferences? = null
     var jobNumberText: String = ""
-
-    // ── Init helpers ──────────────────────────────────────────────────────────
 
     suspend fun initializeSettings(repository: Repository) = withContext(Dispatchers.IO) {
         val systemId   = SecurePrefs.get(StorageKeys.KEY_SYSTEM)

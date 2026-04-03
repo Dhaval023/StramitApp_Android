@@ -76,8 +76,6 @@ class AssetDataStore :
 
     suspend fun getMaxAssetId(): Int = dao.getMaxAssetId() ?: 0
 
-    // ── Barcode / Tag lookup (used by MovementViewModel) ─────────────────────
-
     suspend fun getItemByBarcodeAsync(companyId: Int, barcode: String): Asset? {
         return try {
             dao.getByBarcode(companyId, barcode)
@@ -95,8 +93,6 @@ class AssetDataStore :
         }
     }
 
-    // ── Export ────────────────────────────────────────────────────────────────
-
     suspend fun getItemsToExport(lastSync: String): List<Asset> =
         dao.getItemsToExport(lastSync)
 
@@ -105,9 +101,6 @@ class AssetDataStore :
 
     suspend fun getAssetsForImageSync(): List<Asset> =
         dao.getAssetsForImageSync()
-
-    // ── Shipment ─────────────────────────────────────────────────────────────
-
 
     suspend fun getShipmentItems(): List<Shipment> =
         dao.getShipments()
@@ -145,9 +138,9 @@ class AssetDataStore :
             }
 
             val result = dao.getShipmentItemByBarcodeOnly(
-                companyId,            // ✅ Int first
-                barcode.trim(),       // ✅ String second
-                shipmentNumber.trim() // ✅ String third
+                companyId,
+                barcode.trim(),
+                shipmentNumber.trim()
             )
             AssetResult.Success(result)
 
@@ -174,9 +167,9 @@ class AssetDataStore :
             }
 
             val result = dao.getShipmentItemByTagOnly(
-                companyId,            // ✅ Int first
-                tag.trim(),           // ✅ String second
-                shipmentNumber.trim() // ✅ String third
+                companyId,
+                tag.trim(),
+                shipmentNumber.trim()
             )
             AssetResult.Success(result)
 

@@ -1,4 +1,4 @@
-package com.example.stramitapp.services.API.Job.request
+package com.example.stramitapp.common.API.Job.request
 
 import com.example.stramitapp.model.JobAssetTrackInfo
 

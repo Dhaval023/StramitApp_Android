@@ -48,7 +48,6 @@ abstract class ReaderDataStore(
     }
 
     override suspend fun initializeAsync() {
-        // Room automatically creates tables
     }
 
     override suspend fun pullLatestAsync(): Boolean {

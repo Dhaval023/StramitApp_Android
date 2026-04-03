@@ -1,4 +1,4 @@
-package com.example.stramitapp.services.API.Job.response
+package com.example.stramitapp.common.API.Job.response
 
 data class SubmitJobResponse(
     val statusCode: Int,

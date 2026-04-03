@@ -12,7 +12,6 @@ import com.example.stramitapp.databinding.FragmentSlideshowBinding
 class SlideshowFragment : Fragment() {
 
     private var _binding: FragmentSlideshowBinding? = null
-
     private val binding get() = _binding!!
 
     override fun onCreateView(

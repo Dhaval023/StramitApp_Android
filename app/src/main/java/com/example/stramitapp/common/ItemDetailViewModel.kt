@@ -1,4 +1,4 @@
-package com.example.stramitapp.services
+package com.example.stramitapp.common
 
 
 import android.util.Log

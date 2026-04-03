@@ -21,10 +21,8 @@ class MovementViewModel : ViewModel() {
     private val assetMovementInfoDataStore = AssetMovementInfoDataStore()
     private val _scannedAssets = MutableLiveData<List<Asset>>(emptyList())
     val scannedAssets: LiveData<List<Asset>> = _scannedAssets
-
     private val _toastMessage = MutableLiveData<String>()
     val toastMessage: LiveData<String> = _toastMessage
-
     private val _isBusy = MutableLiveData(false)
     val isBusy: LiveData<Boolean> = _isBusy
     private val internalList = mutableListOf<Asset>()
@@ -58,14 +56,12 @@ class MovementViewModel : ViewModel() {
                 val destinationLocationId = AppSettings.tempSelectedLocation?.locationId
                 if (asset.locationId == destinationLocationId) {
                     _toastMessage.value = "Asset was not moved. Please change its destination location to proceed."
-                    Log.d("MovementVM", "Asset location unchanged, skipping: $barcode")
                     return@launch
                 }
 
                 internalList.add(asset)
                 _scannedAssets.value = internalList.toList()
                 _toastMessage.value = "Asset added: ${asset.title ?: barcode}"
-                Log.d("MovementVM", "Asset added: ${asset.title}, total: ${internalList.size}")
 
             } catch (e: Exception) {
                 Log.e("MovementVM", "Error processing barcode: $barcode", e)
@@ -96,19 +92,16 @@ class MovementViewModel : ViewModel() {
                 }
 
                 if (asset == null) {
-                    Log.d("MovementVM", "Asset not found for tag: $tagId")
                     return@launch
                 }
 
                 val destinationLocationId = AppSettings.tempSelectedLocation?.locationId
                 if (asset.locationId == destinationLocationId) {
-                    Log.d("MovementVM", "Asset location unchanged, skipping tag: $tagId")
                     return@launch
                 }
 
                 internalList.add(asset)
                 _scannedAssets.value = internalList.toList()
-                Log.d("MovementVM", "Tag asset added: ${asset.title}, total: ${internalList.size}")
 
             } catch (e: Exception) {
                 Log.e("MovementVM", "Error processing tag: $tagId", e)
@@ -174,8 +167,6 @@ class MovementViewModel : ViewModel() {
                     val isItemAdded = withContext(Dispatchers.IO) {
                         assetMovementInfoDataStore.addItemAsync(movementInfo)
                     }
-
-                    Log.d("MovementVM", "addItemAsync result: $isItemAdded for assetId: ${item.assetId}")
 
                     if (isItemAdded) {
                         addedMovementInfoList.add(movementInfo)

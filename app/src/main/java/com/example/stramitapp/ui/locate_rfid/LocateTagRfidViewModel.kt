@@ -32,14 +32,12 @@ class LocateTagRFIDViewModel : ViewModel(), RfidEventsListener {
         } catch (e: Exception) { false }
 
     fun updateIn() {
-        Log.d(TAG, "updateIn: initializing RFID listener")
         disposed = false
         hintAvailable.postValue(true)
 
         RFIDHandler.isLocateMode = true
 
         if (!AppSettings.isRFIDReaderConnection) {
-            Log.w(TAG, "updateIn: AppSettings.isRFIDReaderConnection is false")
             readerConnection.postValue("Not connected")
             return
         }
@@ -47,8 +45,6 @@ class LocateTagRFIDViewModel : ViewModel(), RfidEventsListener {
         if (isConnected) {
             try {
                 val reader = RFIDHandler.mConnectedRfidReader ?: return
-                Log.d(TAG, "updateIn: Reader connected, adding events listener")
-
                 reader.Events.addEventsListener(this)
                 reader.Events.setHandheldEvent(true)
                 reader.Events.setTagReadEvent(true)
@@ -67,7 +63,6 @@ class LocateTagRFIDViewModel : ViewModel(), RfidEventsListener {
     }
 
     fun updateOut() {
-        Log.d(TAG, "updateOut: cleaning up")
         hintAvailable.postValue(false)
 
         RFIDHandler.isLocateMode = false
@@ -86,7 +81,6 @@ class LocateTagRFIDViewModel : ViewModel(), RfidEventsListener {
 
     @Synchronized
     override fun eventReadNotify(e: RfidReadEvents?) {
-        Log.d(TAG, "eventReadNotify triggered")
         val reader = RFIDHandler.mConnectedRfidReader ?: return
 
         val tags: Array<TagData>? = try {
@@ -98,11 +92,9 @@ class LocateTagRFIDViewModel : ViewModel(), RfidEventsListener {
         }
 
         if (tags != null) {
-            Log.d(TAG, "Tags read: ${tags.size}")
             for (tag in tags) {
                 if (tag.isContainsLocationInfo) {
                     val relDist = tag.LocationInfo.getRelativeDistance()
-                    Log.d(TAG, "LocationInfo found: relativeDistance=$relDist")
                     updateFillView(relDist)
                     return
                 }
@@ -115,17 +107,14 @@ class LocateTagRFIDViewModel : ViewModel(), RfidEventsListener {
     @Synchronized
     override fun eventStatusNotify(e: RfidStatusEvents?) {
         val statusData = e?.StatusEventData ?: return
-        Log.d(TAG, "eventStatusNotify: ${statusData.getStatusEventType()}")
 
         when (statusData.getStatusEventType()) {
             STATUS_EVENT_TYPE.HANDHELD_TRIGGER_EVENT -> {
                 val handheldEvent = statusData.HandheldTriggerEventData?.getHandheldEvent()
                 val pressed = handheldEvent == HANDHELD_TRIGGER_EVENT_TYPE.HANDHELD_TRIGGER_PRESSED
-                Log.d(TAG, "Trigger event: pressed=$pressed")
                 hhTriggerEvent(pressed)
             }
             STATUS_EVENT_TYPE.DISCONNECTION_EVENT -> {
-                Log.w(TAG, "Disconnection event received")
                 updateHints(connected = false)
             }
             else -> Unit
@@ -136,7 +125,6 @@ class LocateTagRFIDViewModel : ViewModel(), RfidEventsListener {
     fun hhTriggerEvent(pressed: Boolean) {
         try {
             val pattern = tagPattern.value
-            Log.d(TAG, "hhTriggerEvent: pressed=$pressed, pattern=$pattern")
             if (!pattern.isNullOrEmpty()) {
                 locate(start = pressed, pattern = pattern, mask = null)
             } else {
@@ -158,12 +146,10 @@ class LocateTagRFIDViewModel : ViewModel(), RfidEventsListener {
 
     @Synchronized
     private fun locate(start: Boolean, pattern: String, mask: String?) {
-        Log.d(TAG, "locate: start=$start, pattern=$pattern")
         try {
             val reader = RFIDHandler.mConnectedRfidReader ?: return
             if (start) {
                 reader.Actions.TagLocationing.Perform(pattern, mask, null)
-                Log.d(TAG, "TagLocationing.Perform called")
             } else {
                 reader.Actions.TagLocationing.Stop()
                 Log.d(TAG, "TagLocationing.Stop called")
@@ -181,7 +167,6 @@ class LocateTagRFIDViewModel : ViewModel(), RfidEventsListener {
         val clamped = relDist.toInt().coerceIn(0, 100)
         val ratio   = clamped / 100f   // 0.0–1.0, maps to full bar height
 
-        Log.d(TAG, "updateFillView: distance=$clamped, ratio=$ratio")
         distanceBox.postValue(RectF(0f, 0.05f, 50f, ratio))
         relativeDistance.postValue(clamped.toString())
     }

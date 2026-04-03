@@ -2,12 +2,12 @@ package com.example.stramitapp.restclient
 
 import android.util.Log
 import com.example.stramitapp.models.Constants.ApiClient
-import com.example.stramitapp.services.API.request.ForgotPasswordNewRequest
-import com.example.stramitapp.services.API.request.GetDeviceIdRequest
-import com.example.stramitapp.services.API.request.GetLoginDetailsNewRequest
-import com.example.stramitapp.services.API.response.ForgotPasswordNewResponse
-import com.example.stramitapp.services.API.response.GetDeviceIdResponse
-import com.example.stramitapp.services.API.response.GetLoginDetailsNewResponse
+import com.example.stramitapp.common.API.Login.request.ForgotPasswordNewRequest
+import com.example.stramitapp.common.API.Login.request.GetDeviceIdRequest
+import com.example.stramitapp.common.API.Login.request.GetLoginDetailsNewRequest
+import com.example.stramitapp.common.API.Login.response.ForgotPasswordNewResponse
+import com.example.stramitapp.common.API.Login.response.GetDeviceIdResponse
+import com.example.stramitapp.common.API.Login.response.GetLoginDetailsNewResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -43,7 +43,7 @@ class LoginClientService : ApiClient() {
         retrofit.create(LoginApiService::class.java)
     }
 
-    suspend fun getLoginDetails(request: GetLoginDetailsNewRequest): GetLoginDetailsNewResponse {
+    suspend fun getLoginDetails(request:GetLoginDetailsNewRequest): GetLoginDetailsNewResponse {
         return try {
             val response = apiService.getLoginDetails(
                 loginName = request.loginName ?: "",
@@ -56,18 +56,21 @@ class LoginClientService : ApiClient() {
             )
 
             if (response.isSuccessful) {
-                response.body() ?: GetLoginDetailsNewResponse().apply {
+                response.body() ?: GetLoginDetailsNewResponse()
+                    .apply {
                     statusCode = 0
                     error = "Empty response body."
                 }
             } else {
-                GetLoginDetailsNewResponse().apply {
+                GetLoginDetailsNewResponse()
+                    .apply {
                     error = response.message()
                 }
             }
         } catch (ex: Exception) {
             Log.e("LoginClientService", "getLoginDetails failed", ex)
-            GetLoginDetailsNewResponse().apply {
+            GetLoginDetailsNewResponse()
+                .apply {
                 statusCode = 0
                 error = ex.message ?: "An unknown error occurred during login."
             }
@@ -82,19 +85,22 @@ class LoginClientService : ApiClient() {
             )
 
             if (response.isSuccessful) {
-                response.body() ?: ForgotPasswordNewResponse().apply {
+                response.body() ?: ForgotPasswordNewResponse()
+                    .apply {
                     statusCode = 0
                     error      = "Empty response body."
                 }
             } else {
-                ForgotPasswordNewResponse().apply {
+                ForgotPasswordNewResponse()
+                    .apply {
                     statusCode = 0
                     error      = response.message()
                 }
             }
         } catch (ex: Exception) {
             Log.e("LoginClientService", "forgotPassword failed", ex)
-            ForgotPasswordNewResponse().apply {
+            ForgotPasswordNewResponse()
+                .apply {
                 statusCode = 0
                 error      = ex.message ?: "An unknown error occurred."
             }

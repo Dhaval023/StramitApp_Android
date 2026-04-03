@@ -58,13 +58,11 @@ class LoadShipmentViewModel(application: Application) : AndroidViewModel(applica
         val current = _scannedItems.value ?: mutableListOf()
 
         if (current.contains(barcode)) {
-            Log.d("LoadShipmentVM", "Duplicate skipped: $barcode")
             return
         }
 
         current.add(barcode)
         _scannedItems.postValue(current)
-        Log.d("LoadShipmentVM", "Added to list: $barcode — total: ${current.size}")
     }
 
     fun clearAll() {
@@ -84,7 +82,6 @@ class LoadShipmentViewModel(application: Application) : AndroidViewModel(applica
             val shipment = assetDataStore.checkIfShipmentNumberExist(barcode)
 
             if (shipment != null) {
-                Log.d("SHIPMENT_DEBUG", "SCANNED & FOUND: ${shipment.shipmentNumber}")
                 _shipmentNumber.postValue(barcode)
             } else {
                 Log.d("SHIPMENT_DEBUG", "SCANNED BUT NOT FOUND")

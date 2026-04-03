@@ -6,7 +6,7 @@ import com.example.stramitapp.dao.AssetIssueInfoDao
 import com.example.stramitapp.models.Database.AppDatabase
 import com.example.stramitapp.model.AssetIssueInfo
 import com.example.stramitapp.repositories.Base.IDataStore
-import com.example.stramitapp.services.APIHelper
+import com.example.stramitapp.common.APIHelper
 import com.example.stramitapp.utilities.AppSettings
 
 class AssetIssueInfoDataStore(
@@ -31,8 +31,6 @@ class AssetIssueInfoDataStore(
             false
         }
     }
-
-    // ---------------- TRANSACTION ----------------
 
     suspend fun addAssetIssue(items: List<AssetIssueInfo>): Boolean {
 
@@ -63,7 +61,6 @@ class AssetIssueInfoDataStore(
 
                     issueDao.insert(item)
 
-                    // IMAGE INSERT CAN BE ADDED HERE
                 }
             }
 

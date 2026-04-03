@@ -23,11 +23,9 @@ class MovementFragment : BaseRfidFragment() {
     private lateinit var viewModel: MovementViewModel
     private var _binding: FragmentMovementBinding? = null
     private val binding get() = _binding!!
-
     private val movementViewModel: MovementViewModel by viewModels {
         MovementViewModelFactory()
     }
-
     private var scannedListAdapter: ScannedListAdapter? = null
 
     override fun onCreateView(
@@ -92,12 +90,11 @@ class MovementFragment : BaseRfidFragment() {
     override fun onBarcodeReady() {
         binding.bentry.post {
             binding.bentry.requestFocus()
-            Log.d("MovementFragment", "onResume — bentry focus requested")
         }
     }
 
     override fun onResume() {
-        super.onResume() // base handles enableRfidMode/enableBarcodeMode
+        super.onResume()
         updateReaderStatusUI()
     }
 
@@ -138,7 +135,6 @@ class MovementFragment : BaseRfidFragment() {
     }
 
     private fun setupBarcodeMode() {
-        Log.d("MovementFragment", "Barcode Mode Setup — using hidden bentry EditText")
         val bentry = binding.bentry
         bentry.isFocusable = true
         bentry.isFocusableInTouchMode = true
@@ -158,7 +154,6 @@ class MovementFragment : BaseRfidFragment() {
                     || actionId == EditorInfo.IME_NULL
             if (isEnterKey || isImeAction) {
                 val scanned = bentry.text.toString().trim()
-                Log.d("MovementFragment", "bentry EditorAction — scanned: '$scanned'")
                 if (scanned.isNotEmpty()) {
                     movementViewModel.onBarcodeScanned(scanned)
                     bentry.setText("")
@@ -172,7 +167,6 @@ class MovementFragment : BaseRfidFragment() {
                 (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_TAB)
             ) {
                 val scanned = bentry.text.toString().trim()
-                Log.d("MovementFragment", "bentry KeyListener — scanned: '$scanned'")
                 if (scanned.isNotEmpty()) {
                     movementViewModel.onBarcodeScanned(scanned)
                     bentry.setText("")
@@ -196,7 +190,6 @@ class MovementFragment : BaseRfidFragment() {
                     if (lastChangeTime == capturedTime) {
                         val current = bentry.text.toString().trim()
                         if (current.isNotEmpty()) {
-                            Log.d("MovementFragment", "bentry TextWatcher — scanned: '$current'")
                             movementViewModel.onBarcodeScanned(current)
                             bentry.setText("")
                         }
@@ -204,7 +197,6 @@ class MovementFragment : BaseRfidFragment() {
                 }, 300)
             }
         })
-        Log.d("MovementFragment", "bentry setup complete, focus requested")
     }
 
     private fun updateReaderStatusUI() {
@@ -212,9 +204,9 @@ class MovementFragment : BaseRfidFragment() {
             val isConnected = rfidHandler?.connectionStatus?.value ?: false
             setReaderStatusUI(isConnected)
         } else {
-            binding.readerStatus.text = "Barcode" //Barcode Mode Active
+            binding.readerStatus.text = "Barcode"
             binding.readerStatus.setTextColor(
-                resources.getColor(android.R.color.holo_green_dark, null)
+                resources.getColor(android.R.color.black, null)
             )
         }
     }

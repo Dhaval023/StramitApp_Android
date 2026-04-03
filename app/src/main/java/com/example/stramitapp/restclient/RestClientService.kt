@@ -31,8 +31,6 @@ object RestClientService {
     suspend fun executeSimpleGetRequestAsync(request: String): String? {
         return withContext(Dispatchers.IO) {
             try {
-                Log.d("RestClientService", "Executing GET request to: $request")
-
                 val httpRequest = Request.Builder()
                     .url(request)
                     .get()
@@ -41,7 +39,6 @@ object RestClientService {
                 client.newCall(httpRequest).execute().use { response ->
                     val responseBody = response.body?.string()
                     Log.d("RestClientService", "Response code: ${response.code}, successful: ${response.isSuccessful}")
-                    logSafe("RestClientService", "Response body:", responseBody)
                     if (response.isSuccessful) responseBody else null
                 }
             } catch (e: Exception) {
@@ -59,8 +56,6 @@ object RestClientService {
                     formBodyBuilder.add(key, value)
                 }
                 val requestBody = formBodyBuilder.build()
-                Log.d("RestClientService", "Executing POST request to: $request with params: $parameters")
-
                 val httpRequest = Request.Builder()
                     .url(request)
                     .post(requestBody)
@@ -69,7 +64,6 @@ object RestClientService {
                 client.newCall(httpRequest).execute().use { response ->
                     val responseBody = response.body?.string()
                     Log.d("RestClientService", "Response code: ${response.code}, successful: ${response.isSuccessful}")
-                    logSafe("RestClientService", "Response body:", responseBody)
                     if (response.isSuccessful) {
                         responseBody
                     } else {
@@ -117,7 +111,6 @@ object RestClientService {
                 client.newCall(request).execute().use { response ->
                     val responseBody = response.body?.string()
                     Log.d("RestClientService", "Response code: ${response.code}, successful: ${response.isSuccessful}")
-                    logSafe("RestClientService", "Response body:", responseBody)
                     if (response.isSuccessful) {
                         responseBody
                     } else null
@@ -128,11 +121,9 @@ object RestClientService {
             }
         }
     }
-
     suspend fun executePostRequestAsync(resource: String, item: String): String? {
         return withContext(Dispatchers.IO) {
             try {
-                logSafe("RestClientService", "Executing POST request to: $resource with body:", item)
                 val mediaType = "application/json; charset=utf-8".toMediaType()
                 val body = item.toRequestBody(mediaType)
 
@@ -145,7 +136,6 @@ object RestClientService {
                 client.newCall(request).execute().use { response ->
                     val responseBody = response.body?.string()
                     Log.d("RestClientService", "Response code: ${response.code}, successful: ${response.isSuccessful}")
-                    logSafe("RestClientService", "Response body:", responseBody)
                     if (response.isSuccessful) {
                         responseBody
                     } else null
@@ -160,11 +150,9 @@ object RestClientService {
     suspend fun executeGetRequestAsync(request: Request): String? {
         return withContext(Dispatchers.IO) {
             try {
-                Log.d("RestClientService", "Executing GET request: $request")
                 client.newCall(request).execute().use { response ->
                     val responseBody = response.body?.string()
                     Log.d("RestClientService", "Response code: ${response.code}, successful: ${response.isSuccessful}")
-                    logSafe("RestClientService", "Response body:", responseBody)
                     if (response.isSuccessful) {
                         responseBody
                     } else null
@@ -175,15 +163,12 @@ object RestClientService {
             }
         }
     }
-
     suspend fun executePostRequestAsync(request: Request): String? {
         return withContext(Dispatchers.IO) {
             try {
-                Log.d("RestClientService", "Executing POST request: $request")
                 client.newCall(request).execute().use { response ->
                     val responseBody = response.body?.string()
                     Log.d("RestClientService", "Response code: ${response.code}, successful: ${response.isSuccessful}")
-                    logSafe("RestClientService", "Response body:", responseBody)
                     if (response.isSuccessful) {
                         responseBody
                     } else null
@@ -198,7 +183,6 @@ object RestClientService {
     suspend fun getResponsePostRequestAsync(request: Request): Response? {
         return withContext(Dispatchers.IO) {
             try {
-                Log.d("RestClientService", "Executing POST request for Response object: $request")
                 val response = client.newCall(request).execute()
                 Log.d("RestClientService", "Response code: ${response.code}, successful: ${response.isSuccessful}")
                 response

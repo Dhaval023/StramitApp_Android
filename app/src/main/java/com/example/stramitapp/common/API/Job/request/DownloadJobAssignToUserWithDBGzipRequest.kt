@@ -1,4 +1,4 @@
-package com.example.stramitapp.services.API.Job.request
+package com.example.stramitapp.common.API.Job.request
 
 data class DownloadJobAssignToUserWithDBGzipRequest(
     val userId: Int,

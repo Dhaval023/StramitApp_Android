@@ -1,4 +1,4 @@
-package com.example.stramitapp.services.API.FloorSweep.response
+package com.example.stramitapp.common.API.FloorSweep.response
 
 import com.google.gson.annotations.SerializedName
 
@@ -17,7 +17,7 @@ data class FloorSweepResponse(
     var databaseTimeStamp: Any? = null,
 
     @SerializedName("list")
-    var list: List<ResultListModel>? = null
+    var list: List<com.example.stramitapp.common.API.FloorSweep.response.ResultListModel>? = null
 )
 data class ResultListModel(
 

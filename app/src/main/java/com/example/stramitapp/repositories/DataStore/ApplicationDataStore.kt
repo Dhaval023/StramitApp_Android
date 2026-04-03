@@ -1,126 +1,80 @@
-package com.example.stramitapp.repositories.DataStore//package com.example.stramitapp.Repositories.DataStore
-//
-//import android.util.Log
-//import android.database.sqlite.SQLiteDatabase
-//import kotlinx.coroutines.Dispatchers
-//import kotlinx.coroutines.withContext
-//
-//class ApplicationDataStore : BaseRepository<Application>(), IDataStore<Application> {
-//
-//    private val TAG = "ApplicationDataStore"
-//
-//    // ─────────────────────────────────────────────────────────────────────────
-//    // Get Single Item
-//    // ─────────────────────────────────────────────────────────────────────────
-//
-//    override suspend fun getItemAsync(id: Int): Application = withContext(Dispatchers.IO) {
-//        try {
-//            val db = SQLiteDatabase.openDatabase(localDatabase, null, SQLiteDatabase.OPEN_READONLY)
-//            db.use {
-//                val cursor = it.query(
-//                    "Application",
-//                    null,
-//                    "AppId = ?",
-//                    arrayOf(id.toString()),
-//                    null, null, null
-//                )
-//                cursor.use { c ->
-//                    if (c.moveToFirst()) c.toApplication() else throw Exception("Item not found")
-//                }
-//            }
-//        } catch (ex: Exception) {
-//            Log.e(TAG, "getItemAsync error: ${ex.message}", ex)
-//            throw ex
-//        }
-//    }
-//
-//    // ─────────────────────────────────────────────────────────────────────────
-//    // Get All Items
-//    // ─────────────────────────────────────────────────────────────────────────
-//
-//    override suspend fun getItemsAsync(forceRefresh: Boolean): List<Application> =
-//        withContext(Dispatchers.IO) {
-//            try {
-//                val db = SQLiteDatabase.openDatabase(localDatabase, null, SQLiteDatabase.OPEN_READONLY)
-//                db.use {
-//                    val cursor = it.query("Application", null, null, null, null, null, null)
-//                    cursor.use { c ->
-//                        val list = mutableListOf<Application>()
-//                        while (c.moveToNext()) list.add(c.toApplication())
-//                        list
-//                    }
-//                }
-//            } catch (ex: Exception) {
-//                Log.e(TAG, "getItemsAsync error: ${ex.message}", ex)
-//                throw ex
-//            }
-//        }
-//
-//    // ─────────────────────────────────────────────────────────────────────────
-//    // Add Item
-//    // ─────────────────────────────────────────────────────────────────────────
-//
-//    override suspend fun addItemAsync(item: Application): Boolean = withContext(Dispatchers.IO) {
-//        try {
-//            val db = SQLiteDatabase.openDatabase(localDatabase, null, SQLiteDatabase.OPEN_READWRITE)
-//            db.use {
-//                it.insert("Application", null, item.toContentValues())
-//            }
-//            true
-//        } catch (ex: Exception) {
-//            Log.e(TAG, "addItemAsync error: ${ex.message}", ex)
-//            false
-//        }
-//    }
-//
-//    // ─────────────────────────────────────────────────────────────────────────
-//    // Update Item
-//    // ─────────────────────────────────────────────────────────────────────────
-//
-//    override suspend fun updateItemAsync(item: Application): Boolean = withContext(Dispatchers.IO) {
-//        try {
-//            val db = SQLiteDatabase.openDatabase(localDatabase, null, SQLiteDatabase.OPEN_READWRITE)
-//            db.use {
-//                it.update(
-//                    "Application",
-//                    item.toContentValues(),
-//                    "AppId = ?",
-//                    arrayOf(item.appId.toString())
-//                )
-//            }
-//            true
-//        } catch (ex: Exception) {
-//            Log.e(TAG, "updateItemAsync error: ${ex.message}", ex)
-//            false
-//        }
-//    }
-//
-//    // ─────────────────────────────────────────────────────────────────────────
-//    // Delete Item
-//    // ─────────────────────────────────────────────────────────────────────────
-//
-//    override suspend fun deleteItemAsync(item: Application): Boolean = withContext(Dispatchers.IO) {
-//        try {
-//            val db = SQLiteDatabase.openDatabase(localDatabase, null, SQLiteDatabase.OPEN_READWRITE)
-//            db.use {
-//                it.delete("Application", "AppId = ?", arrayOf(item.appId.toString()))
-//            }
-//            true
-//        } catch (ex: Exception) {
-//            Log.e(TAG, "deleteItemAsync error: ${ex.message}", ex)
-//            false
-//        }
-//    }
-//
-//    // ─────────────────────────────────────────────────────────────────────────
-//    // Not Implemented
-//    // ─────────────────────────────────────────────────────────────────────────
-//
-//    override suspend fun clearAsync(): Boolean = throw NotImplementedError()
-//
-//    override suspend fun initializeAsync() = throw NotImplementedError()
-//
-//    override suspend fun pullLatestAsync(): Boolean = throw NotImplementedError()
-//
-//    override suspend fun syncAsync(): Boolean = throw NotImplementedError()
-//}
+package com.example.stramitapp.repositories
+
+import android.util.Log
+import com.example.stramitapp.dao.ApplicationDataDao
+import com.example.stramitapp.model.Application
+import com.example.stramitapp.repositories.Base.BaseRepository
+import com.example.stramitapp.repositories.Base.IDataStore
+import com.example.stramitapp.utilities.AppSettings
+
+class ApplicationDataStore :
+    BaseRepository<Application>(),
+    IDataStore<Application> {
+
+    private val dao: ApplicationDataDao
+        get() = AppSettings.database.applicationDao()
+
+    override suspend fun getItemAsync(id: Int): Application? {
+        return dao.getById(id)
+    }
+
+    override suspend fun getItemsAsync(forceRefresh: Boolean): List<Application> {
+        return dao.getAll()
+    }
+
+    suspend fun getNewIdAsync(): Int {
+        return (dao.getMaxId() ?: 0) + 1
+    }
+
+    override suspend fun addItemAsync(item: Application): Boolean {
+        return try {
+            item.appId = getNewIdAsync()
+            dao.insert(item)
+            true
+        } catch (e: Exception) {
+            Log.e("ApplicationDataStore", "Insert failed", e)
+            false
+        }
+    }
+
+    override suspend fun updateItemAsync(item: Application): Boolean {
+        return try {
+            dao.insert(item)
+            true
+        } catch (e: Exception) {
+            Log.e("ApplicationDataStore", "Update failed", e)
+            false
+        }
+    }
+
+    override suspend fun deleteItemAsync(item: Application): Boolean {
+        return try {
+            dao.delete(item)
+            true
+        } catch (e: Exception) {
+            Log.e("ApplicationDataStore", "Delete failed", e)
+            false
+        }
+    }
+
+    override suspend fun clearAsync(): Boolean {
+        return try {
+            dao.clearAll()
+            true
+        } catch (e: Exception) {
+            Log.e("ApplicationDataStore", "Clear failed", e)
+            false
+        }
+    }
+
+
+    suspend fun count(): Int = dao.count()
+
+    suspend fun getMaxId(): Int = dao.getMaxId() ?: 0
+
+    override suspend fun initializeAsync() {}
+
+    override suspend fun pullLatestAsync(): Boolean = false
+
+    override suspend fun syncAsync(): Boolean = false
+}

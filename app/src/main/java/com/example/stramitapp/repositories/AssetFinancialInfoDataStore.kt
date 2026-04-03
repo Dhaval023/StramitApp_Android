@@ -11,8 +11,6 @@ class AssetFinancialInfoDataStore :
 
     private val dao: AssetFinancialInfoDao by lazy { db.assetFinancialInfoDao() }
 
-    // ---------------- BASIC ----------------
-
     override suspend fun getItemAsync(id: Int): AssetFinancialInfo? {
         return dao.getById(id)
     }
@@ -56,13 +54,10 @@ class AssetFinancialInfoDataStore :
         return dao.getAll()
     }
 
-    // ---------------- EXPORT ----------------
 
     suspend fun getItemsToExportAsync(lastSyncUpData: String): List<AssetFinancialInfo> {
         return dao.getItemsToExport(lastSyncUpData)
     }
-
-    // ---------------- PLACEHOLDERS ----------------
 
     override suspend fun initializeAsync() {}
 

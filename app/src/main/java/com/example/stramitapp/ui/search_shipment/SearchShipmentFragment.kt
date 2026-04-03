@@ -17,7 +17,6 @@ class SearchShipmentFragment : Fragment() {
 
     private var _binding: FragmentSearchShipmentBinding? = null
     private val binding get() = _binding!!
-
     private lateinit var viewModel: SearchShipmentViewModel
 
     override fun onCreateView(
@@ -25,7 +24,6 @@ class SearchShipmentFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        android.util.Log.d("SHIPMENT_DEBUG", "onCreateView called")
         viewModel = ViewModelProvider(this)[SearchShipmentViewModel::class.java]
         _binding = FragmentSearchShipmentBinding.inflate(inflater, container, false)
         setupSearchResults()
@@ -57,7 +55,6 @@ class SearchShipmentFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.searchResults.collect { results ->
-                    android.util.Log.d("SHIPMENT_DEBUG", "Collected results: ${results.size}")
                     if (results.isNotEmpty()) {
                         ShipmentSearchResultFragment
                             .newInstance(ArrayList(results))
@@ -69,15 +66,10 @@ class SearchShipmentFragment : Fragment() {
     }
 
     private fun setupButtons() {
-        android.util.Log.d("SHIPMENT_DEBUG", "setupButtons() called")
         binding.searchButton.setOnClickListener {
-            android.util.Log.d("SHIPMENT_DEBUG", "Search button CLICKED")
-
             val shipmentNumber = binding.shipmentIdEdittext.text?.toString()?.trim() ?: ""
             val m3CO           = binding.m3CoEdittext.text?.toString()?.trim() ?: ""
             val m3DO           = binding.m3DoEdittext.text?.toString()?.trim() ?: ""
-
-            android.util.Log.d("SHIPMENT_DEBUG", "shipmentNumber=$shipmentNumber m3CO=$m3CO m3DO=$m3DO")
 
             viewModel.search(
                 shipmentNumber = shipmentNumber,

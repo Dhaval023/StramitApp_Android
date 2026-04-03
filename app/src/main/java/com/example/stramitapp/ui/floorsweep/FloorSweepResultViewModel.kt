@@ -14,11 +14,8 @@ class FloorSweepResultViewModel : ViewModel() {
 
     private val _isBusy = MutableLiveData<Boolean>(false)
     val isBusy: LiveData<Boolean> = _isBusy
-
-    // Navigation events
     private val _navigateToLocate = MutableLiveData<Pair<String, String>?>()
     val navigateToLocate: LiveData<Pair<String, String>?> = _navigateToLocate
-
     private val _navigateToHome = MutableLiveData<Boolean>(false)
     val navigateToHome: LiveData<Boolean> = _navigateToHome
 
@@ -28,7 +25,7 @@ class FloorSweepResultViewModel : ViewModel() {
             try {
                 sdf.parse(it.deliveryDate)
             } catch (e: Exception) {
-                Date(0) // Fallback for unparseable dates
+                Date(0)
             }
         }
         _floorSweepResultList.value = sortedList

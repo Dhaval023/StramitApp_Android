@@ -21,17 +21,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow<LoginUiState>(LoginUiState.Idle)
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
-
     private val _authenticatedUser = MutableStateFlow<AuthenticatedUser?>(null)
     val authenticatedUser: StateFlow<AuthenticatedUser?> = _authenticatedUser.asStateFlow()
-
     private val authService = AuthenticationService(application)
-
-    private var isRememberCredentials: Boolean =
-        StorageKeys.getRememberCredentials(application)
-
+    private var isRememberCredentials: Boolean = StorageKeys.getRememberCredentials(application)
     private var isLoginOnline: Boolean = true
-
     private var lastUsername = ""
     private var lastPassword = ""
 
@@ -92,8 +86,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                         )
                     }
                 }
-
-                Log.d("LoginViewModel", "Login statusCode: $statusCode")
 
                 when (statusCode) {
                     1 -> {
@@ -162,9 +154,20 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun toggleRememberCredentials() { isRememberCredentials = !isRememberCredentials }
-    fun toggleLoginOnline()         { isLoginOnline = !isLoginOnline }
-    fun resetState()                { _uiState.value = LoginUiState.Idle }
+    fun toggleRememberCredentials()
+    {
+        isRememberCredentials = !isRememberCredentials
+    }
+
+    fun toggleLoginOnline()
+    {
+        isLoginOnline = !isLoginOnline
+    }
+
+    fun resetState()
+    {
+        _uiState.value = LoginUiState.Idle
+    }
 
     private fun isNetworkAvailable(): Boolean {
         val cm = getApplication<Application>()

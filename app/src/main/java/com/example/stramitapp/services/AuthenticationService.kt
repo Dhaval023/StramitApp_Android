@@ -3,13 +3,13 @@ package com.example.stramitapp.services
 import android.content.Context
 import android.provider.Settings
 import android.util.Log
+import com.example.stramitapp.common.API.Login.request.ForgotPasswordNewRequest
+import com.example.stramitapp.common.API.Login.request.GetDeviceIdRequest
+import com.example.stramitapp.common.API.Login.request.GetLoginDetailsNewRequest
 import com.example.stramitapp.model.User
 import com.example.stramitapp.models.Constants.StorageKeys
 import com.example.stramitapp.models.Database.AppDatabase
-import com.example.stramitapp.services.API.request.GetDeviceIdRequest
-import com.example.stramitapp.services.API.request.GetLoginDetailsNewRequest
 import com.example.stramitapp.restclient.LoginClientService
-import com.example.stramitapp.services.API.request.ForgotPasswordNewRequest
 import com.example.stramitapp.utilities.AppSettings
 
 class AuthenticationService(private val context: Context) {
@@ -42,12 +42,12 @@ class AuthenticationService(private val context: Context) {
             ) ?: "unknown"
 
             val request = GetLoginDetailsNewRequest(
-                loginName          = username,
-                password           = password,
-                currentDeviceType  = "Android",
-                currentDeviceUdid  = androidId,
-                deviceId           = deviceId,
-                licennseeKey       = licenseKey,
+                loginName = username,
+                password = password,
+                currentDeviceType = "Android",
+                currentDeviceUdid = androidId,
+                deviceId = deviceId,
+                licennseeKey = licenseKey,
                 setForceFullAssign = isForceLogin
             )
 
@@ -58,7 +58,6 @@ class AuthenticationService(private val context: Context) {
                 val loginDetail = result.list?.firstOrNull()
                 if (loginDetail != null) {
 
-                    // ── 1. Build AuthenticatedUser (in-memory DTO) ────────────
                     authenticatedUser = AuthenticatedUser(
                         userId            = loginDetail.userId,
                         firstName         = loginDetail.firstName,
@@ -75,19 +74,13 @@ class AuthenticationService(private val context: Context) {
                         isActive          = loginDetail.isActive
                     )
 
-                    // ── 2. FIX: Set AppSettings.authenticatedUser ─────────────
-                    // This is what SyncService reads. Was never set — caused NPE.
                     AppSettings.authenticatedUser = authenticatedUser!!.toUser()
 
-                    // ── 3. FIX: Save User to Room tbl_user ────────────────────
-                    // SyncService.forceSync_internal() calls db.userDao().getFirstUser()
-                    // as a fallback. Without this insert it always returned null.
                     try {
                         val db = AppDatabase.getInstance()
                         db.userDao().insert(authenticatedUser!!.toUser())
                         Log.d("AuthService", "User saved to Room: userId=${loginDetail.userId}")
                     } catch (e: Exception) {
-                        // Non-fatal — AppSettings.authenticatedUser is already set above
                         Log.w("AuthService", "Could not save user to Room: ${e.message}")
                     }
                 }
@@ -115,38 +108,44 @@ class AuthenticationService(private val context: Context) {
         password: String,
         isRememberCredentials: Boolean
     ): Int {
+
         loginErrorMessage = ""
 
-        val savedUsername = StorageKeys.getUsername(context)
-        val savedPassword = StorageKeys.getPassword(context)
+        try {
+            val db = AppDatabase.getInstance()
+            val users = db.userDao().getAll()
 
-        if (savedUsername.isBlank() || savedPassword.isBlank()) return 0
+            if (users.isEmpty()) return 0
 
-        return if (savedUsername == username && savedPassword == password) {
-            authenticatedUser = AuthenticatedUser(
-                loginName = username,
-                password  = password
-            )
+            val userList = users.filter { it.loginName == username }
 
-            try {
-                val db = AppDatabase.getInstance()
-                val userFromDb = db.userDao().getFirstUser()
-                if (userFromDb != null) {
-                    AppSettings.authenticatedUser = userFromDb
+            if (userList.isNotEmpty()) {
+
+                val user = userList[0]
+
+                // Password decryptor function called
+                //val decryptedPassword = PasswordStorage.encryptPassword(user.password)
+
+                if (user.password == password) {
+
+                    AppSettings.authenticatedUser = user
+
+                    if (isRememberCredentials) {
+                        StorageKeys.saveUsername(context, username)
+                        StorageKeys.savePassword(context, password)
+                    }
+
+                    return 1
                 }
-            } catch (e: Exception) {
-                Log.w("AuthService", "Offline login: could not load user from Room: ${e.message}")
             }
 
-            if (isRememberCredentials) {
-                StorageKeys.saveUsername(context, username)
-                StorageKeys.savePassword(context, password)
-            }
-            1
-        } else {
-            loginErrorMessage = "Invalid username or password"
-            0
+        } catch (e: Exception) {
+            e.printStackTrace()
+            loginErrorMessage = e.message ?: "Login error"
         }
+
+        loginErrorMessage = "Invalid username or password"
+        return 0
     }
 
     fun isLicenseeKeyAvailable(): Boolean = fetchLicenseKey().isNotBlank()
@@ -190,7 +189,7 @@ class AuthenticationService(private val context: Context) {
             val request = GetDeviceIdRequest(
                 currentDeviceType = "Android",
                 currentDeviceUdid = androidId,
-                deviceTokenId     = ""
+                deviceTokenId = ""
             )
 
             val result = clientService.getDeviceId(request)
@@ -208,10 +207,6 @@ class AuthenticationService(private val context: Context) {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// AuthenticatedUser DTO  (unchanged)
-// ─────────────────────────────────────────────────────────────────────────────
-
 data class AuthenticatedUser(
     val userId: Long = 0,
     val firstName: String? = null,
@@ -227,10 +222,7 @@ data class AuthenticatedUser(
     val licenseeId: Long? = null,
     val isActive: Long = 0
 ) {
-    /**
-     * Converts this login DTO into a Room [User] entity.
-     * Called after successful login to persist the user and populate AppSettings.
-     */
+
     fun toUser(): User = User().apply {
         userId            = this@AuthenticatedUser.userId.toInt()
         firstName         = this@AuthenticatedUser.firstName

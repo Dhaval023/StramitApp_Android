@@ -1,75 +1,65 @@
-package com.example.stramitapp.repositories.DataStore
+package com.example.stramitapp.repositories
 
-//import com.example.stramitapp.Repositories.Base.BaseRepository
-//
-//class DeviceTypeDataStore : BaseRepository<DeviceType>(), IDataStore<DeviceType> {
-//
-//    suspend fun getItemAsync(id: Int): DeviceType? {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<DeviceType>().firstOrNull { item -> item.id == id } }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    suspend fun getItemsAsync(forceRefresh: Boolean = false): List<DeviceType> {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<DeviceType>() }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    suspend fun addItemAsync(item: DeviceType): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.insert(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun updateItemAsync(item: DeviceType): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.update(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun deleteItemAsync(item: DeviceType): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.delete(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun clearAsync(): Boolean {
-//        throw NotImplementedError("clearAsync is not implemented")
-//    }
-//
-//    suspend fun initializeAsync() {
-//        throw NotImplementedError("initializeAsync is not implemented")
-//    }
-//
-//    suspend fun pullLatestAsync(): Boolean {
-//        throw NotImplementedError("pullLatestAsync is not implemented")
-//    }
-//
-//    suspend fun syncAsync(): Boolean {
-//        throw NotImplementedError("syncAsync is not implemented")
-//    }
-//}
+import android.util.Log
+import com.example.stramitapp.dao.DeviceTypeDao
+import com.example.stramitapp.model.DeviceType
+import com.example.stramitapp.repositories.Base.BaseRepository
+import com.example.stramitapp.repositories.Base.IDataStore
+import com.example.stramitapp.utilities.AppSettings
+
+class DeviceTypeDataStore :
+    BaseRepository<DeviceType>(),
+    IDataStore<DeviceType> {
+
+    private val dao: DeviceTypeDao
+        get() = AppSettings.database.deviceTypeDao()
+
+    override suspend fun getItemAsync(id: Int): DeviceType? {
+        return dao.getById(id)
+    }
+
+    override suspend fun getItemsAsync(forceRefresh: Boolean): List<DeviceType> {
+        return dao.getAll()
+    }
+
+    override suspend fun addItemAsync(item: DeviceType): Boolean {
+        return try {
+            dao.insert(item)
+            true
+        } catch (e: Exception) {
+            Log.e("DeviceTypeDS", "Insert failed", e)
+            false
+        }
+    }
+
+    override suspend fun updateItemAsync(item: DeviceType): Boolean {
+        return try {
+            dao.insert(item)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun deleteItemAsync(item: DeviceType): Boolean {
+        return try {
+            dao.delete(item)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun clearAsync(): Boolean {
+        return try {
+            dao.clearAll()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun initializeAsync() {}
+    override suspend fun pullLatestAsync(): Boolean = false
+    override suspend fun syncAsync(): Boolean = false
+}

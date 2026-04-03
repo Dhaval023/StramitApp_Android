@@ -1,5 +1,6 @@
 package com.example.stramitapp.ui.addlocationmovement
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stramitapp.model.Company
@@ -15,7 +16,6 @@ class AddLocationMovementViewModel : ViewModel() {
 
     private val _companies = MutableStateFlow<List<Company>>(emptyList())
     val companies: StateFlow<List<Company>> = _companies
-
     private val _locations = MutableStateFlow<List<CompanyLocation>>(emptyList())
     val locations: StateFlow<List<CompanyLocation>> = _locations
 
@@ -25,10 +25,10 @@ class AddLocationMovementViewModel : ViewModel() {
                 val result = withContext(Dispatchers.IO) {
                     AppDatabase.getInstance().companyDao().getAll()
                 }
-                android.util.Log.d("DB_DEBUG", "Companies loaded: ${result.size}")
+                Log.d("DB_DEBUG", "Companies loaded: ${result.size}")
                 _companies.value = result
             } catch (e: Exception) {
-                android.util.Log.e("DB_DEBUG", "loadCompanies error: ${e.message}")
+                Log.e("DB_DEBUG", "loadCompanies error: ${e.message}")
             }
         }
     }
@@ -39,10 +39,10 @@ class AddLocationMovementViewModel : ViewModel() {
                 val result = withContext(Dispatchers.IO) {
                     AppDatabase.getInstance().companyLocationDao().getItemByCompany(companyId)
                 }
-                android.util.Log.d("DB_DEBUG", "Locations loaded: ${result.size}")
+                Log.d("DB_DEBUG", "Locations loaded: ${result.size}")
                 _locations.value = result
             } catch (e: Exception) {
-                android.util.Log.e("DB_DEBUG", "loadLocations error: ${e.message}")
+                Log.e("DB_DEBUG", "loadLocations error: ${e.message}")
             }
         }
     }

@@ -12,7 +12,7 @@ import com.example.stramitapp.model.CompanyLocation
 import com.example.stramitapp.utilities.AppSettings
 import com.example.stramitapp.repositories.AssetDataStore
 import com.example.stramitapp.repositories.AssetMovementInfoDataStore
-import com.example.stramitapp.services.APIHelper
+import com.example.stramitapp.common.APIHelper
 import com.example.stramitapp.services.SyncService
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat

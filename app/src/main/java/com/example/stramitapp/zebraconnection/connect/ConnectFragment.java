@@ -3,6 +3,7 @@ package com.example.stramitapp.zebraconnection.connect;
 import static com.example.stramitapp.zebraconnection.RFIDHandler.mConnectedRfidReader;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,14 +51,12 @@ public class ConnectFragment extends Fragment {
         }
 
 
-        // Set up Refresh button click listener
         binding.buttonRefreshReaders.setOnClickListener(v -> {
             connectViewModel.refreshReaders();
         });
         adapter = new ReaderDeviceAdapter(new ArrayList<>(), device -> {
 
             handler.selectReader(device);
-            // Disconnect if already connected, otherwise connect
             if (mConnectedRfidReader != null && mConnectedRfidReader.isConnected()) {
                 handler.disconnect();
             } else {
@@ -96,8 +95,7 @@ public class ConnectFragment extends Fragment {
                 }
             });
         } else {
-            // Optionally log or show a message if handler is null
-            android.util.Log.e(RFIDHandler.TAG, "RFIDHandler or connectionStatus is null");
+           Log.e(RFIDHandler.TAG, "RFIDHandler or connectionStatus is null");
         }
 
         if (mConnectedRfidReader != null && mConnectedRfidReader.isConnected()) {

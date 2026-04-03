@@ -33,9 +33,7 @@ class SyncViewModel : ViewModel() {
             _isSyncing.value = true
 
             try {
-
                 val syncService = SyncService()
-
                 val result = if (force) {
                     syncService.forceSync()
                 } else {

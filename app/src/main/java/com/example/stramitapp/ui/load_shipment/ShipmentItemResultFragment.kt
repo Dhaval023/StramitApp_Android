@@ -1,6 +1,7 @@
 package com.example.stramitapp.ui.load_shipment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,8 +25,6 @@ class ShipmentItemResultFragment : Fragment() {
     private var _binding: FragmentShipmentItemResultBinding? = null
     private val binding get() = _binding!!
     private val viewModel: ShipmentItemResultViewModel by viewModels()
-
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,8 +52,6 @@ class ShipmentItemResultFragment : Fragment() {
         _binding = null
     }
 
-    // ── Setup ─────────────────────────────────────────────────────────────────
-
     private fun setupToolbar() {
         binding.btnClose.setOnClickListener {
             try {
@@ -63,7 +60,7 @@ class ShipmentItemResultFragment : Fragment() {
                     requireActivity().onBackPressed()
                 }
             } catch (e: Exception) {
-                android.util.Log.e("ShipmentItemResult", "Nav error: ${e.message}")
+                Log.e("ShipmentItemResult", "Nav error: ${e.message}")
                 requireActivity().onBackPressed()
             }
         }
@@ -107,7 +104,6 @@ class ShipmentItemResultFragment : Fragment() {
             }
         }
     }
-    // ── Navigation ────────────────────────────────────────────────────────────
     private fun navigateToAssetDetail(item: ShipmentSearchResultItem) {
         requireActivity().supportFragmentManager.beginTransaction()
             .replace(

@@ -6,9 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import com.example.stramitapp.repositories.Base.BaseRepository
 import kotlinx.coroutines.withContext
 
-class CompanyDataStore : BaseRepository<Company>(), IDataStore<Company> {  // ← removed "abstract"
-
-    // ── IDataStore overrides ──────────────────────────────────────────────────
+class CompanyDataStore : BaseRepository<Company>(), IDataStore<Company> {
 
     override suspend fun getItemAsync(id: Int): Company? = withContext(Dispatchers.IO) {
         runCatching { db.companyDao().getById(id) }.getOrElse { throw it }
@@ -40,8 +38,6 @@ class CompanyDataStore : BaseRepository<Company>(), IDataStore<Company> {  // �
 
     override suspend fun syncAsync(): Boolean = false
 
-    // ── Extra methods ─────────────────────────────────────────────────────────
-
     suspend fun getFirstCompany(): Company? = withContext(Dispatchers.IO) {
         runCatching { db.companyDao().getFirst() }.getOrElse { throw it }
     }
@@ -58,7 +54,6 @@ class CompanyDataStore : BaseRepository<Company>(), IDataStore<Company> {  // �
     suspend fun clearAll(): Int = withContext(Dispatchers.IO) {
         runCatching { db.companyDao().deleteAll() }.getOrElse { -1 }
     }
-    // ── Not implemented (stubs kept for interface compliance) ─────────────────
 
      suspend fun clear(): Boolean =
         throw NotImplementedError("clear() is not implemented")

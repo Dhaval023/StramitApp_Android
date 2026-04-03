@@ -60,8 +60,6 @@ class CompanyLocationDataStore : BaseRepository<CompanyLocation>(), IDataStore<C
         return dao.getAll()
     }
 
-    // CompanyLocationDao has no clearAll() — delete-all via getAll() + delete each,
-    // or just return true as a no-op if clearing locations is not needed
     override suspend fun clearAsync(): Boolean {
         return try {
             dao.getAll().forEach { dao.delete(it) }

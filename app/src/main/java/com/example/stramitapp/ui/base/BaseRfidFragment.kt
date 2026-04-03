@@ -20,8 +20,6 @@ abstract class BaseRfidFragment : Fragment() {
         tagDataViewModel = ViewModelProvider(requireActivity()).get(TagDataViewModel::class.java)
     }
 
-    // ── Lifecycle ─────────────────────────────────────────────────────────
-
     override fun onResume() {
         super.onResume()
         if (Global.isRfidSelected) {
@@ -48,14 +46,7 @@ abstract class BaseRfidFragment : Fragment() {
         rfidHandler?.stopInventory()
     }
 
-    // ── Hooks for subclasses ──────────────────────────────────────────────
-
-    /** Called for each individual tag ID scanned. Override in MovementFragment etc. */
     open fun onRfidTagScanned(tagId: String) {}
-
-    /** Called with full TagData array. Override in FloorSweepFragment etc. */
     open fun onRfidTagsReceived(tags: Array<TagData>) {}
-
-    /** Called when barcode mode is active. Override to request focus on bentry. */
     open fun onBarcodeReady() {}
 }

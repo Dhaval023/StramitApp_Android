@@ -1,4 +1,4 @@
-package com.example.stramitapp.services.API.FloorSweep.request
+package com.example.stramitapp.common.API.FloorSweep.request
 
 import com.google.gson.annotations.SerializedName
 

@@ -1,5 +1,6 @@
 package com.example.stramitapp.ui.home
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -32,10 +33,9 @@ class HomeViewModel : ViewModel() {
                 val result = withContext(Dispatchers.IO) {
                     AppDatabase.getInstance().companyDao().getAll()
                 }
-                android.util.Log.d("DB_DEBUG", "Home Companies loaded: ${result.size}")
                 _companies.value = result
             } catch (e: Exception) {
-                android.util.Log.e("DB_DEBUG", "Home loadCompanies error: ${e.message}")
+                Log.e("DB_DEBUG", "Home loadCompanies error: ${e.message}")
             }
         }
     }

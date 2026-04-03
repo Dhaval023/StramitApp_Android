@@ -1,89 +1,69 @@
-package com.example.stramitapp.repositories.DataStore
+package com.example.stramitapp.repositories
 
-//import com.example.stramitapp.Repositories.Base.BaseRepository
-//
-//class CompanyAssetSubPartsDataStore : BaseRepository<CompanyAssetSubParts>(), IDataStore<CompanyAssetSubParts> {
-//
-//    suspend fun getItemAsync(id: Int): CompanyAssetSubParts? {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<CompanyAssetSubParts>().firstOrNull { item -> item.subPartId == id } }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    suspend fun getItemsAsync(forceRefresh: Boolean = false): List<CompanyAssetSubParts> {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.queryAll<CompanyAssetSubParts>() }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    // Function to fetch Models based on selected device
-//    suspend fun getItemsByTypeAsync(typeId: Int): List<CompanyAssetSubParts> {
-//        return try {
-//            val conn = getConnection()
-//            conn.use {
-//                it.queryAll<CompanyAssetSubParts>()
-//                    .filter { item -> item.partId == typeId && item.updateFlag != "D" }
-//            }
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            throw ex
-//        }
-//    }
-//
-//    suspend fun addItemAsync(item: CompanyAssetSubParts): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.insert(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun updateItemAsync(item: CompanyAssetSubParts): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.update(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun deleteItemAsync(item: CompanyAssetSubParts): Boolean {
-//        return try {
-//            val conn = getConnection()
-//            conn.use { it.delete(item) }
-//            true
-//        } catch (ex: Exception) {
-//            val d = ex.message
-//            false
-//        }
-//    }
-//
-//    suspend fun clearAsync(): Boolean {
-//        throw NotImplementedError("clearAsync is not implemented")
-//    }
-//
-//    suspend fun initializeAsync() {
-//        throw NotImplementedError("initializeAsync is not implemented")
-//    }
-//
-//    suspend fun pullLatestAsync(): Boolean {
-//        throw NotImplementedError("pullLatestAsync is not implemented")
-//    }
-//
-//    suspend fun syncAsync(): Boolean {
-//        throw NotImplementedError("syncAsync is not implemented")
-//    }
-//}
+import android.util.Log
+import com.example.stramitapp.dao.CompanyAssetSubPartsDao
+import com.example.stramitapp.model.CompanyAssetSubParts
+import com.example.stramitapp.repositories.Base.BaseRepository
+import com.example.stramitapp.repositories.Base.IDataStore
+import com.example.stramitapp.utilities.AppSettings
+
+class CompanyAssetSubPartsDataStore :
+    BaseRepository<CompanyAssetSubParts>(),
+    IDataStore<CompanyAssetSubParts> {
+
+    private val dao: CompanyAssetSubPartsDao
+        get() = AppSettings.database.companyAssetSubPartsDao()
+
+    override suspend fun getItemAsync(id: Int): CompanyAssetSubParts? {
+        return dao.getById(id)
+    }
+
+    override suspend fun getItemsAsync(forceRefresh: Boolean): List<CompanyAssetSubParts> {
+        return dao.getAll()
+    }
+
+    suspend fun getItemsByTypeAsync(typeId: Int): List<CompanyAssetSubParts> {
+        return dao.getByType(typeId)
+    }
+
+    override suspend fun addItemAsync(item: CompanyAssetSubParts): Boolean {
+        return try {
+            dao.insert(item)
+            true
+        } catch (e: Exception) {
+            Log.e("SubPartsDS", "Insert failed", e)
+            false
+        }
+    }
+
+    override suspend fun updateItemAsync(item: CompanyAssetSubParts): Boolean {
+        return try {
+            dao.insert(item) // replace
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun deleteItemAsync(item: CompanyAssetSubParts): Boolean {
+        return try {
+            dao.delete(item)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun clearAsync(): Boolean {
+        return try {
+            dao.clearAll()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun initializeAsync() {}
+    override suspend fun pullLatestAsync(): Boolean = false
+    override suspend fun syncAsync(): Boolean = false
+}

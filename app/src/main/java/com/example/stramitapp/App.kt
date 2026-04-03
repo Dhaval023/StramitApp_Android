@@ -27,7 +27,6 @@ class App : Application() {
     fun initializeDatabase() {
         setupAppSettings()
 
-        // Store app context so SyncService can re-init Room after full sync
 
         AppSettings.appContext = this
 
@@ -41,8 +40,6 @@ class App : Application() {
         val db = AppDatabase.getInstance()
         buildRepository(db)
     }
-
-    // ── private helpers ───────────────────────────────────────────────────────
 
     private fun buildRepository(db: AppDatabase) {
         com.example.stramitapp.services.App.repository =

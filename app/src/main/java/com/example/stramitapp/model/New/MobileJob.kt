@@ -7,45 +7,44 @@ import com.example.stramitapp.model.DataObject.BaseDataObject
 import java.time.OffsetDateTime
 
 @Entity(tableName = "tbl_mobile_job")
-class MobileJob : BaseDataObject() {
-
+class MobileJob (
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "job_id")
-    var jobId: Int = 0
+    var jobId: Int = 0,
 
     @ColumnInfo(name = "company_wp_id")
-    var companyWpId: Int = 0
+    var companyWpId: Int = 0,
 
     @ColumnInfo(name = "company_id")
-    var companyId: Int = 0
+    var companyId: Int = 0,
 
     @ColumnInfo(name = "location_id")
-    var locationId: Int = 0
+    var locationId: Int = 0,
 
     @ColumnInfo(name = "job_type_id")
-    var jobTypeId: Int = 0
+    var jobTypeId: Int = 0,
 
     @ColumnInfo(name = "job_desc_id")
-    var jobDescId: Int = 0
+    var jobDescId: Int = 0,
 
     @ColumnInfo(name = "asset_id")
-    var assetId: String? = null
+    var assetId: String? = null,
 
     @ColumnInfo(name = "user_id")
-    var userId: Int = 0
+    var userId: Int = 0,
 
     @ColumnInfo(name = "is_active")
-    var isActive: Int = 0
+    var isActive: Int = 0,
 
     @ColumnInfo(name = "job_number")
-    var jobNumber: String? = null
+    var jobNumber: String? = null,
 
     @ColumnInfo(name = "last_updated_user")
-    var lastUpdatedUser: Int = 0
+    var lastUpdatedUser: Int = 0,
 
     @ColumnInfo(name = "create_date")
-    var createDate: OffsetDateTime? = null
+    var createDate: OffsetDateTime? = null,
 
     @ColumnInfo(name = "last_update_date")
     var lastUpdateDate: OffsetDateTime? = null
-}
+): BaseDataObject()

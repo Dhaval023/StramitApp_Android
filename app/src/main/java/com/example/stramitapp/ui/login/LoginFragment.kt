@@ -27,7 +27,6 @@ class LoginFragment : Fragment() {
 
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
-
     private val viewModel: LoginViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -103,16 +102,12 @@ class LoginFragment : Fragment() {
         }
     }
 
-    // ─── Init DB → Navigate with fromLogin flag ───────────────────────────────
-
     private fun initializeDatabaseAndNavigate() {
         val app = requireActivity().application as App
         app.initializeDatabase()
         val bundle = Bundle().apply { putBoolean("fromLogin", true) }
         findNavController().navigate(R.id.action_nav_login_to_nav_home, bundle)
     }
-
-    // ─── Storage Permission ────────────────────────────────────────────────────
 
     private val STORAGE_REQUEST_CODE = 101
 
@@ -181,8 +176,6 @@ class LoginFragment : Fragment() {
         }
     }
 
-    // ─── Dialogs ───────────────────────────────────────────────────────────────
-
     private fun showAlertDialog(
         title: String,
         message: String,
@@ -220,8 +213,6 @@ class LoginFragment : Fragment() {
             .setCancelable(false)
             .show()
     }
-
-    // ─── UI helpers ───────────────────────────────────────────────────────────
 
     private fun setLoading(isLoading: Boolean) {
         binding.loginButton.isEnabled = !isLoading

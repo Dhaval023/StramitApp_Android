@@ -1,4 +1,4 @@
-package com.example.stramitapp.services.API.Sync.response
+package com.example.stramitapp.common.API.Sync.response
 
 import com.example.stramitapp.model.AssetMemoType
 import com.example.stramitapp.model.BillOfMaterial

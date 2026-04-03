@@ -11,8 +11,6 @@ class AssetInsuranceInfoDataStore :
 
     private val dao: AssetInsuranceInfoDao by lazy { db.assetInsuranceInfoDao() }
 
-    // ---------------- BASIC ----------------
-
     override suspend fun getItemAsync(id: Int): AssetInsuranceInfo? {
         return dao.getById(id)
     }
@@ -56,13 +54,9 @@ class AssetInsuranceInfoDataStore :
         return dao.getAll()
     }
 
-    // ---------------- EXPORT ----------------
-
     suspend fun getItemsToExportAsync(lastSyncUpData: String): List<AssetInsuranceInfo> {
         return dao.getItemsToExport(lastSyncUpData)
     }
-
-    // ---------------- PLACEHOLDERS ----------------
 
     override suspend fun initializeAsync() {}
 

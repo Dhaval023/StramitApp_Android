@@ -12,8 +12,6 @@ import com.example.stramitapp.model.Shipment
 @Dao
 interface AssetDao {
 
-    // ---------------- BASIC CRUD ----------------
-
     @Query("SELECT * FROM tbl_asset WHERE asset_id = :id LIMIT 1")
     suspend fun getById(id: Int): Asset?
 
@@ -34,8 +32,6 @@ interface AssetDao {
 
     @Query("DELETE FROM tbl_asset")
     suspend fun clearAll()
-
-    // ---------------- BARCODE / TAG ----------------
 
     @Query("""
         SELECT * FROM tbl_asset 
@@ -72,8 +68,6 @@ interface AssetDao {
     """)
     suspend fun getByTagOrBarcode(companyId: Int, barcodeTag: String): Asset?
 
-    // ---------------- BULK FETCH ----------------
-
     @Query("SELECT * FROM tbl_asset")
     suspend fun getAll(): List<Asset>
 
@@ -82,8 +76,6 @@ interface AssetDao {
         WHERE update_flag != 'D'
     """)
     suspend fun getActiveAssets(): List<Asset>
-
-    // ---------------- SHIPMENT ----------------
 
     @Query("""
         SELECT * FROM tbl_asset 
@@ -105,8 +97,6 @@ interface AssetDao {
     """)
     suspend fun deleteAssetsBetween(fromDate: String, toDate: String): Int
 
-    // ---------------- SEARCH ----------------
-
     @Query("""
         SELECT * FROM tbl_asset
         WHERE update_flag != 'D'
@@ -115,17 +105,6 @@ interface AssetDao {
     """)
     suspend fun getRecentAssets(): List<Asset>
 
-    // ---------------- SYNC ----------------
-
-    /**
-     * Returns ONLY assets created on this device (update_flag = 'I') since
-     * the last upload.
-     *
-     * IMPORTANT: Assets downloaded from the server have update_flag = 'U'
-     * and must NOT be sent back — the server returns HTTP 400 if you do.
-     * The old query had no flag filter so it returned all 59k server assets
-     * on every sync, causing OOM and HTTP 400.
-     */
     @Query("""
         SELECT * FROM tbl_asset
         WHERE update_flag = 'I'
@@ -133,10 +112,6 @@ interface AssetDao {
     """)
     suspend fun getItemsToExport(lastSync: String): List<Asset>
 
-    /**
-     * COUNT of device-created assets pending upload.
-     * Cheap check — no rows loaded into memory.
-     */
     @Query("""
         SELECT COUNT(*) FROM tbl_asset
         WHERE update_flag = 'I'
@@ -144,30 +119,18 @@ interface AssetDao {
     """)
     suspend fun getItemsToExportCount(lastSync: String): Int
 
-    /**
-     * Returns assets with update_flag = 'I' (not yet confirmed by server).
-     * Used by updateAssetsFlag after a successful upload.
-     */
     @Query("""
         SELECT * FROM tbl_asset
         WHERE update_flag = 'I'
     """)
     suspend fun getItemsFlagI(): List<Asset>
 
-    /**
-     * COUNT of assets still flagged 'I'.
-     * Used to drive the batched flag-update loop.
-     */
     @Query("""
         SELECT COUNT(*) FROM tbl_asset
         WHERE update_flag = 'I'
     """)
     suspend fun getItemsFlagICount(): Int
 
-    /**
-     * Paginated fetch of 'I'-flagged assets.
-     * Prevents loading all flag-update candidates into memory at once.
-     */
     @Query("""
         SELECT * FROM tbl_asset
         WHERE update_flag = 'I'
@@ -184,8 +147,6 @@ interface AssetDao {
 
     @Query("SELECT * FROM tbl_asset WHERE update_flag = :assetUpdateFlag")
     suspend fun getByUpdateFlag(assetUpdateFlag: String): List<Asset>
-
-    // ---------------- SHIPMENT TABLE ----------------
 
     @Query("SELECT * FROM tbl_shipment WHERE update_flag != 'D'")
     suspend fun getShipments(): List<Shipment>
@@ -238,8 +199,6 @@ interface AssetDao {
         tag: String,
         shipmentNumber: String
     ): Asset?
-
-    // ---------------- SHIPMENT RESULT LIST ----------------
 
     @Query("""
         SELECT * FROM tbl_asset
