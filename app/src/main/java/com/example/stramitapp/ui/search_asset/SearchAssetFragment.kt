@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -77,12 +79,42 @@ class SearchAssetFragment : Fragment() {
 
         binding.companyAutocompleteTextview.setOnItemClickListener { _, _, position, _ ->
             val company = viewModel.companies.value[position]
-            selectedCompany = company
-            AppSettings.tempSelectedSystem = company
-            selectedLocation = null
-            binding.locationAutocompleteTextview.setText("", false)
-            viewModel.loadLocationsByCompany(company.companyId)
+            updateSelectedCompany(company)
         }
+
+        binding.companyAutocompleteTextview.doAfterTextChanged { s ->
+            binding.companyTextInputLayout.error = null
+            val text = s.toString().trim()
+            val match = viewModel.companies.value.find { it.companyName?.trim() == text }
+            if (match != null && match != selectedCompany) {
+                updateSelectedCompany(match)
+            } else if (match == null) {
+                selectedCompany = null
+                AppSettings.tempSelectedSystem = null
+            }
+        }
+
+        binding.companyAutocompleteTextview.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+                val text = binding.companyAutocompleteTextview.text.toString().trim()
+                val match = viewModel.companies.value.find { it.companyName?.trim() == text }
+                if (match == null && text.isNotEmpty()) {
+                    binding.companyTextInputLayout.error = "Invalid Company"
+                } else if (match != null) {
+                    binding.companyTextInputLayout.error = null
+                    binding.locationAutocompleteTextview.requestFocus()
+                }
+                true
+            } else false
+        }
+    }
+
+    private fun updateSelectedCompany(company: Company) {
+        selectedCompany = company
+        AppSettings.tempSelectedSystem = company
+        selectedLocation = null
+        binding.locationAutocompleteTextview.setText("", false)
+        viewModel.loadLocationsByCompany(company.companyId)
     }
 
     private fun setupLocationDropdown() {
@@ -122,6 +154,34 @@ class SearchAssetFragment : Fragment() {
             val location = viewModel.locations.value[position]
             selectedLocation = location
             AppSettings.tempSelectedLocation = location
+            binding.locationTextInputLayout.error = null
+        }
+
+        binding.locationAutocompleteTextview.doAfterTextChanged { s ->
+            binding.locationTextInputLayout.error = null
+            val text = s.toString().trim()
+            val match = viewModel.locations.value.find { it.locationName?.trim() == text }
+            if (match != null) {
+                selectedLocation = match
+                AppSettings.tempSelectedLocation = match
+            } else {
+                selectedLocation = null
+                AppSettings.tempSelectedLocation = null
+            }
+        }
+
+        binding.locationAutocompleteTextview.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+                val text = binding.locationAutocompleteTextview.text.toString().trim()
+                val match = viewModel.locations.value.find { it.locationName?.trim() == text }
+                if (match == null && text.isNotEmpty()) {
+                    binding.locationTextInputLayout.error = "Invalid Location"
+                } else if (match != null) {
+                    binding.locationTextInputLayout.error = null
+                    binding.idEdittext.requestFocus()
+                }
+                true
+            } else false
         }
     }
 
@@ -160,16 +220,43 @@ class SearchAssetFragment : Fragment() {
 
     private fun setupButtons() {
         binding.searchButton.setOnClickListener {
-            val companyId = selectedCompany?.companyId
-            if (companyId == null) {
-                Toast.makeText(
-                    requireContext(),
-                    "Please select a Company before searching.",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
+            val companyText = binding.companyAutocompleteTextview.text.toString().trim()
+            val locationText = binding.locationAutocompleteTextview.text.toString().trim()
+
+            var isValid = true
+
+            // Validate Company
+            if (companyText.isEmpty()) {
+                binding.companyTextInputLayout.error = "Please select a Company"
+                isValid = false
+            } else {
+                val match = viewModel.companies.value.find { it.companyName?.trim() == companyText }
+                if (match == null) {
+                    binding.companyTextInputLayout.error = "Invalid Company. Please select from the list."
+                    isValid = false
+                } else {
+                    selectedCompany = match
+                    AppSettings.tempSelectedSystem = match
+                    binding.companyTextInputLayout.error = null
+                }
             }
 
+            // Validate Location
+            if (locationText.isNotEmpty()) {
+                val match = viewModel.locations.value.find { it.locationName?.trim() == locationText }
+                if (match == null) {
+                    binding.locationTextInputLayout.error = "Invalid Location. Please select from the list."
+                    isValid = false
+                } else {
+                    selectedLocation = match
+                    AppSettings.tempSelectedLocation = match
+                    binding.locationTextInputLayout.error = null
+                }
+            }
+
+            if (!isValid) return@setOnClickListener
+
+            val companyId = selectedCompany?.companyId ?: return@setOnClickListener
             val locationId = selectedLocation?.locationId ?: 0
             val barcode = binding.idEdittext.text?.toString()?.trim() ?: ""
 

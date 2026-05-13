@@ -168,6 +168,7 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
             Log.d(TAG, "CreateInstanceTask");
             readers = new Readers(context, ENUM_TRANSPORT.ALL);
             readers.setTransport(ENUM_TRANSPORT.ALL);
+            Readers.attach(this);
             isInitialized.postValue(true);
         });
     }
@@ -257,6 +258,7 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
     public synchronized void dispose() {
         disconnect();
         try {
+            Readers.deattach(this);
             if (mConnectedRfidReader != null) {
                 mConnectedRfidReader = null;
                 readers.Dispose();
@@ -268,7 +270,16 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
     }
 
     @Override
-    public void RFIDReaderAppeared(ReaderDevice readerDevice) {}
+    public void RFIDReaderAppeared(ReaderDevice readerDevice) {
+        Log.d(TAG, "RFIDReaderAppeared " + readerDevice.getName());
+        if (mConnectedRfidReader == null || !mConnectedRfidReader.isConnected()) {
+            context.runOnUiThread(() -> {
+                Toast.makeText(context, "Reader appeared: " + readerDevice.getName() + ". Connecting...", Toast.LENGTH_SHORT).show();
+                selectReader(readerDevice);
+                connect(readerDevice.getName());
+            });
+        }
+    }
 
     @Override
     public void RFIDReaderDisappeared(ReaderDevice readerDevice) {

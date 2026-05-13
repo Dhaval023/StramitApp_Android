@@ -50,7 +50,6 @@ class SyncService {
     private suspend fun forceSync_internal(): Boolean {
 
         if (AppSettings.authenticatedUser == null) {
-            Log.w("SyncService", "authenticatedUser is null — loading from local DB...")
             val userFromDb = withContext(Dispatchers.IO) {
                 AppDatabase.getInstance().userDao().getFirstUser()
             }
