@@ -2,7 +2,7 @@ package com.example.stramitapp.repositories
 
 class Repository(
     val companyDataStore: CompanyDataStore,
-    val wpCompanyDataStore: com.example.stramitapp.repositories.DataStore.WpCompanyDataStore,
+    val wpCompanyDataStore: WpCompanyDataStore,
     val companyLocationDataStore: CompanyLocationDataStore,
     val assetDataStore: AssetDataStore,
     val assetMemoInfoDataStore : AssetMemoInfoDataStore,

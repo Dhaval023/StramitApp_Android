@@ -12,9 +12,11 @@ import com.example.stramitapp.repositories.AssetMemoInfoDataStore
 import com.example.stramitapp.repositories.AssetMovementInfoDataStore
 import com.example.stramitapp.repositories.CompanyLocationDataStore
 import com.example.stramitapp.repositories.UserDataStore
-import com.example.stramitapp.repositories.DataStore.WpCompanyDataStore
+import com.example.stramitapp.repositories.WpCompanyDataStore
 import com.example.stramitapp.repositories.CompanyDataStore
-import com.google.firebase.BuildConfig
+import com.example.stramitapp.BuildConfig
+import android.media.MediaScannerConnection
+import android.util.Log
 import java.io.File
 
 class App : Application() {
@@ -65,13 +67,11 @@ class App : Application() {
         AppSettings.deviceType   = "Android"
         AppSettings.syncVersion  = "1.3.0"
 
-        val downloadsFolder = Environment.getExternalStoragePublicDirectory(
-            Environment.DIRECTORY_DOWNLOADS
-        ).absolutePath
+        // Use the public Downloads directory so it's visible to the user
+        val downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath
 
-        val imagesFolder = Environment.getExternalStoragePublicDirectory(
-            Environment.DIRECTORY_PICTURES
-        ).absolutePath
+        val imagesFolder = getExternalFilesDir(Environment.DIRECTORY_PICTURES)?.absolutePath
+            ?: filesDir.absolutePath
 
         val dbFolderName =
             if (BuildConfig.DEBUG) "TsTAsTrack2-3"
@@ -81,7 +81,10 @@ class App : Application() {
         AppSettings.pathDownloads = downloadsFolder
         AppSettings.pathImages    = imagesFolder
 
-        File(AppSettings.pathDatabase).mkdirs()
+        val dbDir = File(AppSettings.pathDatabase)
+        if (!dbDir.exists()) {
+            dbDir.mkdirs()
+        }
 
         val newImages    = File(imagesFolder, "AssetNewImages")
         val issueImages  = File(imagesFolder, "AssetIssueImages")
@@ -91,8 +94,12 @@ class App : Application() {
         if (!issueImages.exists()) issueImages.mkdirs()
         if (!returnImages.exists()) returnImages.mkdirs()
 
-        AppSettings.pathAssetNewImages    = newImages.absolutePath + "/"
-        AppSettings.pathAssetIssueImages  = issueImages.absolutePath + "/"
-        AppSettings.pathAssetReturnImages = returnImages.absolutePath + "/"
+        AppSettings.pathAssetNewImages    = newImages.absolutePath + File.separator
+        AppSettings.pathAssetIssueImages  = issueImages.absolutePath + File.separator
+        AppSettings.pathAssetReturnImages = returnImages.absolutePath + File.separator
+
+        // Refresh MediaScanner so the folder and files are visible to the user immediately
+        MediaScannerConnection.scanFile(this, arrayOf(dbDir.absolutePath), null, null)
+        Log.d("App", "Database path set to: ${AppSettings.pathDatabase}")
     }
 }

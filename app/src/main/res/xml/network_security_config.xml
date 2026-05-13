@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
     <domain-config cleartextTrafficPermitted="true">
-        <domain>54.206.135.82</domain>
+        <domain includeSubdomains="true">54.206.135.82</domain>
+        <domain includeSubdomains="true">tst-astrack.stramit.com.au</domain>
+        <domain includeSubdomains="true">prd-astrack.stramit.com.au</domain>
     </domain-config>
 </network-security-config>

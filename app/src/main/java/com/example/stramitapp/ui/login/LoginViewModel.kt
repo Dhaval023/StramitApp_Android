@@ -69,6 +69,9 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _uiState.value = LoginUiState.Loading
 
+            // Refresh the preference in case it was changed in Settings
+            isRememberCredentials = StorageKeys.getRememberCredentials(getApplication())
+
             try {
                 val statusCode: Int = withContext(Dispatchers.IO) {
                     if (isLoginOnline) {

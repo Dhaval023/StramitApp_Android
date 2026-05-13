@@ -1,29 +1,40 @@
 package com.example.stramitapp.models.Constants
 
+/**
+ * Centrally manages API settings and environment configurations.
+ */
 object ApiSettings {
 
-    //const val BASE_URL = "http://stramit-dev-env-env.eba-jhftdmd2.ap-southeast-2.elasticbeanstalk.com/ws/";
-    //const val SCHEME = "http";
-    //const val HOST = "stramit-dev-env-env.eba-jhftdmd2.ap-southeast-2.elasticbeanstalk.com"; https://prd-astrack.stramit.com.au/
+    // --- CHANGE THIS TO SWITCH ENVIRONMENTS ---
+    private const val USE_PROD_SERVER = true
 
-    //Test Server
-    // const val BASE_URL = "http://tst-astrack.stramit.com.au";
-    // const val SCHEME = "http";
-    // const val HOST = "tst-astrack.stramit.com.au";
+    // Server Hostnames
+    private const val PROD_HOST = "54.206.135.82:8080"
+    private const val TEST_HOST = "tst-astrack.stramit.com.au"
 
-    //Prod Server Backend
-    // const val BASE_URL = "https://prd-astrack.stramit.com.au";
-    // const val SCHEME = "http";
-    // const val HOST = "prd-astrack.stramit.com.au";
-
-    //Prod Server
-    // const val BASE_URL = "http://54.206.135.82:8080";
-    // const val SCHEME = "http";
-    // const val HOST = "54.206.135.82:8080";
-
-    const val BASE_URL = "https://tst-astrack.stramit.com.au"
-    const val SCHEME = "https"
-    const val HOST = "tst-astrack.stramit.com.au"
+    // API Path Constants
+    const val SCHEME = "http"
     const val ROOT = "ws"
-    //const val PORT = "8080"
+
+    /**
+     * The active host based on the environment flag.
+     */
+    val HOST: String = if (USE_PROD_SERVER) PROD_HOST else TEST_HOST
+
+    /**
+     * The base URL for the active environment.
+     */
+    val BASE_URL: String = "$SCHEME://$HOST"
+
+    /**
+     * The full URL including the root context (e.g., /ws/).
+     */
+    val FULL_BASE_URL: String = "$BASE_URL/$ROOT/"
+
+    /**
+     * Timeouts in seconds. 
+     * PRODUCTION_DB_TIMEOUT is higher to accommodate large database downloads.
+     */
+    const val DEFAULT_TIMEOUT = 120L
+    const val PRODUCTION_DB_TIMEOUT = 480L // 8 minutes for large production DB
 }

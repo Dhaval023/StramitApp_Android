@@ -22,10 +22,12 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream
 import java.io.*
 import com.example.stramitapp.utilities.AppSettings
 import com.example.stramitapp.models.Constants.ApiClient
+import com.example.stramitapp.models.Constants.ApiSettings
 import com.example.stramitapp.common.API.Sync.request.DownloadCompanyAssignToUserWithDBGzipRequest
 import com.example.stramitapp.common.API.Sync.request.GetAssignCompanyListToUserRequest
 import com.example.stramitapp.common.API.Sync.response.DownloadCompanyAssignToUserWithDBGzipResponse
 import com.example.stramitapp.common.APIHelper
+import android.media.MediaScannerConnection
 import com.example.stramitapp.common.API.FloorSweep.request.FloorSweepRequest
 import com.example.stramitapp.common.API.FloorSweep.response.FloorSweepResponse
 import com.example.stramitapp.model.DataObject.BaseDataObject
@@ -166,7 +168,11 @@ class SyncClientService : ApiClient() {
             val emptyBody = "".toRequestBody("application/json".toMediaType())
             val httpRequest = Request.Builder().url(resource).post(emptyBody).build()
 
-            httpClient.newCall(httpRequest).execute().use { response ->
+            httpClient.newBuilder()
+                .connectTimeout(ApiSettings.PRODUCTION_DB_TIMEOUT, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(ApiSettings.PRODUCTION_DB_TIMEOUT, java.util.concurrent.TimeUnit.SECONDS)
+                .build()
+                .newCall(httpRequest).execute().use { response ->
                 response.body?.byteStream()?.use { input ->
                     FileOutputStream(pathTempDBZip).use { output -> input.copyTo(output) }
                 }
@@ -214,6 +220,9 @@ class SyncClientService : ApiClient() {
             if (assetCount == 0 || AppSettings.isFreshInstall.equals("Yes", ignoreCase = true)) {
                 if (finalDbPath.exists()) finalDbPath.delete()
                 tempDbExtracted.copyTo(finalDbPath, overwrite = true)
+                
+                // Notify system that a new file exists in the public directory
+                MediaScannerConnection.scanFile(AppSettings.appContext, arrayOf(finalDbPath.absolutePath), null, null)
             }
 
             if (pathTempDBZip.exists()) pathTempDBZip.delete()

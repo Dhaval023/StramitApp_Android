@@ -1,6 +1,7 @@
 package com.example.stramitapp.restclient
 
 import android.util.Log
+import com.example.stramitapp.models.Constants.ApiSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.*
@@ -9,6 +10,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
+import java.util.concurrent.TimeUnit
 
 object RestClientService {
 
@@ -96,6 +98,9 @@ object RestClientService {
         return OkHttpClient.Builder()
             .sslSocketFactory(sslSocketFactory, trustAllCerts[0] as X509TrustManager)
             .hostnameVerifier { _, _ -> true }
+            .connectTimeout(ApiSettings.DEFAULT_TIMEOUT, TimeUnit.SECONDS)
+            .readTimeout(ApiSettings.DEFAULT_TIMEOUT, TimeUnit.SECONDS)
+            .writeTimeout(ApiSettings.DEFAULT_TIMEOUT, TimeUnit.SECONDS)
             .build()
     }
 

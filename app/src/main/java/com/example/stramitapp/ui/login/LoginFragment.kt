@@ -41,11 +41,26 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.usernameEditText.setText("mttest")
-        binding.passwordEditText.setText("Mitesh@123")
-
+        loadSavedCredentials()
         setupClickListeners()
         observeViewModel()
+    }
+
+    private fun loadSavedCredentials() {
+        val context = requireContext()
+        val isRemembered = com.example.stramitapp.models.Constants.StorageKeys.getRememberCredentials(context)
+
+        if (isRemembered) {
+            val savedUsername = com.example.stramitapp.models.Constants.StorageKeys.getUsername(context)
+            val savedPassword = com.example.stramitapp.models.Constants.StorageKeys.getPassword(context)
+            
+            if (savedUsername.isNotEmpty()) {
+                binding.usernameEditText.setText(savedUsername)
+            }
+            if (savedPassword.isNotEmpty()) {
+                binding.passwordEditText.setText(savedPassword)
+            }
+        }
     }
 
     private fun setupClickListeners() {
@@ -73,11 +88,7 @@ class LoginFragment : Fragment() {
             is LoginUiState.Success -> {
                 setLoading(false)
                 viewModel.resetState()
-                if (hasStoragePermission()) {
-                    initializeDatabaseAndNavigate()
-                } else {
-                    requestStoragePermission()
-                }
+                initializeDatabaseAndNavigate()
             }
             is LoginUiState.NoLicenseKey -> {
                 setLoading(false)
@@ -109,73 +120,6 @@ class LoginFragment : Fragment() {
         findNavController().navigate(R.id.action_nav_login_to_nav_home, bundle)
     }
 
-    private val STORAGE_REQUEST_CODE = 101
-
-    private fun hasStoragePermission(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            android.os.Environment.isExternalStorageManager()
-        } else {
-            ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) == PackageManager.PERMISSION_GRANTED
-        }
-    }
-
-    private fun requestStoragePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            try {
-                startActivityForResult(
-                    Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
-                        data = Uri.parse("package:${requireContext().packageName}")
-                    },
-                    STORAGE_REQUEST_CODE
-                )
-            } catch (e: Exception) {
-                startActivityForResult(
-                    Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION),
-                    STORAGE_REQUEST_CODE
-                )
-            }
-        } else {
-            requestPermissions(
-                arrayOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ),
-                STORAGE_REQUEST_CODE
-            )
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == STORAGE_REQUEST_CODE) {
-            if (hasStoragePermission()) {
-                initializeDatabaseAndNavigate()
-            } else {
-                showPermissionDeniedDialog()
-            }
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == STORAGE_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() &&
-                grantResults[0] == PackageManager.PERMISSION_GRANTED
-            ) {
-                initializeDatabaseAndNavigate()
-            } else {
-                showPermissionDeniedDialog()
-            }
-        }
-    }
-
     private fun showAlertDialog(
         title: String,
         message: String,
@@ -188,16 +132,6 @@ class LoginFragment : Fragment() {
                 dialog.dismiss()
                 onDismiss?.invoke()
             }
-            .setCancelable(false)
-            .show()
-    }
-
-    private fun showPermissionDeniedDialog() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Permission Required")
-            .setMessage("Storage permission is required to store database and images.")
-            .setPositiveButton("Try Again") { _, _ -> requestStoragePermission() }
-            .setNegativeButton("Exit") { _, _ -> requireActivity().finish() }
             .setCancelable(false)
             .show()
     }

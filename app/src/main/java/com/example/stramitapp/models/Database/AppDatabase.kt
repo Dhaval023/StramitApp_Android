@@ -121,6 +121,7 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 dbFile.absolutePath
             )
+                .setJournalMode(RoomDatabase.JournalMode.TRUNCATE) // More stable for public/external storage
                 .fallbackToDestructiveMigration()
                 .build()
         }

@@ -151,7 +151,11 @@ class AuthenticationService(private val context: Context) {
     fun isLicenseeKeyAvailable(): Boolean = fetchLicenseKey().isNotBlank()
 
     fun logout() {
-        StorageKeys.savePassword(context, "")
+        val isRemembered = StorageKeys.getRememberCredentials(context)
+        if (!isRemembered) {
+            StorageKeys.saveUsername(context, "")
+            StorageKeys.savePassword(context, "")
+        }
         StorageKeys.saveSelectedSystem(context, "")
         StorageKeys.saveSelectedCompany(context, "")
         StorageKeys.saveSelectedLocation(context, "")

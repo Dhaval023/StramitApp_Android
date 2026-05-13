@@ -1,4 +1,4 @@
-package com.example.stramitapp.repositories.DataStore
+package com.example.stramitapp.repositories
 
 import com.example.stramitapp.repositories.Base.BaseRepository
 import com.example.stramitapp.repositories.Base.IDataStore

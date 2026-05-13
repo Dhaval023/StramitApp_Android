@@ -1,6 +1,7 @@
 package com.example.stramitapp.services
 
 import android.util.Log
+import android.media.MediaScannerConnection
 import com.example.stramitapp.App
 import com.example.stramitapp.common.API.Sync.request.DeviceToServerRequest
 import com.example.stramitapp.common.API.Sync.request.DownloadCompanyAssignToUserWithDBGzipRequest
@@ -51,7 +52,12 @@ class SyncService {
 
         if (AppSettings.authenticatedUser == null) {
             val userFromDb = withContext(Dispatchers.IO) {
-                AppDatabase.getInstance().userDao().getFirstUser()
+                try {
+                    AppDatabase.getInstance().userDao().getFirstUser()
+                } catch (e: Exception) {
+                    Log.w("SyncService", "AppDatabase not initialized or empty: ${e.message}")
+                    null
+                }
             }
             if (userFromDb == null) {
                 Log.e("SyncService", "No user in local DB. Cannot sync — user must log in first.")
@@ -217,6 +223,10 @@ class SyncService {
                 AppSettings.lastSyncData = System.currentTimeMillis()
                 AppSettings.isForceSyncRequested = false
                 Log.d("SyncService", "Server→Device sync succeeded.")
+
+                // Make sure the database file is visible in the public Downloads folder
+                val dbFile = File(AppSettings.pathDatabase, AppSettings.databaseName)
+                MediaScannerConnection.scanFile(AppSettings.appContext, arrayOf(dbFile.absolutePath), null, null)
             }
 
             synced

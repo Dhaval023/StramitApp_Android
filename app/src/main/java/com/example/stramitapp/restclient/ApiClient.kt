@@ -17,7 +17,7 @@ open class ApiClient {
 
     init {
 
-        baseUrl = "${ApiSettings.SCHEME}://${ApiSettings.HOST}/${ApiSettings.ROOT}/"
+        baseUrl = ApiSettings.FULL_BASE_URL
 
         val logging = HttpLoggingInterceptor()
         logging.level = HttpLoggingInterceptor.Level.BODY
@@ -64,6 +64,9 @@ open class ApiClient {
             val builder = OkHttpClient.Builder()
             builder.sslSocketFactory(sslSocketFactory, trustAllCerts[0] as X509TrustManager)
             builder.hostnameVerifier { _, _ -> true }
+            builder.connectTimeout(ApiSettings.DEFAULT_TIMEOUT, java.util.concurrent.TimeUnit.SECONDS)
+            builder.readTimeout(ApiSettings.DEFAULT_TIMEOUT, java.util.concurrent.TimeUnit.SECONDS)
+            builder.writeTimeout(ApiSettings.DEFAULT_TIMEOUT, java.util.concurrent.TimeUnit.SECONDS)
 
             return builder
 
