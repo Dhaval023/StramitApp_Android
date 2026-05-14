@@ -157,7 +157,7 @@ class MovementViewModel : ViewModel() {
                         movementDate = nowDateStr
                         updatedBy = authenticatedUser.userId
                         lastUpdateDate = nowDateStr
-                        updateFlag = "I"
+                        updateFlag = "U"
                         flagSync = item.flagSync ?: 0
                         attributeDeviceId = item.deviceId
                         movementType = "in"

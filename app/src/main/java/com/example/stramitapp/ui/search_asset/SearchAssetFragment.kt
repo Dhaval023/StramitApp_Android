@@ -1,6 +1,9 @@
 package com.example.stramitapp.ui.search_asset
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,7 +11,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -17,10 +20,11 @@ import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentSearchAssetBinding
 import com.example.stramitapp.model.Company
 import com.example.stramitapp.model.CompanyLocation
+import com.example.stramitapp.ui.base.BaseRfidFragment
 import com.example.stramitapp.utilities.AppSettings
 import kotlinx.coroutines.launch
 
-class SearchAssetFragment : Fragment() {
+class SearchAssetFragment : BaseRfidFragment() {
 
     private var _binding: FragmentSearchAssetBinding? = null
     private val binding get() = _binding!!
@@ -41,6 +45,55 @@ class SearchAssetFragment : Fragment() {
         setupSearchResults()
         setupButtons()
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initRfid()
+        setupBarcodeMode()
+    }
+
+    private fun setupBarcodeMode() {
+        val bentry = binding.idEdittext
+        bentry.setShowSoftInputOnFocus(false)
+
+        bentry.addTextChangedListener(object : TextWatcher {
+            private var lastChangeTime = 0L
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                lastChangeTime = System.currentTimeMillis()
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                val text = s?.toString()?.trim() ?: return
+                if (text.isEmpty()) return
+                val capturedTime = lastChangeTime
+                binding.root.postDelayed({
+                    if (_binding == null) return@postDelayed
+                    if (lastChangeTime == capturedTime) {
+                        val current = bentry.text.toString().trim()
+                        if (current.isNotEmpty()) {
+                            performSearch(current)
+                            bentry.setText("")
+                        }
+                    }
+                }, 300)
+            }
+        })
+    }
+
+    override fun onRfidTagScanned(tagId: String) {
+        requireActivity().runOnUiThread {
+            binding.idEdittext.setText(tagId)
+            performSearch(tagId)
+            binding.idEdittext.setText("")
+        }
+    }
+
+    override fun onBarcodeReady() {
+        binding.idEdittext.post {
+            binding.idEdittext.requestFocus()
+        }
     }
 
     private fun setupCompanyDropdown() {
@@ -219,52 +272,26 @@ class SearchAssetFragment : Fragment() {
     }
 
     private fun setupButtons() {
+        binding.idEdittext.setOnEditorActionListener { _, actionId, event ->
+            val isEnterKey = (event?.keyCode == KeyEvent.KEYCODE_ENTER || event?.keyCode == KeyEvent.KEYCODE_TAB)
+                    && event.action == KeyEvent.ACTION_DOWN
+            val isImeAction = actionId == EditorInfo.IME_ACTION_DONE
+                    || actionId == EditorInfo.IME_ACTION_NEXT
+                    || actionId == EditorInfo.IME_NULL
+            if (isEnterKey || isImeAction) {
+                val current = binding.idEdittext.text.toString().trim()
+                if (current.isNotEmpty()) {
+                    performSearch(current)
+                    binding.idEdittext.setText("")
+                }
+                true
+            } else false
+        }
+
         binding.searchButton.setOnClickListener {
-            val companyText = binding.companyAutocompleteTextview.text.toString().trim()
-            val locationText = binding.locationAutocompleteTextview.text.toString().trim()
-
-            var isValid = true
-
-            // Validate Company
-            if (companyText.isEmpty()) {
-                binding.companyTextInputLayout.error = "Please select a Company"
-                isValid = false
-            } else {
-                val match = viewModel.companies.value.find { it.companyName?.trim() == companyText }
-                if (match == null) {
-                    binding.companyTextInputLayout.error = "Invalid Company. Please select from the list."
-                    isValid = false
-                } else {
-                    selectedCompany = match
-                    AppSettings.tempSelectedSystem = match
-                    binding.companyTextInputLayout.error = null
-                }
-            }
-
-            // Validate Location
-            if (locationText.isNotEmpty()) {
-                val match = viewModel.locations.value.find { it.locationName?.trim() == locationText }
-                if (match == null) {
-                    binding.locationTextInputLayout.error = "Invalid Location. Please select from the list."
-                    isValid = false
-                } else {
-                    selectedLocation = match
-                    AppSettings.tempSelectedLocation = match
-                    binding.locationTextInputLayout.error = null
-                }
-            }
-
-            if (!isValid) return@setOnClickListener
-
-            val companyId = selectedCompany?.companyId ?: return@setOnClickListener
-            val locationId = selectedLocation?.locationId ?: 0
-            val barcode = binding.idEdittext.text?.toString()?.trim() ?: ""
-
-            viewModel.search(
-                companyId = companyId,
-                locationId = locationId,
-                barcode = barcode
-            )
+            val current = binding.idEdittext.text.toString().trim()
+            performSearch(current)
+            binding.idEdittext.setText("")
         }
 
         binding.resetButton.setOnClickListener {
@@ -275,6 +302,58 @@ class SearchAssetFragment : Fragment() {
             binding.idEdittext.setText("")
             viewModel.reset()
         }
+    }
+
+    private fun performSearch(barcode: String) {
+        val companyText = binding.companyAutocompleteTextview.text.toString().trim()
+        val locationText = binding.locationAutocompleteTextview.text.toString().trim()
+
+        var isValid = true
+
+        // Validate Company
+        if (companyText.isEmpty()) {
+            binding.companyTextInputLayout.error = "Please select a Company"
+            isValid = false
+        } else {
+            val match = viewModel.companies.value.find { it.companyName?.trim() == companyText }
+            if (match == null) {
+                binding.companyTextInputLayout.error = "Invalid Company. Please select from the list."
+                isValid = false
+            } else {
+                selectedCompany = match
+                AppSettings.tempSelectedSystem = match
+                binding.companyTextInputLayout.error = null
+            }
+        }
+
+        // Validate Location
+        if (locationText.isNotEmpty()) {
+            val match = viewModel.locations.value.find { it.locationName?.trim() == locationText }
+            if (match == null) {
+                binding.locationTextInputLayout.error = "Invalid Location. Please select from the list."
+                isValid = false
+            } else {
+                selectedLocation = match
+                AppSettings.tempSelectedLocation = match
+                binding.locationTextInputLayout.error = null
+            }
+        }
+
+        if (!isValid) return
+
+        val companyId = selectedCompany?.companyId ?: return
+        val locationId = selectedLocation?.locationId ?: 0
+
+        // Dismiss previous result dialog if it's still showing
+        childFragmentManager.findFragmentByTag(SearchResultFragment.TAG)?.let {
+            (it as? DialogFragment)?.dismiss()
+        }
+
+        viewModel.search(
+            companyId = companyId,
+            locationId = locationId,
+            barcode = barcode
+        )
     }
 
     override fun onDestroyView() {

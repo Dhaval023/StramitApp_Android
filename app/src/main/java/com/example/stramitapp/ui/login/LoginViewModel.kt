@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.stramitapp.models.Constants.StorageKeys
 import com.example.stramitapp.services.AuthenticationService
 import com.example.stramitapp.services.AuthenticatedUser
+import com.example.stramitapp.services.PasswordStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -141,10 +142,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
     fun rememberLogin() {
         val username = StorageKeys.getUsername(getApplication<Application>())
-        val password = StorageKeys.getPassword(getApplication<Application>())
+        val savedPassword = StorageKeys.getPassword(getApplication<Application>())
 
-        if (username.isBlank() || password.isBlank()) return
+        if (username.isBlank() || savedPassword.isBlank()) return
 
+        val password = PasswordStorage.decrypt(savedPassword)
         lastUsername = username
         lastPassword = password
         performLogin(username, password, forceLogin = false)

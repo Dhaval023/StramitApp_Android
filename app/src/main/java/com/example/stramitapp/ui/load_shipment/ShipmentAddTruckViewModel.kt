@@ -127,7 +127,7 @@ class ShipmentAddTruckViewModel(application: Application) : AndroidViewModel(app
                                 movementDate         = APIHelper.nowDateTimeSQLite()
                                 updatedBy            = AppSettings.authenticatedUser?.userId ?: 0
                                 lastUpdateDate       = APIHelper.nowDateTimeSQLite()
-                                updateFlag           = "I"
+                                updateFlag           = "S"
                                 flagSync             = item.flagSync ?: 0
                                 attributeDeviceId    = item.deviceId
                                 movementType         = "in"

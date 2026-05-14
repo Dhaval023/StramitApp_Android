@@ -66,7 +66,7 @@ class AuthenticationService(private val context: Context) {
                         email             = loginDetail.email,
                         phone             = loginDetail.phone,
                         loginName         = loginDetail.loginname,
-                        password          = password,
+                        password          = PasswordStorage.encrypt(password),
                         parentUserId      = loginDetail.parentUserId,
                         currentDeviceUdid = loginDetail.currentDeviceUdid,
                         currentDeviceType = loginDetail.currentDeviceType,
@@ -87,7 +87,8 @@ class AuthenticationService(private val context: Context) {
 
                 if (isRememberCredentials) {
                     StorageKeys.saveUsername(context, authenticatedUser?.loginName ?: username)
-                    StorageKeys.savePassword(context, password)
+                    val encryptedPassword = PasswordStorage.encrypt(password)
+                    StorageKeys.savePassword(context, encryptedPassword)
                 }
                 1
 
@@ -124,15 +125,16 @@ class AuthenticationService(private val context: Context) {
                 val user = userList[0]
 
                 // Password decryptor function called
-                //val decryptedPassword = PasswordStorage.encryptPassword(user.password)
+                val decryptedPassword = PasswordStorage.decrypt(user.password ?: "")
 
-                if (user.password == password) {
+                if (decryptedPassword == password) {
 
                     AppSettings.authenticatedUser = user
 
                     if (isRememberCredentials) {
                         StorageKeys.saveUsername(context, username)
-                        StorageKeys.savePassword(context, password)
+                        val encryptedPassword = PasswordStorage.encrypt(password)
+                        StorageKeys.savePassword(context, encryptedPassword)
                     }
 
                     return 1

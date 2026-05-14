@@ -65,7 +65,6 @@ class FloorSweepFragment : BaseRfidFragment() {
 
     override fun onResume() {
         super.onResume() // base handles enableRfidMode/enableBarcodeMode
-        viewModel.resetAll()
         updateReaderStatusUI()
     }
 

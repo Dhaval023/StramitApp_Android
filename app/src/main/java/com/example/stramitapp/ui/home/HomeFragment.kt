@@ -143,6 +143,7 @@ class HomeFragment : Fragment() {
                     setSyncLoading(true, "Sync successful! ")
                     kotlinx.coroutines.delay(1000)
                     setSyncLoading(false)
+                    homeViewModel.loadCompanies()
                 } else {
                     setSyncLoading(false)
                     Toast.makeText(requireContext(), "Sync failed", Toast.LENGTH_SHORT).show()

@@ -321,6 +321,8 @@ class SyncService {
         }
 
     private fun getSettings() {
+        AppSettings.isFreshInstall = SecurePrefs.get(StorageKeys.IsFreshInstall) ?: "Yes"
+
         AppSettings.lastSyncUpData =
             SecurePrefs.get(StorageKeys.LastSyncUpDataStorageKey)
                 ?: "2000-01-01 00:00:00.000"

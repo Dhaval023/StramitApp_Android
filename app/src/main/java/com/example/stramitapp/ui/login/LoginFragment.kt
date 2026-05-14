@@ -21,6 +21,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentLoginBinding
+import com.example.stramitapp.services.PasswordStorage
 import kotlinx.coroutines.launch
 
 class LoginFragment : Fragment() {
@@ -41,9 +42,19 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        checkFreshInstall()
         loadSavedCredentials()
         setupClickListeners()
         observeViewModel()
+    }
+
+    private fun checkFreshInstall() {
+        val context = requireContext()
+        val storageKeys = com.example.stramitapp.models.Constants.StorageKeys
+        if (storageKeys.isFreshInstall(context)) {
+            storageKeys.clearAll(context)
+            storageKeys.setFreshInstall(context, false)
+        }
     }
 
     private fun loadSavedCredentials() {
@@ -58,7 +69,8 @@ class LoginFragment : Fragment() {
                 binding.usernameEditText.setText(savedUsername)
             }
             if (savedPassword.isNotEmpty()) {
-                binding.passwordEditText.setText(savedPassword)
+                val decryptedPassword = PasswordStorage.decrypt(savedPassword)
+                binding.passwordEditText.setText(decryptedPassword)
             }
         }
     }
