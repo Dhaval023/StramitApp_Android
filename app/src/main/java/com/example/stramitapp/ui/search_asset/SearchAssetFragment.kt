@@ -58,35 +58,15 @@ class SearchAssetFragment : BaseRfidFragment() {
         bentry.setShowSoftInputOnFocus(false)
 
         bentry.addTextChangedListener(object : TextWatcher {
-            private var lastChangeTime = 0L
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                lastChangeTime = System.currentTimeMillis()
-            }
-
-            override fun afterTextChanged(s: Editable?) {
-                val text = s?.toString()?.trim() ?: return
-                if (text.isEmpty()) return
-                val capturedTime = lastChangeTime
-                binding.root.postDelayed({
-                    if (_binding == null) return@postDelayed
-                    if (lastChangeTime == capturedTime) {
-                        val current = bentry.text.toString().trim()
-                        if (current.isNotEmpty()) {
-                            performSearch(current)
-                            bentry.setText("")
-                        }
-                    }
-                }, 300)
-            }
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {}
         })
     }
 
     override fun onRfidTagScanned(tagId: String) {
         requireActivity().runOnUiThread {
             binding.idEdittext.setText(tagId)
-            performSearch(tagId)
-            binding.idEdittext.setText("")
         }
     }
 
@@ -280,10 +260,7 @@ class SearchAssetFragment : BaseRfidFragment() {
                     || actionId == EditorInfo.IME_NULL
             if (isEnterKey || isImeAction) {
                 val current = binding.idEdittext.text.toString().trim()
-                if (current.isNotEmpty()) {
-                    performSearch(current)
-                    binding.idEdittext.setText("")
-                }
+                performSearch(current)
                 true
             } else false
         }
@@ -291,7 +268,6 @@ class SearchAssetFragment : BaseRfidFragment() {
         binding.searchButton.setOnClickListener {
             val current = binding.idEdittext.text.toString().trim()
             performSearch(current)
-            binding.idEdittext.setText("")
         }
 
         binding.resetButton.setOnClickListener {
@@ -308,18 +284,23 @@ class SearchAssetFragment : BaseRfidFragment() {
         val companyText = binding.companyAutocompleteTextview.text.toString().trim()
         val locationText = binding.locationAutocompleteTextview.text.toString().trim()
 
+        if (companyText.isEmpty() && locationText.isEmpty() && barcode.isEmpty()) {
+            Toast.makeText(requireContext(), "Please fill up any field before proceeding.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         var isValid = true
+        var companyId = 0
+        var locationId = 0
 
         // Validate Company
-        if (companyText.isEmpty()) {
-            binding.companyTextInputLayout.error = "Please select a Company"
-            isValid = false
-        } else {
+        if (companyText.isNotEmpty()) {
             val match = viewModel.companies.value.find { it.companyName?.trim() == companyText }
             if (match == null) {
                 binding.companyTextInputLayout.error = "Invalid Company. Please select from the list."
                 isValid = false
             } else {
+                companyId = match.companyId
                 selectedCompany = match
                 AppSettings.tempSelectedSystem = match
                 binding.companyTextInputLayout.error = null
@@ -333,6 +314,7 @@ class SearchAssetFragment : BaseRfidFragment() {
                 binding.locationTextInputLayout.error = "Invalid Location. Please select from the list."
                 isValid = false
             } else {
+                locationId = match.locationId
                 selectedLocation = match
                 AppSettings.tempSelectedLocation = match
                 binding.locationTextInputLayout.error = null
@@ -340,9 +322,6 @@ class SearchAssetFragment : BaseRfidFragment() {
         }
 
         if (!isValid) return
-
-        val companyId = selectedCompany?.companyId ?: return
-        val locationId = selectedLocation?.locationId ?: 0
 
         // Dismiss previous result dialog if it's still showing
         childFragmentManager.findFragmentByTag(SearchResultFragment.TAG)?.let {

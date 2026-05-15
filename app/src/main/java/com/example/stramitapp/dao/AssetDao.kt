@@ -44,9 +44,9 @@ interface AssetDao {
     @Query("""
     SELECT * FROM tbl_asset
     WHERE update_flag != 'D'
-    AND company_id = :companyId
+    AND (:companyId = 0 OR company_id = :companyId)
     AND (:locationId = 0 OR location_id = :locationId)
-    AND (:barcode = '' OR barcode = :barcode)
+    AND (:barcode = '' OR barcode LIKE '%' || :barcode || '%')
     ORDER BY asset_id DESC
     LIMIT 100
      """)
