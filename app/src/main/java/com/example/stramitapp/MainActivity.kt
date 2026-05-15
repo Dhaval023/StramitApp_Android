@@ -9,6 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -81,6 +82,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         rfidHandler = RFIDHandler()
         rfidHandler?.onCreate(this)
         RFIDHandler.tagDataViewModel = tagDataViewModel
+
+        rfidHandler?.isInitialized?.observe(this) { initialized ->
+            if (initialized == true && Global.isRfidSelected) {
+                rfidHandler?.attemptAutoConnect()
+            }
+        }
 
         barcodeHandler = BarcodeHandler(this)
     }

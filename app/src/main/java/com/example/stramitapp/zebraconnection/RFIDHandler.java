@@ -237,6 +237,47 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
         }
     }
 
+    public void attemptAutoConnect() {
+        if (mConnectedRfidReader != null && mConnectedRfidReader.isConnected()) {
+            return;
+        }
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            try {
+                if (readers != null) {
+                    ArrayList<ReaderDevice> readerList = readers.GetAvailableRFIDReaderList();
+                    if (readerList != null && !readerList.isEmpty()) {
+                        ReaderDevice deviceToConnect = null;
+                        if (readerList.size() == 1) {
+                            deviceToConnect = readerList.get(0);
+                        } else {
+                            for (ReaderDevice device : readerList) {
+                                if (device.getName().startsWith(readername)) {
+                                    deviceToConnect = device;
+                                    break;
+                                }
+                            }
+                            if (deviceToConnect == null) {
+                                deviceToConnect = readerList.get(0);
+                            }
+                        }
+
+                        if (deviceToConnect != null) {
+                            final ReaderDevice finalDevice = deviceToConnect;
+                            context.runOnUiThread(() -> {
+                                Toast.makeText(context, "Auto-connecting to: " + finalDevice.getName(), Toast.LENGTH_SHORT).show();
+                                selectReader(finalDevice);
+                                connect(finalDevice.getName());
+                            });
+                        }
+                    }
+                }
+            } catch (InvalidUsageException e) {
+                Log.e(TAG, "attemptAutoConnect error: " + e.getMessage());
+            }
+        });
+    }
+
     public synchronized void disconnect() {
         Log.d(TAG, "Disconnect");
         try {

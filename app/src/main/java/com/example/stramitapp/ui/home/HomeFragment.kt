@@ -15,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.stramitapp.Global
+import com.example.stramitapp.MainActivity
 import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentHomeBinding
 import com.example.stramitapp.model.Company
@@ -55,7 +56,10 @@ class HomeFragment : Fragment() {
         }
         binding.readerModeRadioGroup?.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
-                R.id.rfid_radiobutton -> Global.setRfidMode()
+                R.id.rfid_radiobutton -> {
+                    Global.setRfidMode()
+                    (requireActivity() as? MainActivity)?.getRfidHandler()?.attemptAutoConnect()
+                }
                 R.id.barcode_radiobutton -> Global.setBarcodeMode()
             }
         }
