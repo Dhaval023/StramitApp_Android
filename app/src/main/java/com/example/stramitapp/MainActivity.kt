@@ -21,6 +21,10 @@ import com.example.stramitapp.databinding.ActivityMainBinding
 import com.example.stramitapp.ui.login.LoginViewModel
 import com.example.stramitapp.ui.movement.MovementFragment
 import com.example.stramitapp.ui.floorsweep.FloorSweepFragment
+import com.example.stramitapp.ui.search_asset.SearchAssetFragment
+import com.example.stramitapp.ui.search_shipment.SearchShipmentFragment
+import com.example.stramitapp.ui.load_shipment.LoadShipmentFragment
+import com.example.stramitapp.ui.load_shipment.LoadShipmentListFragment
 import com.example.stramitapp.zebraconnection.BarcodeHandler
 import com.example.stramitapp.zebraconnection.Inventory.TagDataViewModel
 import com.example.stramitapp.zebraconnection.RFIDHandler
@@ -98,11 +102,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onResume() {
         super.onResume()
         rfidHandler?.onResume()
+        barcodeHandler?.registerBarcodeReceiver()
     }
 
     override fun onPause() {
         super.onPause()
         rfidHandler?.onPause()
+        barcodeHandler?.unregisterBarcodeReceiver()
     }
 
     override fun onDestroy() {
@@ -159,6 +165,23 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     fun getRfidHandler(): RFIDHandler? {
         return rfidHandler
+    }
+
+    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        if (event.action == android.view.KeyEvent.ACTION_DOWN && (event.keyCode in 280..290 || event.keyCode == 102 || event.keyCode == 103)) {
+            val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as? NavHostFragment
+            val currentFragment = navHostFragment?.childFragmentManager?.primaryNavigationFragment
+            if (currentFragment is SearchAssetFragment) {
+                currentFragment.clearIdField()
+            } else if (currentFragment is SearchShipmentFragment) {
+                currentFragment.clearIdField()
+            } else if (currentFragment is LoadShipmentFragment) {
+                currentFragment.clearIdField()
+            } else if (currentFragment is LoadShipmentListFragment) {
+                currentFragment.clearBentry()
+            }
+        }
+        return super.dispatchKeyEvent(event)
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {

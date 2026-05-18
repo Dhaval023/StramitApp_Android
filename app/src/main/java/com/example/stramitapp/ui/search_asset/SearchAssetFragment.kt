@@ -1,8 +1,6 @@
 package com.example.stramitapp.ui.search_asset
 
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +14,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.example.stramitapp.MainActivity
 import com.example.stramitapp.R
 import com.example.stramitapp.databinding.FragmentSearchAssetBinding
 import com.example.stramitapp.model.Company
@@ -51,17 +50,31 @@ class SearchAssetFragment : BaseRfidFragment() {
         super.onViewCreated(view, savedInstanceState)
         initRfid()
         setupBarcodeMode()
+
+        rfidHandler?.triggerPressedLiveData?.observe(viewLifecycleOwner) { pressed ->
+            if (pressed == true) {
+                clearIdField()
+            }
+        }
+
+        (requireActivity() as? MainActivity)?.getBarcodeHandler()?.getBarcodeDataLiveData()?.observe(viewLifecycleOwner) { data: String? ->
+            if (!data.isNullOrEmpty()) {
+                binding.idEdittext.setText(data)
+                binding.idEdittext.setSelection(data.length)
+            }
+        }
     }
 
     private fun setupBarcodeMode() {
         val bentry = binding.idEdittext
         bentry.setShowSoftInputOnFocus(false)
 
-        bentry.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {}
-        })
+        bentry.setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN && (keyCode in 280..290 || keyCode == 102 || keyCode == 103)) {
+                clearIdField()
+            }
+            false
+        }
     }
 
     override fun onRfidTagScanned(tagId: String) {
@@ -333,6 +346,21 @@ class SearchAssetFragment : BaseRfidFragment() {
             locationId = locationId,
             barcode = barcode
         )
+    }
+
+    fun clearIdField() {
+        requireActivity().runOnUiThread {
+            if (binding.idEdittext.text?.isNotEmpty() == true) {
+                binding.idEdittext.setText("")
+            }
+        }
+    }
+
+    fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.action == KeyEvent.ACTION_DOWN && (event.keyCode in 280..290 || event.keyCode == 102 || event.keyCode == 103)) {
+            clearIdField()
+        }
+        return false
     }
 
     override fun onDestroyView() {

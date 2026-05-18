@@ -117,6 +117,22 @@ class LoadShipmentListFragment : Fragment() {
         binding.root.setOnClickListener { bentry.requestFocus() }
         listView?.setOnTouchListener { _, _ -> bentry.requestFocus(); false }
 
+        bentry.setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN && (keyCode in 280..290 || keyCode == 102 || keyCode == 103)) {
+                bentry.setText("")
+            } else if (event.action == KeyEvent.ACTION_DOWN &&
+                (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_TAB)
+            ) {
+                val scanned = bentry.text.toString().trim()
+                if (scanned.isNotEmpty()) {
+                    viewModel.onItemScanned(scanned, shipmentNumber)
+                    bentry.setText("")
+                }
+                return@setOnKeyListener true
+            }
+            false
+        }
+
         bentry.setOnEditorActionListener { _, actionId, event ->
             val isEnterKey = event?.keyCode == KeyEvent.KEYCODE_ENTER
                     && event.action == KeyEvent.ACTION_DOWN
@@ -133,17 +149,11 @@ class LoadShipmentListFragment : Fragment() {
             } else false
         }
 
-        bentry.setOnKeyListener { _, keyCode, event ->
-            if (event.action == KeyEvent.ACTION_DOWN &&
-                (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_TAB)
-            ) {
-                val scanned = bentry.text.toString().trim()
-                if (scanned.isNotEmpty()) {
-                    viewModel.onItemScanned(scanned, shipmentNumber)
-                    bentry.setText("")
-                }
-                true
-            } else false
+        (requireActivity() as? MainActivity)?.getBarcodeHandler()?.getBarcodeDataLiveData()?.observe(viewLifecycleOwner) { data: String? ->
+            if (!data.isNullOrEmpty()) {
+                viewModel.onItemScanned(data, shipmentNumber)
+                binding.bentry.setText("")
+            }
         }
 
         bentry.addTextChangedListener(object : android.text.TextWatcher {
@@ -171,7 +181,12 @@ class LoadShipmentListFragment : Fragment() {
     }
     private fun setupRfid() {
         rfidHandler?.triggerPressedLiveData?.observe(viewLifecycleOwner) { pressed ->
-            if (pressed) rfidHandler?.performInventory()
+            if (pressed) {
+                if (binding.bentry.isFocused) {
+                    binding.bentry.setText("")
+                }
+                rfidHandler?.performInventory()
+            }
             else rfidHandler?.stopInventory()
         }
         tagDataViewModel.getInventoryItem().observe(viewLifecycleOwner) { tags ->
@@ -250,6 +265,14 @@ class LoadShipmentListFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         rfidHandler?.stopInventory()
+    }
+
+    fun clearBentry() {
+        if (_binding != null) {
+            requireActivity().runOnUiThread {
+                binding.bentry.setText("")
+            }
+        }
     }
 
     override fun onDestroyView() {
