@@ -424,10 +424,14 @@ public class RFIDHandler implements IDcsSdkApiDelegate, Readers.RFIDReaderEventH
                             impinjExtensions = new ImpinjExtensions(mConnectedRfidReader);
                             Log.d(TAG, "Connection successful: " + mConnectedRfidReader.getHostName());
                             connectionStatus.postValue(true);
+                        } else {
+                            showMessage("Connection failed. Please re-attach the reader.");
+                            connectionStatus.postValue(false);
                         }
                     }
                 } catch (InvalidUsageException | OperationFailureException e) {
                     e.printStackTrace();
+                    showMessage("Error connecting: " + e.getMessage() + ". Please re-attach the reader.");
                     connectionStatus.postValue(false);
                 }
             }
